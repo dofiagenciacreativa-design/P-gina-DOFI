@@ -1,0 +1,40 @@
+{
+  "redes": {
+    "lineas": [
+      "Redes Sociales que",
+      "SÍ VENDEN"
+    ],
+    "video": "/home/escenas/redes-24aa2187.webm",
+    "videoMovil": "/home/escenas/redes-24aa2187-movil.webm",
+    "poster": "/home/escenas/redes-24aa2187.webp"
+  },
+  "pauta": {
+    "lineas": [
+      "PAUTA INTELIGENTE =",
+      "VENTAS INTELIGENTES"
+    ],
+    "video": "/home/escenas/pauta-c2aacda6.webm",
+    "videoMovil": "/home/escenas/pauta-c2aacda6-movil.webm",
+    "poster": "/home/escenas/pauta-c2aacda6.webp"
+  },
+  "crm": {
+    "lineas": [
+      "con",
+      "RESPUESTAS RÁPIDAS",
+      "hay",
+      "CLIENTES FELICES"
+    ],
+    "video": "/home/escenas/crm-fe570d4f.webm",
+    "videoMovil": "/home/escenas/crm-fe570d4f-movil.webm",
+    "poster": "/home/escenas/crm-fe570d4f.webp"
+  },
+  "asesorias": {
+    "lineas": [
+      "RESCATANDO",
+      "EMPRENDEDORES"
+    ],
+    "video": "/home/escenas/asesorias-df7dcd92.webm",
+    "videoMovil": "/home/escenas/asesorias-df7dcd92-movil.webm",
+    "poster": "/home/escenas/asesorias-df7dcd92.webp"
+  }
+}

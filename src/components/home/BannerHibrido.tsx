@@ -160,7 +160,7 @@ export function BannerHibrido({
 
       {/* Telefono */}
       <div className="md:hidden">
-        <EscenaBanner escena={escena} lineas={textos} ancho={g.escena.ancho} alto={alto} borde="abajo" className="w-full" />
+        <EscenaBanner escena={escena} lineas={textos} ancho={g.escena.ancho} alto={alto} borde="abajo" movil className="w-full" />
         <div className="relative w-full" style={{ aspectRatio: movil.aspecto }}>
           <Foto
             foto={foto}

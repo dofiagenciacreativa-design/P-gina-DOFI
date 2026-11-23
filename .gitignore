@@ -21,3 +21,9 @@ logo-preview.png
 # log local de assets subidos por scripts/test-content-sections-sanity.mjs
 # (para poder borrarlos en "limpiar"); nunca contiene nada mas que ids.
 scripts/.test-content-sections-assets.json
+
+# Capturas y registros del navegador de pruebas
+.playwright-mcp/
+
+# Cuadros de trabajo de las escenas de los banners (npm run grabar:escenas)
+.grabacion/

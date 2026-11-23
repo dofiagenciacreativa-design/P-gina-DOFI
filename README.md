@@ -234,6 +234,25 @@ ruta exacta que falta. Es intencional, para que sea obvio que archivo subir.
 
 Deja los mp4 en `public/videos/` y el fotograma de portada en `public/media/`.
 
+### 3b. Los videos de los banners del Home
+
+La mitad animada de cada banner del Home (redes, pauta, CRM, asesorías) se
+reproduce como **video** (WebM con transparencia, en `public/home/escenas/`),
+grabado de la escena Remotion de `src/remotion/home/`. Dibujada en vivo iba a
+saltos en computadoras con gráfica integrada (ver
+`audit/AJUSTES-2026-11-23-RESULTADOS.md`).
+
+**Si cambias el texto de un banner en Sanity**, ese banner vuelve solo a la
+animación en vivo (nunca muestra un texto viejo). Para devolverle el video:
+
+```bash
+npm run dev               # en una terminal
+npm run grabar:escenas    # en otra (necesita Chrome y ffmpeg)
+```
+
+y publica `public/home/escenas/` y `src/remotion/home/videos.json`. Más
+opciones en el encabezado de `scripts/grabar-escenas.mjs`.
+
 ### 4. Contacto
 
 Todos los datos corporativos viven en **`src/config/company.ts`** (fuente unica
