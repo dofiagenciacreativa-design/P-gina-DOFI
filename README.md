@@ -42,6 +42,21 @@ quedar en blanco o en `npm run build`; no es lo que soluciona el error.
 Ver tambien `npm run cf:preview` para probar el Worker localmente antes de
 subir.
 
+**Vistas previas de ramas (desde el 2026-11-23).** En la cuenta de Cloudflare
+de DOFI el "Build command" es `npm run cf:deploy` para todas las ramas, y el
+"Deploy command" de las ramas que no son `main` es `npx wrangler preview`.
+Para que eso funcione:
+
+- `npm run cf:deploy` (`scripts/cf-deploy.mjs`) construye siempre, pero solo
+  publica en `main` (o a mano). En otra rama Cloudflare rechaza publicar el
+  Worker de produccion y la construccion fallaba entera.
+- `wrangler.jsonc` repite las variables de Sanity y el enlace
+  `WORKER_SELF_REFERENCE` dentro de `"previews"`: no se heredan, y sin ellas la
+  vista previa mostraba el contenido de respaldo.
+
+La vista previa de una rama queda en
+`https://<rama>-pagina-dofi.dofiagenciacreativa.workers.dev`.
+
 **Next.js 15 fuera de soporte (desde el 2026-10-21).** OpenNext corta el build
 cuando la version mayor de Next.js paso sus 2 años de soporte oficial. Por
 decision del propietario (2026-10-23) los scripts `build`, `cf:build`,
