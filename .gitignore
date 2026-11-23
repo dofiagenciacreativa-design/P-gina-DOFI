@@ -27,3 +27,8 @@ scripts/.test-content-sections-assets.json
 
 # Cuadros de trabajo de las escenas de los banners (npm run grabar:escenas)
 .grabacion/
+
+# Material de trabajo de las fotos de los banners (no se publica)
+borradores/
+daniel-senalando-fondo-negro.jpg
+WhatsApp Image*.jpeg
