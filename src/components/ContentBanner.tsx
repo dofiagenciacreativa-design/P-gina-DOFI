@@ -122,6 +122,13 @@ function variablesDePosicion(mobile: PosicionCta, desktop: PosicionCta): React.C
   } as React.CSSProperties;
 }
 
+/** Imagenes de Sanity que ya no se muestran (ver «FOTOS RETIRADAS» abajo). */
+const FOTOS_RETIRADAS = [
+  "0c241a21778d9f184a4da28618af2374cfadbc41", // Redes
+  "ca26b0e956f056590179b6aeb0144cdd8fa86275", // Pauta
+  "499bf6b37a83ffdf494743713d9e356283159a80", // ChatBots / CRM
+];
+
 export function ContentBanner({
   backgroundImage,
   backgroundImageAlt,
@@ -136,7 +143,15 @@ export function ContentBanner({
     // La foto de primer plano: la que se subio al Studio o, si todavia no hay,
     // la que viene de fabrica con esa escena.
     const respaldo = GEOMETRIA[escena].fotoRespaldo;
-    const fotoFinal = foto ?? { url: respaldo.url, ancho: respaldo.ancho, alto: respaldo.alto, hotspot: null };
+    // FOTOS RETIRADAS (2026-11-23): en las tres fotos que estaban subidas en
+    // Sanity para Redes, Pauta y ChatBots la persona central habia quedado con
+    // la cara cambiada por una edicion con IA. Si el banner todavia apunta a
+    // una de ellas, se usa la de fabrica (public/home/banner-*-foto.webp, ya
+    // con la foto real de Daniel). Una foto NUEVA subida en el Studio sigue
+    // mandando, como siempre.
+    const retirada = foto !== null && FOTOS_RETIRADAS.some((id) => foto.url.includes(id));
+    const fotoFinal =
+      foto && !retirada ? foto : { url: respaldo.url, ancho: respaldo.ancho, alto: respaldo.alto, hotspot: null };
     const boton = cta && (
       <BotonCta texto={cta.texto} enlace={cta.enlace} color={cta.color} esExterno={cta.esExterno} />
     );
