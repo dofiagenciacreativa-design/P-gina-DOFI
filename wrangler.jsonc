@@ -42,5 +42,24 @@
       "binding": "WORKER_SELF_REFERENCE",
       "service": "pagina-dofi"
     }
-  ]
+  ],
+  // VISTAS PREVIAS DE RAMAS (`npx wrangler preview`, el "Deploy command" de
+  // las ramas que no son main). Las variables y enlaces de arriba NO se
+  // heredan: sin este bloque la vista previa arrancaba sin SANITY_* y
+  // mostraba el contenido de respaldo (titulo «Un Mar de Ideas», banners
+  // vacios). Wrangler lo avisaba asi: «Your configuration has diverged...
+  // missing from the Previews settings». Mismos valores que produccion: la
+  // vista previa lee el mismo contenido de Sanity (solo lectura).
+  "previews": {
+    "vars": {
+      "SANITY_PROJECT_ID": "59r5krzd",
+      "SANITY_DATASET": "production"
+    },
+    "services": [
+      {
+        "binding": "WORKER_SELF_REFERENCE",
+        "service": "pagina-dofi"
+      }
+    ]
+  }
 }
