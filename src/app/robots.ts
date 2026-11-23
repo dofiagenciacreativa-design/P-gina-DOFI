@@ -31,6 +31,27 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
+        disallow: ["/api/", "/render-escena"],
+      },
+      // BUSCADORES CON IA (GEO, 2026-11-23): bienvenidos, con nombre propio.
+      // La regla de arriba ya los deja pasar; declararlos uno por uno deja
+      // claro que es a proposito y evita que una regla futura los bloquee
+      // sin querer. Son los que leen la web para responder en ChatGPT,
+      // Claude, Perplexity, Gemini y Apple Intelligence.
+      {
+        userAgent: [
+          "GPTBot",
+          "OAI-SearchBot",
+          "ChatGPT-User",
+          "ClaudeBot",
+          "Claude-SearchBot",
+          "Claude-User",
+          "PerplexityBot",
+          "Perplexity-User",
+          "Google-Extended",
+          "Applebot-Extended",
+        ],
+        allow: "/",
         disallow: ["/api/"],
       },
     ],

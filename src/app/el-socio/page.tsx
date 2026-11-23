@@ -1,11 +1,9 @@
-import type { Metadata } from "next";
+import { PAGINAS, metadatosDePagina } from "@/config/seo";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { PaginaEnConstruccion } from "@/components/PaginaEnConstruccion";
 
-export const metadata: Metadata = {
-  title: "El Socio | DOFI Agencia Creativa",
-};
+export const metadata = metadatosDePagina(PAGINAS.elSocio);
 
 export default function ElSocioPage() {
   return (

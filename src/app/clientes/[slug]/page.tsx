@@ -11,7 +11,7 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import { getAccountBySlug, getAllActiveSlugs } from "@/lib/sanity";
 import { company } from "@/config/company";
-import { site } from "@/config/site";
+import { metadatosDePagina } from "@/config/seo";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { VideoTile } from "@/components/VideoTile";
@@ -34,26 +34,16 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const client = await getAccountBySlug(slug);
   if (!client) return { title: "Cliente no encontrado | DOFI" };
 
-  return {
-    title: `${client.name} | Casos ${company.name}`,
-    description: client.summary,
-    // Canonical solo con dominio definitivo configurado. En staging se omite
-    // a proposito: un canonical a *.workers.dev seria peor que ninguno.
-    // Ver src/config/site.ts.
-    alternates: site.isIndexable
-      ? { canonical: `/clientes/${client.slug}` }
-      : undefined,
-    openGraph: {
-      title: `${client.name} | Casos ${company.shortName}`,
-      description: client.summary,
-      url: `/clientes/${client.slug}`,
-      // NOTA: hoy client.cover es la misma portada generica en las 26
-      // cuentas (ver AUDITORIA-DOFI-V1, VIS-012). Se conserva para no dejar
-      // las tarjetas de enlace sin imagen; se reemplaza cuando exista el
-      // material real de cada caso.
-      images: [client.cover],
-    },
-  };
+  // Titulo, descripcion y canonical con la misma regla que el resto del
+  // sitio (src/config/seo.ts). La imagen para compartir es la general de
+  // DOFI: client.cover es hoy la misma portada generica de relleno en las 26
+  // cuentas (ver AUDITORIA-DOFI-V1, VIS-012). Cuando cada caso tenga su
+  // material real, pasarlo en `imagen`.
+  return metadatosDePagina({
+    ruta: `/clientes/${client.slug}`,
+    titulo: `${client.name}: cliente de DOFI | Marketing en Cuenca`,
+    descripcion: client.summary || `${client.name}, cliente de DOFI Agencia Creativa, agencia de marketing digital en ${company.location.city}.`,
+  });
 }
 
 export default async function ClientePage({ params }: Params) {

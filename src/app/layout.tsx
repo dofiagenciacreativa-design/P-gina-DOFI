@@ -3,7 +3,10 @@ import localFont from "next/font/local";
 import { GeistSans } from "geist/font/sans";
 import { company } from "@/config/company";
 import { site } from "@/config/site";
+import { PAGINAS, metadatosDePagina } from "@/config/seo";
 import { BotonWhatsApp } from "@/components/BotonWhatsApp";
+import { DatosEstructurados } from "@/components/seo/DatosEstructurados";
+import { datosDelNegocio, datosDelSitio } from "@/lib/datos-estructurados";
 import "./globals.css";
 
 /**
@@ -55,19 +58,27 @@ const archivo = localFont({
  */
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
-  title: `${company.name} | ${company.tagline}`,
-  description:
-    "Agencia creativa que produce campañas, contenido audiovisual y sistemas de CRM que convierten. DOFI crea, FENIAX automatiza.",
+  // Titulo, descripcion e imagen para compartir de respaldo (los del inicio).
+  // Cada pagina declara los suyos con metadatosDePagina() (src/config/seo.ts).
+  //
+  // SIN canonical aca (2026-11-23): antes el layout declaraba
+  // `canonical: "/"` y todas las paginas lo heredaban, o sea que todas le
+  // decian a Google «soy una copia del inicio». Ahora cada pagina declara
+  // la suya.
+  ...metadatosDePagina(PAGINAS.inicio),
+  alternates: undefined,
   keywords: [
-    "agencia creativa",
-    "producción audiovisual",
-    "CRM Kommo",
-    `marketing digital ${company.location.city}`,
+    "agencia de marketing digital Cuenca",
+    "agencia de marketing Cuenca",
+    "manejo de redes sociales Cuenca",
+    "publicidad en Meta Ads",
+    "TikTok Ads",
+    "Google Ads",
+    "chatbots con IA",
+    "CRM para WhatsApp",
     company.shortName,
     company.partner.name,
   ],
-  // Solo con dominio definitivo. Ver nota de arriba.
-  alternates: site.isIndexable ? { canonical: "/" } : undefined,
   robots: site.isIndexable
     ? undefined
     : {
@@ -75,33 +86,16 @@ export const metadata: Metadata = {
         follow: false,
         googleBot: { index: false, follow: false },
       },
-  openGraph: {
-    title: `${company.name} | ${company.tagline}`,
-    description:
-      "Creatividad que se ve y sistemas que venden. Producción audiovisual, campañas y CRM en un solo equipo.",
-    url: site.url,
-    siteName: company.name,
-    locale: "es_EC",
-    type: "website",
-    // PENDIENTE og:image: no existe todavia un asset propio de 1200x630.
-    // Los archivos disponibles son el logo (cuadrado) y una portada
-    // generica de relleno; ninguno sirve como tarjeta de enlace y no se
-    // pone una imagen mediocre solo por rellenar el campo.
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${company.name} | ${company.tagline}`,
-    description:
-      "Creatividad que se ve y sistemas que venden. Producción audiovisual, campañas y CRM.",
-  },
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={`${sora.variable} ${GeistSans.variable} ${archivo.variable}`}>
+    <html lang="es-EC" className={`${sora.variable} ${GeistSans.variable} ${archivo.variable}`}>
       <body>
+        {/* La ficha del negocio y del sitio para buscadores (no se ve). */}
+        <DatosEstructurados datos={[datosDelNegocio(), datosDelSitio()]} />
         {/*
           THESIS: El lienzo blanco reemplaza el canvas oscuro en Navbar,
           Hero y Capacidades; DOFI se expresa en morado+naranja sobre claro,

@@ -3,6 +3,9 @@ import { Hero } from "@/components/Hero";
 import { ContentBanner } from "@/components/ContentBanner";
 import { Footer } from "@/components/Footer";
 import { getPaginaInicio } from "@/lib/sanity";
+import { PAGINAS, metadatosDePagina } from "@/config/seo";
+
+export const metadata = metadatosDePagina(PAGINAS.inicio);
 
 /**
  * Home.

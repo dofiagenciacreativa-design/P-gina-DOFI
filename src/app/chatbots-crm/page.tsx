@@ -1,12 +1,17 @@
-import type { Metadata } from "next";
+import { PAGINAS, metadatosDePagina } from "@/config/seo";
+import { DatosEstructurados } from "@/components/seo/DatosEstructurados";
+import { SERVICIOS, datosDeServicio, migasDePan } from "@/lib/datos-estructurados";
 import { PaginaFeniax } from "@/components/feniax/PaginaFeniax";
 
-export const metadata: Metadata = {
-  title: "FENIAX · ChatBots / CRM con IA | DOFI Agencia Creativa",
-  description:
-    "FENIAX conecta tu WhatsApp, Instagram, Facebook y TikTok a un CRM con inteligencia artificial que responde al instante y le da seguimiento a cada cliente. Ventas inteligentes, Cuenca - Ecuador.",
-};
+export const metadata = metadatosDePagina(PAGINAS.chatbotsCrm);
 
 export default function ChatbotsCrmPage() {
-  return <PaginaFeniax />;
+  return (
+    <>
+      <DatosEstructurados
+        datos={[datosDeServicio(SERVICIOS.chatbotsCrm), migasDePan([{ nombre: "ChatBots / CRM", ruta: PAGINAS.chatbotsCrm.ruta }])]}
+      />
+      <PaginaFeniax />
+    </>
+  );
 }

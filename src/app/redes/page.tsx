@@ -1,4 +1,6 @@
-import type { Metadata } from "next";
+import { PAGINAS, metadatosDePagina } from "@/config/seo";
+import { DatosEstructurados } from "@/components/seo/DatosEstructurados";
+import { migasDePan } from "@/lib/datos-estructurados";
 import Image from "next/image";
 import { ArrowUpRight, InstagramLogo, TiktokLogo } from "@phosphor-icons/react/dist/ssr";
 import { Nav } from "@/components/Nav";
@@ -8,10 +10,7 @@ import { AtmosferaMar } from "@/components/marketing/AtmosferaMar";
 import { perfilesRedes } from "@/config/company";
 import { TEXTO_CTA, enlaceFormulario } from "@/lib/cta";
 
-export const metadata: Metadata = {
-  title: "Mira nuestro trabajo | DOFI Agencia Creativa",
-  description: "Las redes de DOFI y de Daniel Vallejo: mira lo que hacemos todos los días.",
-};
+export const metadata = metadatosDePagina(PAGINAS.redes);
 
 /** Cada red con su ícono y el color de su marca, para la baldosa del ícono. */
 const REDES = {
@@ -40,6 +39,7 @@ const REDES = {
 export default function RedesPage() {
   return (
     <>
+      <DatosEstructurados datos={migasDePan([{ nombre: "Nuestro trabajo", ruta: PAGINAS.redes.ruta }])} />
       <Nav />
       <main>
         <section

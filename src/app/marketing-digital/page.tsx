@@ -1,4 +1,6 @@
-import type { Metadata } from "next";
+import { PAGINAS, metadatosDePagina } from "@/config/seo";
+import { DatosEstructurados } from "@/components/seo/DatosEstructurados";
+import { SERVICIOS, datosDeServicio, migasDePan } from "@/lib/datos-estructurados";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { BannerFoto } from "@/components/marketing/BannerFoto";
@@ -13,11 +15,7 @@ import {
   type TipoSeccion,
 } from "@/lib/marketing-digital";
 
-export const metadata: Metadata = {
-  title: "Marketing Digital | DOFI Agencia Creativa",
-  description:
-    "Todo lo que necesitas para hacer crecer tu negocio, en un solo equipo. DOFI Agencia Creativa, Cuenca - Ecuador.",
-};
+export const metadata = metadatosDePagina(PAGINAS.marketingDigital);
 
 /**
  * Marketing Digital. Sin Hero tradicional: la pagina ES su lista de
@@ -76,6 +74,12 @@ export default async function MarketingDigitalPage() {
 
   return (
     <>
+      <DatosEstructurados
+        datos={[
+          datosDeServicio(SERVICIOS.marketingDigital),
+          migasDePan([{ nombre: "Marketing Digital", ruta: PAGINAS.marketingDigital.ruta }]),
+        ]}
+      />
       <Nav />
       <main>
         {secciones.map((seccion, i) => {

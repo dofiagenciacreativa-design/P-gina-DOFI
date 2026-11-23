@@ -1,4 +1,6 @@
-import type { Metadata } from "next";
+import { PAGINAS, metadatosDePagina } from "@/config/seo";
+import { DatosEstructurados } from "@/components/seo/DatosEstructurados";
+import { migasDePan } from "@/lib/datos-estructurados";
 import { ChatsCircle, NotePencil, PaperPlaneTilt } from "@phosphor-icons/react/dist/ssr";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
@@ -6,10 +8,7 @@ import { AtmosferaMar } from "@/components/marketing/AtmosferaMar";
 import { FormularioContacto } from "@/components/contacto/FormularioContacto";
 import { ID_FORMULARIO } from "@/lib/cta";
 
-export const metadata: Metadata = {
-  title: "Contáctanos | DOFI Agencia Creativa",
-  description: "Cuéntanos qué necesitas y te escribimos por WhatsApp para empezar a mejorar tus ventas.",
-};
+export const metadata = metadatosDePagina(PAGINAS.contactanos);
 
 /** Los tres pasos de siempre, dichos en corto: así la tarjeta del formulario
  *  solo tiene campos y el botón. */
@@ -36,6 +35,7 @@ const PASOS = [
 export default function ContactanosPage() {
   return (
     <>
+      <DatosEstructurados datos={migasDePan([{ nombre: "Contáctanos", ruta: PAGINAS.contactanos.ruta }])} />
       <Nav />
       <main>
         <section aria-labelledby="contacto-titulo" className="pantalla relative isolate overflow-hidden bg-abyss text-foam">
