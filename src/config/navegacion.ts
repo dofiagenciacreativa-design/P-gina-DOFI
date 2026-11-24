@@ -38,13 +38,16 @@ export const NAV_LINKS: NavLink[] = [
     href: "/marketing-digital",
     match: esRuta("/marketing-digital"),
   },
+  // NOMBRES EN PALABRAS DEL CLIENTE (2026-11-23): «Tráfico / Ads» y
+  // «ChatBots / CRM» eran jerga de agencia. Un dueño de negocio busca
+  // «publicidad» y «chatbots». Las rutas no cambian (SEO y enlaces viejos).
   {
-    label: "Tráfico / Ads",
+    label: "Publicidad",
     href: "/trafico-ads",
     match: esRuta("/trafico-ads"),
   },
   {
-    label: "ChatBots / CRM",
+    label: "Chatbots y CRM",
     href: "/chatbots-crm",
     match: esRuta("/chatbots-crm"),
   },

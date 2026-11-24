@@ -1,3 +1,4 @@
+import { variarCtas } from "@/lib/cta";
 import { sanityQuery } from "@/lib/sanity";
 import { obtenerResenasGoogle } from "@/lib/google-places";
 import { company } from "@/config/company";
@@ -301,5 +302,5 @@ export async function getPaginaTrafico(): Promise<PaginaTrafico> {
     .map((s) => normalizarSeccionTrafico(s, resenas, girosMarketing))
     .filter((s): s is SeccionTrafico => s !== null);
 
-  return { secciones: secciones.length > 0 ? secciones : respaldo(girosMarketing, resenas) };
+  return { secciones: variarCtas(secciones.length > 0 ? secciones : respaldo(girosMarketing, resenas), "trafico") };
 }

@@ -8,7 +8,7 @@ import { Reveal } from "@/components/Reveal";
 import { BotonCta } from "@/components/BotonCta";
 import { AtmosferaMar } from "@/components/marketing/AtmosferaMar";
 import { perfilesRedes } from "@/config/company";
-import { TEXTO_CTA, enlaceFormulario } from "@/lib/cta";
+import { VARIANTES_CTA, enlaceFormulario } from "@/lib/cta";
 
 export const metadata = metadatosDePagina(PAGINAS.redes);
 
@@ -113,7 +113,7 @@ export default function RedesPage() {
             </ul>
 
             <Reveal y={14} delay={0.34} className="mt-9">
-              <BotonCta texto={TEXTO_CTA} enlace={enlaceFormulario()} />
+              <BotonCta texto={VARIANTES_CTA.redes} enlace={enlaceFormulario()} />
             </Reveal>
           </div>
         </section>

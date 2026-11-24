@@ -1,3 +1,4 @@
+import { variarCtas } from "@/lib/cta";
 import { sanityQuery } from "@/lib/sanity";
 import { obtenerResenasGoogle } from "@/lib/google-places";
 import { COPY_FENIAX } from "@/lib/feniax-respaldo";
@@ -273,5 +274,5 @@ export async function getPaginaFeniax(): Promise<PaginaFeniax> {
     .map((s) => normalizarSeccionFeniax(s, resenas, girosMarketing))
     .filter((s): s is SeccionFeniax => s !== null);
 
-  return { secciones: secciones.length > 0 ? secciones : respaldo(girosMarketing, resenas) };
+  return { secciones: variarCtas(secciones.length > 0 ? secciones : respaldo(girosMarketing, resenas), "feniax") };
 }

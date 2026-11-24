@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
-import { ShareNetwork, Megaphone, ChartLineUp, Lifebuoy, GraduationCap } from "@phosphor-icons/react";
+import { ShareNetwork, Megaphone, ChartLineUp, Lifebuoy, GraduationCap, ArrowUpRight } from "@phosphor-icons/react";
 import { useCallback, useRef, useState, type PointerEvent } from "react";
 import type { Capacidad } from "@/lib/sanity";
 
@@ -32,6 +32,21 @@ const ICONOS = {
   rescue: Lifebuoy,
   academia: GraduationCap,
 } as const;
+
+/**
+ * A DONDE LLEVA CADA TARJETA (2026-11-23). En el Studio ninguna tiene enlace
+ * cargado, asi que las 5 eran texto suelto: el visitante leia «Redes
+ * Sociales» y no podia ir a ver el servicio. Si la tarjeta no trae enlace
+ * desde el Studio, usa el de su icono. Academia sigue sin destino: todavia
+ * no existe su pagina (no se inventa una).
+ */
+const DESTINO_POR_ICONO: Record<keyof typeof ICONOS, string | null> = {
+  social: "/marketing-digital",
+  ads: "/trafico-ads",
+  growth: "/marketing-digital#clientes",
+  rescue: "/asesorias",
+  academia: null,
+};
 
 /**
  * Detecta una sola vez, al montar, si el dispositivo soporta hover real
@@ -69,8 +84,9 @@ function useHoverCapable() {
  * requestAnimationFrame para no saturar el hilo principal si el navegador
  * dispara pointermove mas rapido de lo que se pinta.
  */
-function Tarjeta({ titulo, descripcion, icono, enlace }: Capacidad) {
+function Tarjeta({ titulo, descripcion, icono, enlace: enlaceStudio }: Capacidad) {
   const Icono = ICONOS[icono];
+  const enlace = enlaceStudio || DESTINO_POR_ICONO[icono];
   const reduce = useReducedMotion();
   const hoverCapable = useHoverCapable();
 
@@ -113,20 +129,38 @@ function Tarjeta({ titulo, descripcion, icono, enlace }: Capacidad) {
   // Vidrio oscuro sobre el fondo del hero (version premium, 2026-10-07):
   // icono a la izquierda y titulo + descripcion a la derecha, asi las cuatro
   // entran en una fila baja y el hero completo cabe en una pantalla.
+  //
+  // MENOS «PLANTILLA» (2026-11-23): el icono blanco dentro de un cuadrado
+  // morado con degradado y sombra es el recurso mas repetido de las webs
+  // hechas con plantilla o con IA. Ahora el icono va suelto, en linea fina y
+  // en el naranja claro de la marca, y el titulo manda. Las tarjetas que
+  // llevan a una pagina muestran una flecha arriba a la derecha que se
+  // enciende al pasar el mouse: se entiende que se pueden abrir.
   const contenido = (
     <>
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] bg-[linear-gradient(150deg,var(--color-brand-lift)_0%,var(--color-brand)_100%)] shadow-[0_10px_22px_-12px_rgba(109,75,201,0.9)]">
-        <Icono size={24} weight="bold" aria-hidden="true" className="text-white" />
-      </div>
-      <div className="min-w-0">
-        <h3 className="font-display text-[15.5px] font-bold leading-snug tracking-tight text-foam">{titulo}</h3>
+      <Icono
+        size={26}
+        weight="duotone"
+        aria-hidden="true"
+        className="mt-0.5 shrink-0 text-accent-lift"
+      />
+      <div className="min-w-0 pr-4">
+        <h3 className="font-display text-[15.5px] font-semibold leading-snug tracking-tight text-foam">{titulo}</h3>
         <p className="mt-1 font-sans text-[15px] leading-snug text-mist">{descripcion}</p>
       </div>
+      {enlace && (
+        <ArrowUpRight
+          size={15}
+          weight="bold"
+          aria-hidden="true"
+          className="absolute right-3.5 top-3.5 text-foam/35 transition-colors duration-300 group-hover:text-accent-lift xl:right-4 xl:top-4"
+        />
+      )}
     </>
   );
 
   const className =
-    "capacidad-card relative flex h-full items-start gap-4 rounded-[20px] border border-white/12 p-4 shadow-[0_24px_48px_-32px_rgba(8,4,20,0.9)] xl:p-5";
+    "capacidad-card group relative flex h-full items-start gap-3.5 rounded-[20px] border border-white/12 p-4 shadow-[0_24px_48px_-32px_rgba(8,4,20,0.9)] xl:p-5";
 
   // El listener solo se pasa si el dispositivo tiene hover real y el
   // usuario no pidio reduced-motion -- en touch/tablet no se adjunta

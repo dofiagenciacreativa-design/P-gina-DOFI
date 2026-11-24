@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
+  ArrowRight,
   List,
   X,
   FacebookLogo,
@@ -14,8 +15,55 @@ import {
 import { Wordmark } from "./Wordmark";
 import { headerSocialLinks, type HeaderSocialKey } from "@/config/company";
 import { NAV_LINKS as LINKS } from "@/config/navegacion";
+import { RUTA_FORMULARIO } from "@/lib/cta";
 
 /**
+ * El boton de contacto del header (2026-11-23). Lleva al formulario
+ * (/contactanos), el mismo destino que el boton flotante de WhatsApp. Se
+ * llama como la pagina a la que lleva, «Contáctanos», y no «Quiero mejorar
+ * mis ventas»: ese texto es el de los botones de conversion del contenido
+ * (src/lib/cta.ts) y no entra en la barra. Naranja: el unico color de
+ * accion del sitio (DESIGN.md, «The One Accent Rule»).
+ */
+function BotonContacto({ activo, compacto = false }: { activo: boolean; compacto?: boolean }) {
+  return (
+    <Link
+      href={RUTA_FORMULARIO}
+      aria-current={activo ? "page" : undefined}
+      className={[
+        "group inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-accent font-display font-semibold text-fg-on-accent shadow-[0_8px_20px_-12px_rgba(244,123,32,0.85)] transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-accent-lift active:scale-[0.98]",
+        compacto ? "h-10 px-4 text-[13.5px]" : "h-10 px-5 text-[14px]",
+      ].join(" ")}
+    >
+      Contáctanos
+      <ArrowRight
+        size={compacto ? 14 : 15}
+        weight="bold"
+        aria-hidden="true"
+        className="transition-transform duration-300 group-hover:translate-x-0.5"
+      />
+    </Link>
+  );
+}
+
+/**
+ * Header DOFI.
+ *
+ * REDISEÑO DEL 2026-11-23 (revision de diseño y conversion, tanda 2;
+ * audit/REVISION-DISENO-2026-11-23.md, punto 2):
+ *   - Logo a la IZQUIERDA, enlaces al centro y, a la derecha, las redes
+ *     (mas discretas) y un boton naranja «Contáctanos» siempre visible.
+ *     Antes: redes a la izquierda, logo centrado y SIN boton de contacto
+ *     (pedido de la «Corrección del Header V2»). Con el logo centrado no
+ *     entraban los enlaces + el boton ni siquiera a 1440 px.
+ *   - Enlaces de 13 a 14-15 px y con nombres que entiende un dueño de
+ *     negocio (src/config/navegacion.ts).
+ *   - En el telefono, el boton «Contáctanos» tambien va en la barra, al
+ *     lado del menu.
+ *   - Se conservan: lienzo claro, redes siempre visibles (Facebook,
+ *     Instagram, TikTok), subrayado del enlace activo, panel movil.
+ * El historial de abajo describe la version anterior.
+ *
  * Header DOFI — arquitectura de 3 zonas sobre lienzo blanco, inspirada en
  * Converzzo (Sprint "Header nuevo + lienzo blanco global"; corregido en
  * "Corrección del Header V2").
@@ -110,7 +158,7 @@ const UMBRAL_SOLIDO = 32;
  *  como acento puntual en otras piezas, no como color de hover de estos 3
  *  botones). 300ms, cubic-bezier(0.16, 1, 0.3, 1) (spec §15). */
 const CLASE_BOTON_SOCIAL =
-  "flex h-11 w-11 items-center justify-center rounded-[10px] border border-brand/20 bg-white text-brand shadow-[0_1px_2px_rgba(26,15,61,0.06)] transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:border-brand hover:bg-brand hover:text-white";
+  "flex h-10 w-10 items-center justify-center rounded-full text-ink-muted transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:bg-brand/8 hover:text-brand";
 
 function RedesSociales({ className }: { className?: string }) {
   // Los 3 items SIEMPRE se pintan — headerSocialLinks ya no filtra por URL
@@ -266,40 +314,30 @@ export function Nav() {
             Puppeteer, la version de 3 zonas ahora entra limpia tambien a
             1024px, asi que el punto de quiebre vuelve a `lg` (coincide con
             el §26 del brief, que vuelve a listar 1024 en "test desktop"). */}
-        <div className="relative hidden h-16 items-center lg:flex lg:h-[68px]">
+        <div className="relative hidden h-16 items-center gap-6 lg:flex lg:h-[68px]">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 overflow-hidden"
           >
-            {/* Difuminado sutil DOFI (spec §10-13): dos manchas muy
-                translucidas, nunca un fondo — recortadas por el propio
-                header (overflow-hidden en este contenedor) para que jamas
-                se sientan como un hero oscuro. Morado detras del logo,
-                naranja muy tenue hacia el lado de la navegacion. Mismo
-                blur/opacidad que ya usa el slot de imagen del Hero, solo
-                que aqui a una escala mucho mas chica (el header mide
-                64-68px de alto). */}
-            <div className="absolute left-1/2 top-1/2 h-40 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand/12 blur-3xl" />
+            {/* Difuminado sutil DOFI: morado detras del logo, naranja muy
+                tenue hacia el boton de contacto. Nunca un fondo oscuro. */}
+            <div className="absolute -left-10 top-1/2 h-40 w-72 -translate-y-1/2 rounded-full bg-brand/10 blur-3xl" />
             <div className="absolute -right-10 top-1/2 h-28 w-56 -translate-y-1/2 rounded-full bg-accent/8 blur-3xl" />
-          </div>
-
-          <div className="relative flex flex-1 items-center">
-            <RedesSociales />
           </div>
 
           <Link
             href="/"
             aria-label="DOFI Agencia Creativa, inicio"
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg"
+            className="relative shrink-0 rounded-lg"
           >
             <Wordmark size="nav" tone="light" />
           </Link>
 
           <nav
             aria-label="Navegación principal"
-            className="relative flex flex-1 items-center justify-end"
+            className="relative flex flex-1 items-center justify-center"
           >
-            <ul className="flex items-center gap-0.5">
+            <ul className="flex items-center gap-1 xl:gap-2">
               {LINKS.map((l) => {
                 const esActivo = l.match(pathname);
                 return (
@@ -308,17 +346,17 @@ export function Nav() {
                       href={l.href}
                       aria-current={esActivo ? "page" : undefined}
                       className={[
-                        "relative inline-flex h-10 items-center whitespace-nowrap px-1 font-sans text-[13px] font-medium transition-colors duration-200",
+                        "relative inline-flex h-10 items-center whitespace-nowrap px-2 font-sans text-[14px] font-medium transition-colors duration-200 xl:px-2.5 xl:text-[15px]",
                         esActivo
                           ? "text-brand"
-                          : "text-ink-muted hover:text-brand-lift",
+                          : "text-ink/75 hover:text-brand-lift",
                       ].join(" ")}
                     >
                       {l.label}
                       {esActivo && (
                         <motion.span
                           layoutId="nav-active-underline"
-                          className="absolute inset-x-1 -bottom-0.5 h-[2px] rounded-full bg-brand"
+                          className="absolute inset-x-2 -bottom-0.5 h-[2px] rounded-full bg-brand xl:inset-x-2.5"
                           transition={
                             reduce
                               ? { duration: 0 }
@@ -332,6 +370,11 @@ export function Nav() {
               })}
             </ul>
           </nav>
+
+          <div className="relative flex shrink-0 items-center gap-3">
+            <RedesSociales className="gap-0.5" />
+            <BotonContacto activo={pathname === RUTA_FORMULARIO} />
+          </div>
         </div>
 
         {/* ---------- Barra tablet/mobile: logo izquierda, hamburguesa derecha ----------
@@ -346,7 +389,8 @@ export function Nav() {
             <Wordmark size="sm" tone="light" />
           </Link>
 
-          <div className="flex shrink-0 items-center">
+          <div className="flex shrink-0 items-center gap-2">
+            <BotonContacto activo={pathname === RUTA_FORMULARIO} compacto />
             <button
               ref={botonRef}
               type="button"

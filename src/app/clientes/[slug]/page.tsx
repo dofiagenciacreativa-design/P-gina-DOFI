@@ -16,7 +16,7 @@ import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { VideoTile } from "@/components/VideoTile";
 import { MagneticCta } from "@/components/MagneticCta";
-import { RUTA_FORMULARIO, TEXTO_CTA } from "@/lib/cta";
+import { RUTA_FORMULARIO, VARIANTES_CTA } from "@/lib/cta";
 import { Reveal } from "@/components/Reveal";
 
 /** Genera una ruta estatica por cada cuenta activa en tiempo de build.
@@ -79,7 +79,7 @@ export default async function ClientePage({ params }: Params) {
           />
           <div className="relative mx-auto max-w-[1400px] px-5 md:px-8">
             <Link
-              href="/#clientes"
+              href="/marketing-digital#clientes"
               className="inline-flex items-center gap-2 font-sans text-sm text-mist transition-colors duration-300 hover:text-foam"
             >
               <ArrowLeft size={16} weight="bold" />
@@ -316,7 +316,7 @@ export default async function ClientePage({ params }: Params) {
               Tu marca puede ser la siguiente
             </h2>
             <div className="mt-10 flex justify-center">
-              <MagneticCta href={RUTA_FORMULARIO}>{TEXTO_CTA}</MagneticCta>
+              <MagneticCta href={RUTA_FORMULARIO}>{VARIANTES_CTA.cliente}</MagneticCta>
             </div>
           </div>
         </section>

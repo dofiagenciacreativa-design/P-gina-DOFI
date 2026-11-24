@@ -1,4 +1,4 @@
-import { TEXTO_CTA, enlaceFormulario } from "@/lib/cta";
+import { TEXTO_CTA, enlaceFormulario, variarCtas } from "@/lib/cta";
 import { sanityQuery } from "@/lib/sanity";
 import { company } from "@/config/company";
 import { obtenerResenasGoogle } from "@/lib/google-places";
@@ -659,10 +659,13 @@ export async function getPaginaMarketingDigital(): Promise<{ secciones: SeccionM
 
   const crudas = respuesta?.pagina?.sections ?? [];
   if (crudas.length === 0) {
-    return { secciones: SECCIONES_RESPALDO.map((s) => conDatos(s, resenas)) };
+    return { secciones: variarCtas(SECCIONES_RESPALDO.map((s) => conDatos(s, resenas)), "marketing") };
   }
 
   return {
-    secciones: crudas.map((s) => normalizarSeccion(s, resenas)).filter((s): s is SeccionMarketing => s !== null),
+    secciones: variarCtas(
+      crudas.map((s) => normalizarSeccion(s, resenas)).filter((s): s is SeccionMarketing => s !== null),
+      "marketing"
+    ),
   };
 }

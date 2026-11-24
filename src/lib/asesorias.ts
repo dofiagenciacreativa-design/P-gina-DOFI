@@ -1,3 +1,4 @@
+import { variarCtas } from "@/lib/cta";
 import { sanityQuery } from "@/lib/sanity";
 import { obtenerResenasGoogle } from "@/lib/google-places";
 import { GIRO_GROQ } from "@/lib/giros";
@@ -397,5 +398,5 @@ export async function getPaginaAsesorias(): Promise<{ secciones: SeccionAsesoria
     .map((s) => normalizarSeccionAsesorias(s, resenas, girosMarketing, marketing))
     .filter((s): s is SeccionAsesorias => s !== null);
 
-  return { secciones: secciones.length > 0 ? secciones : respaldo(girosMarketing, marketing) };
+  return { secciones: variarCtas(secciones.length > 0 ? secciones : respaldo(girosMarketing, marketing), "asesorias") };
 }

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Reveal } from "./Reveal";
 import { BotonCta } from "./BotonCta";
+import { textoCta } from "@/lib/cta";
 import { BannerHibrido } from "./home/BannerHibrido";
 import { GEOMETRIA } from "@/remotion/home/tema";
 import type {
@@ -153,7 +154,7 @@ export function ContentBanner({
     const fotoFinal =
       foto && !retirada ? foto : { url: respaldo.url, ancho: respaldo.ancho, alto: respaldo.alto, hotspot: null };
     const boton = cta && (
-      <BotonCta texto={cta.texto} enlace={cta.enlace} color={cta.color} esExterno={cta.esExterno} />
+      <BotonCta texto={textoCta(cta.texto, `inicio:${escena}`)} enlace={cta.enlace} color={cta.color} esExterno={cta.esExterno} />
     );
     return (
       <BannerHibrido
