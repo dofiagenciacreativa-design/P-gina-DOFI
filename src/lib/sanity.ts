@@ -258,9 +258,10 @@ export async function getActiveAccounts(): Promise<Client[]> {
 
   try {
     const res = await fetch(url, {
-      // ISR: revalida cada 60s en vez de pegarle a Sanity en cada request.
-      // /api/revalidate invalida esto al instante cuando se publica algo.
-      next: { revalidate: 60 },
+      // Se consulta al construir la web, no en cada visita (ver
+      // open-next.config.ts). Al publicar en Sanity, /api/revalidate dispara
+      // una construccion nueva y el cambio aparece en unos minutos.
+      cache: "force-cache",
     });
     if (!res.ok) throw new Error(`Sanity respondio ${res.status} ${res.statusText}`);
 
@@ -286,7 +287,7 @@ export async function getAllActiveSlugs(): Promise<string[]> {
   const url = buildQueryUrl(projectId, dataset, QUERY_SLUGS_ACTIVOS);
 
   try {
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    const res = await fetch(url, { cache: "force-cache" });
     if (!res.ok) throw new Error(`Sanity respondio ${res.status} ${res.statusText}`);
 
     const { result } = (await res.json()) as { result: (string | null)[] };
@@ -316,7 +317,7 @@ export async function getAccountBySlug(slug: string): Promise<Client | null> {
   const url = buildQueryUrl(projectId, dataset, QUERY_CUENTA_POR_SLUG, { slug });
 
   try {
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    const res = await fetch(url, { cache: "force-cache" });
     if (!res.ok) throw new Error(`Sanity respondio ${res.status} ${res.statusText}`);
 
     const { result } = (await res.json()) as { result: SanityCuentaCompleta | null };
@@ -372,7 +373,7 @@ export async function sanityQuery<T>(query: string): Promise<T | null> {
   const url = `https://${projectId}.apicdn.sanity.io/v${API_VERSION}/data/query/${dataset}?query=${encodeURIComponent(query)}`;
 
   try {
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    const res = await fetch(url, { cache: "force-cache" });
     if (!res.ok) {
       throw new Error(`Sanity respondio ${res.status} ${res.statusText}`);
     }

@@ -1,28 +1,24 @@
-import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 /**
  * Webhook de Sanity: se llama al publicar/editar/borrar una Cuenta, un
- * Contenido o un Servicio para que la web muestre el cambio de inmediato,
- * sin esperar el ISR de 60s de src/lib/sanity.ts ni hacer un redeploy.
+ * Contenido o un Servicio.
  *
- * Configuralo en manage.sanity.io -> tu proyecto -> API -> Webhooks,
- * apuntando a esta URL con ?secret=<SANITY_REVALIDATE_SECRET> (mismo valor
- * que la variable de entorno de este Worker), disparado en
- * Create/Update/Delete de "cuenta", "contenido" y "servicio".
+ * DESDE EL 2026-11-24 las paginas se arman UNA vez, al construir la web, y
+ * se entregan ya hechas (ver open-next.config.ts). Por eso este endpoint ya
+ * no «invalida» nada: dispara una construccion nueva de la web en Cloudflare
+ * (Deploy Hook de Workers Builds) y el cambio aparece en unos minutos.
  *
- * PENDIENTE (Sprint "Implementación final del Hero + Sanity + Cards"):
- * agregar tambien "hero" y "paginaInicio" a esos tipos disparadores en el
- * dashboard del webhook -- sin eso, un cambio de foto en el Hero sigue
- * llegando a la web solo, pero tarda hasta 60s (el ISR de src/lib/sanity.ts)
- * en vez de ser instantaneo. No es un bloqueo: se verifico manualmente
- * llamando a este endpoint despues de publicar y el cambio se reflejo al
- * toque (ver el reporte del sprint).
+ * Configuracion (no va en el repositorio):
+ *  - Webhook en manage.sanity.io -> proyecto -> API -> Webhooks, apuntando a
+ *    esta URL con ?secret=<SANITY_REVALIDATE_SECRET>, en Create/Update/Delete.
+ *  - Secretos del Worker pagina-dofi: SANITY_REVALIDATE_SECRET y
+ *    CF_DEPLOY_HOOK_URL (la URL del Deploy Hook de la rama main, creado en
+ *    Workers & Pages -> pagina-dofi -> Settings -> Builds -> Deploy Hooks).
+ *    Quien tenga esa URL puede lanzar construcciones: tratarla como clave.
  *
- * Invalida todo el arbol de rutas ("/", "layout") en vez de una ruta
- * puntual: el carrusel y el muro de logos de la home tambien dependen de
- * las cuentas, no solo /clientes/[slug]. Para un sitio de este tamaño es
- * mas simple y confiable que mantener tags por cada fetch.
+ * Varias publicaciones seguidas lanzan varias construcciones; Cloudflare las
+ * hace en fila y la ultima trae todos los cambios.
  */
 export async function POST(request: Request) {
   const secretEsperado = process.env.SANITY_REVALIDATE_SECRET;
@@ -30,12 +26,32 @@ export async function POST(request: Request) {
 
   if (!secretEsperado || secretRecibido !== secretEsperado) {
     return NextResponse.json(
-      { revalidated: false, error: "Secreto invalido o no configurado" },
+      { publicando: false, error: "Secreto invalido o no configurado" },
       { status: 401 }
     );
   }
 
-  revalidatePath("/", "layout");
+  const deployHook = process.env.CF_DEPLOY_HOOK_URL;
+  if (!deployHook) {
+    console.error(
+      "[revalidate] Falta el secreto CF_DEPLOY_HOOK_URL: el cambio de Sanity se vera recien en la proxima publicacion."
+    );
+    return NextResponse.json(
+      { publicando: false, error: "Falta CF_DEPLOY_HOOK_URL" },
+      { status: 500 }
+    );
+  }
 
-  return NextResponse.json({ revalidated: true, now: Date.now() });
+  try {
+    const res = await fetch(deployHook, { method: "POST", cache: "no-store" });
+    if (!res.ok) throw new Error(`Cloudflare respondio ${res.status}`);
+  } catch (err) {
+    console.error("[revalidate] No se pudo lanzar la construccion nueva:", err);
+    return NextResponse.json(
+      { publicando: false, error: "No se pudo lanzar la construccion" },
+      { status: 502 }
+    );
+  }
+
+  return NextResponse.json({ publicando: true, now: Date.now() });
 }

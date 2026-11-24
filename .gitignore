@@ -6,6 +6,7 @@ build
 *.pem
 .env*
 !.env.example
+!.env.production
 .vercel
 next-env.d.ts
 *.tsbuildinfo

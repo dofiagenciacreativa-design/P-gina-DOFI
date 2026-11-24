@@ -16,17 +16,20 @@ import type { Resena } from "./marketing-digital";
  * mas de 5 en su perfil, estas son las que Google decide mostrar.
  *
  * CACHE: los Terminos de Servicio de Google Maps Platform limitan cuanto
- * tiempo se puede conservar el contenido de Place Details. 6 horas de
- * revalidacion (Next Data Cache, mismo mecanismo que ya usa sanityQuery) es
- * un margen conservador: nunca se guarda de forma permanente en Sanity ni en
- * ningun otro lado.
+ * tiempo se puede conservar el contenido de Place Details. 6 horas es un
+ * margen conservador: nunca se guarda de forma permanente en Sanity ni en
+ * ningun otro lado. Ver la nota de abajo sobre las construcciones.
  *
  * RESPALDO: sin configurar, con cualquier error de red, o si Google no
  * devuelve reseñas validas, esta funcion responde `null` -- nunca lanza --
  * para que quien llama caiga a las reseñas de Sanity sin romper la pagina.
  */
 
-const REVALIDAR_SEGUNDOS = 60 * 60 * 6;
+// OJO (2026-11-24): las paginas ahora se arman al construir la web y no
+// caducan solas (ver open-next.config.ts). Hoy no hay clave de Google en
+// produccion, asi que esto no se usa. Si algun dia se activa, hay que
+// programar una construccion nueva cada 6 horas (Cron Trigger que llame al
+// Deploy Hook) para respetar este margen.
 
 type ReviewGoogleRaw = {
   author_name?: string;
@@ -68,7 +71,7 @@ export async function obtenerResenasGoogle(): Promise<Resena[] | null> {
 
   try {
     const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(placeId)}&fields=reviews&language=es&key=${encodeURIComponent(apiKey)}`;
-    const res = await fetch(url, { next: { revalidate: REVALIDAR_SEGUNDOS } });
+    const res = await fetch(url, { cache: "force-cache" });
     if (!res.ok) {
       console.error(`[google-places] HTTP ${res.status} al consultar Place Details, se usa el respaldo de Sanity.`);
       return null;
