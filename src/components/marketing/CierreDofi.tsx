@@ -18,9 +18,10 @@ import type { SeccionCierre } from "@/lib/marketing-digital";
  *    delfín hecho de luz» (propuesta C): el delfín del logo de DOFI, grande
  *    y tenue, con un reflejo que lo recorre (MarcaDeLuz). En Chatbots y CRM
  *    es el isotipo de FENIAX, con sus colores.
- *  - Texto a la izquierda y la marca a la derecha. En el teléfono la marca
- *    va ARRIBA, chica, y el texto empieza enseguida: sin espacio vacío.
- *    En el teléfono todo va CENTRADO (pedido del propietario, 2026-11-24).
+ *  - Texto a la izquierda y la marca a la derecha.
+ *    Sin espacio vacío encima del título.
+ *    En el teléfono todo va CENTRADO y la marca va detrás del texto, en
+ *    grande (pedidos del propietario, 2026-11-24).
  *
  * La imagen del cierre que sigue cargada en Sanity (y su versión para
  * teléfono) ya no se usa. Textos y botón siguen viniendo de Sanity.
@@ -73,8 +74,10 @@ export function CierreDofi({
       <div aria-hidden="true" className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
 
       <div className="mx-auto grid w-full max-w-page grid-cols-1 items-center gap-8 px-5 py-[var(--seccion-y)] sm:px-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] md:gap-10 md:px-10 lg:px-12">
-        {/* La marca: arriba en el teléfono, a la derecha en computadora. */}
-        <div className="order-1 md:order-2">
+        {/* La marca. En el teléfono va DETRÁS del texto, grande y más tenue
+            (pedido del propietario, 2026-11-24): ocupa el fondo de la sección
+            sin sumar alto. En computadora, a la derecha del texto. */}
+        <div className="pointer-events-none absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-center opacity-[0.45] md:static md:order-2 md:block md:translate-y-0 md:opacity-100">
           <MarcaDeLuz
             src={v.marca.src}
             ancho={v.marca.ancho}
@@ -82,13 +85,13 @@ export function CierreDofi({
             tono={variante}
             className={
               variante === "feniax"
-                ? "mx-auto w-[44%] max-w-[180px] md:mr-0 md:ml-auto md:w-[78%] md:max-w-[420px]"
-                : "mx-auto w-[62%] max-w-[260px] md:mr-0 md:ml-auto md:w-[112%] md:max-w-[620px] md:translate-x-[6%]"
+                ? "w-[92%] max-w-none shrink-0 md:ml-auto md:w-[78%] md:max-w-[420px] md:shrink"
+                : "w-[140%] max-w-none shrink-0 md:ml-auto md:w-[112%] md:max-w-[620px] md:shrink md:translate-x-[6%]"
             }
           />
         </div>
 
-        <div className="order-2 flex min-w-0 flex-col items-center text-center md:order-1 md:items-start md:text-left">
+        <div className="relative z-10 flex min-w-0 flex-col items-center text-center md:order-1 md:items-start md:text-left">
           {subtitulo && (
             <Anim animar={animar} y={12} duration={0.6}>
               <p className="mb-5 inline-flex w-fit items-center rounded-full border border-white/15 bg-white/[0.06] px-4 py-1.5 font-sans text-sm text-foam/85">
