@@ -6,6 +6,10 @@ import { OndasFeniax } from "./OndasFeniax";
 import { FotoFondo, Puntos, partirFinal } from "./piezas";
 
 /**
+ * SIN USO desde el 2026-11-23: el cierre de FENIAX es ahora CierreDofi con
+ * variante="feniax" (src/components/marketing/CierreDofi.tsx). Se deja el
+ * archivo por si se quiere volver al diseño anterior.
+ *
  * 7 · Cierre (tipo ctaBanner): la pregunta final y el botón protagonista.
  *
  * Sin foto: el isotipo grande, con un brillo que respira, sobre el fondo de

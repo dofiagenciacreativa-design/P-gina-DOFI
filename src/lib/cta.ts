@@ -39,7 +39,7 @@ export const VARIANTES_CTA: Record<string, string> = {
   // Marketing Digital
   "marketing:teamBanner": "Quiero mejorar mis ventas",
   "marketing:methodBanner": "Quiero agendar una reunión",
-  "marketing:ctaBanner": "Quiero que seamos socios",
+  "marketing:ctaBanner": "Quiero vender más",
   // Pauta digital (Tráfico / Ads)
   "trafico:teamBanner": "Quiero más clientes",
   "trafico:methodBanner": "Quiero una campaña que venda",
@@ -63,14 +63,43 @@ export function textoCta(texto: string, lugar: string): string {
   return ES_GENERICO(texto) ? (VARIANTES_CTA[lugar] ?? texto) : texto;
 }
 
-/** Aplica textoCta a todas las secciones de una pagina de servicio. */
-export function variarCtas<T extends { tipo: string; cta?: { texto: string; enlace: string } | null }>(
-  secciones: T[],
-  pagina: "marketing" | "trafico" | "feniax" | "asesorias"
-): T[] {
-  return secciones.map((s) =>
-    s.cta ? { ...s, cta: { ...s.cta, texto: textoCta(s.cta.texto, `${pagina}:${s.tipo}`) } } : s
-  );
+/**
+ * TEXTOS DEL CIERRE (2026-11-23, con el rediseño del cierre). «¿Somos socios
+ * o le pasas tu oportunidad a alguien más?» sonaba a presión; la idea se
+ * mantiene (vender más, agendar una reunión) con palabras propias de cada
+ * página. Chatbots y CRM y Asesorías ya seguían la idea «¿Listo…?» y no
+ * cambian. Igual que con los botones: solo se reemplaza si en Sanity sigue
+ * el texto anterior; si alguien escribe otro en el Studio, se respeta.
+ */
+const CIERRES: Record<string, { anterior: string; titulo: string; descripcion?: string }> = {
+  "marketing:ctaBanner": {
+    anterior: "¿Somos socios o le pasas tu oportunidad a alguien más?",
+    titulo: "¿Listo para vender de forma inteligente?",
+    descripcion: "Estrategia, contenido y pauta con un solo equipo. Agenda una reunión y armamos tu plan.",
+  },
+  "trafico:ctaBanner": {
+    anterior: "¿Listos para poner tu inversión en movimiento?",
+    titulo: "¿Hacemos que tu publicidad venda?",
+    descripcion: "Convierte tu presupuesto en mensajes, clientes y ventas que puedes medir.",
+  },
+};
+
+const normalizar = (t: string) => t.replace(/\s+/g, " ").trim().toLowerCase();
+
+/** Aplica textoCta a todas las secciones de una pagina de servicio, y los
+ *  textos nuevos del cierre (CIERRES). */
+export function variarCtas<
+  T extends { tipo: string; titulo?: string; descripcion?: string; cta?: { texto: string; enlace: string } | null },
+>(secciones: T[], pagina: "marketing" | "trafico" | "feniax" | "asesorias"): T[] {
+  return secciones.map((s) => {
+    const lugar = `${pagina}:${s.tipo}`;
+    let nueva = s.cta ? { ...s, cta: { ...s.cta, texto: textoCta(s.cta.texto, lugar) } } : s;
+    const cierre = CIERRES[lugar];
+    if (cierre && typeof s.titulo === "string" && normalizar(s.titulo) === normalizar(cierre.anterior)) {
+      nueva = { ...nueva, titulo: cierre.titulo, ...(cierre.descripcion ? { descripcion: cierre.descripcion } : {}) };
+    }
+    return nueva;
+  });
 }
 
 /** Los servicios que ofrece el formulario, en este orden. `clave` es lo que

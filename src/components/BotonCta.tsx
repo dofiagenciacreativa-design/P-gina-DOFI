@@ -56,11 +56,15 @@ export function clasesBoton(tamano: TamanoBoton = "normal"): string {
     "banner-cta-boton group/cta inline-flex items-center justify-center rounded-full text-center font-display font-bold leading-tight " +
     "transition-[background-color,box-shadow,scale] duration-300 ease-out " +
     "motion-safe:hover:scale-[1.04] active:scale-[0.99] " +
+    // EN EL TELEFONO (2026-11-23): menos relleno a los lados y letra de
+    // 15,5 px. Con 17 px y 36 px de relleno, «Quiero que mis ventas
+    // renazcan» o «Quiero una campaña que venda» se partian en dos lineas
+    // con la flecha sola a un costado. Desde tablet (md) no cambia nada.
     (tamano === "grande"
-      ? "min-h-[60px] gap-3 px-9 py-3.5 text-[17px] md:min-h-[76px] md:px-12 md:text-[21px]"
+      ? "min-h-[58px] gap-2.5 px-6 py-3 text-[15.5px] md:min-h-[76px] md:gap-3 md:px-12 md:text-[21px]"
       : tamano === "medio"
-        ? "min-h-[56px] gap-2.5 px-8 py-3 text-[16px] md:min-h-[68px] md:gap-3 md:px-10 md:text-[19px]"
-        : "min-h-[56px] gap-2.5 px-8 py-3 text-[16px] md:min-h-[64px] md:gap-3 md:px-10 md:text-[18px]")
+        ? "min-h-[56px] gap-2.5 px-6 py-3 text-[15.5px] md:min-h-[68px] md:gap-3 md:px-10 md:text-[19px]"
+        : "min-h-[54px] gap-2.5 px-6 py-3 text-[15.5px] md:min-h-[64px] md:gap-3 md:px-10 md:text-[18px]")
   );
 }
 

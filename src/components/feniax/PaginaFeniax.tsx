@@ -8,7 +8,7 @@ import { FeniaxEditorial } from "./FeniaxEditorial";
 import { FeniaxMetodo } from "./FeniaxMetodo";
 import { FeniaxClientes } from "./FeniaxClientes";
 import { FeniaxResenas } from "./FeniaxResenas";
-import { FeniaxCierre } from "./FeniaxCierre";
+import { CierreDofi } from "@/components/marketing/CierreDofi";
 
 /**
  * Página FENIAX / ChatBots-CRM. Mismo patrón que /marketing-digital: la
@@ -56,7 +56,9 @@ function Seccion({
     case "reviewsBanner":
       return <FeniaxResenas seccion={seccion} id={id} nivel={nivel} />;
     case "ctaBanner":
-      return <FeniaxCierre seccion={seccion} id={id} nivel={nivel} />;
+      // Mismo cierre que las otras páginas (2026-11-23), con el fénix de
+      // FENIAX hecho de luz en lugar del delfín de DOFI.
+      return <CierreDofi seccion={seccion} id={id} nivel={nivel} variante="feniax" />;
   }
 }
 

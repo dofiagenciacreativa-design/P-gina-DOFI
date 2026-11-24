@@ -4,6 +4,7 @@ import { BotonCta, type TamanoBoton } from "@/components/BotonCta";
 import { Anim } from "./Anim";
 import { Parallax } from "./Parallax";
 import { AtmosferaMar } from "./AtmosferaMar";
+import { CierreDofi } from "./CierreDofi";
 import type {
   Alineacion,
   ImagenSanity,
@@ -134,6 +135,11 @@ export function BannerFoto({
    *  esto, "normal" en la portada y "grande" en el cierre. */
   tamanoBoton?: TamanoBoton;
 }) {
+  // El cierre (ctaBanner) tiene su propio diseño desde el 2026-11-23: la
+  // marca de DOFI hecha de luz, sin la imagen de Sanity (CierreDofi.tsx).
+  if (seccion.tipo === "ctaBanner") {
+    return <CierreDofi seccion={seccion} id={id} nivel={nivel} tamanoBoton={tamanoBoton} />;
+  }
   const { imagen, imagenMovil, subtitulo, titulo, descripcion, destacado, cta, alineacion, overlay, animar } =
     seccion;
   const esEquipo = seccion.tipo === "teamBanner";

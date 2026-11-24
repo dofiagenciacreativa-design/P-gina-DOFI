@@ -1321,42 +1321,65 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
-ONDAS DEL CIERRE (src/components/marketing/CierreDofi.tsx, 2026-11-23).
-Reemplazan al delfín hecho con IA: anillos de línea fina que nacen en la mano
-de Daniel y se abren hasta apagarse, uno detrás de otro (cada uno con su
-retraso negativo, así ya están repartidos al cargar). Solo se anima
-transform y opacity. Con «menos movimiento» quedan quietos y tenues.
+MARCA DE LUZ (src/components/MarcaDeLuz.tsx, 2026-11-23). El cierre de las
+páginas de servicio: el logo grande y tenue (base), un reflejo que lo
+recorre por dentro (luz: degradado enmascarado con la silueta del logo) y un
+resplandor que respira (halo). Solo se anima background-position y
+opacity. Con «menos movimiento» queda quieto, con el reflejo a la mitad.
 --------------------------------------------------------------------------- */
-.cierre-onda {
-  width: 520px;
-  height: 520px;
-  margin: -260px 0 0 -260px;
-  border-width: 2px;
-  border-color: rgb(255 153 77 / 0.5);
-  opacity: 0;
-  transform: scale(0.12);
-  animation: cierre-onda 7s cubic-bezier(0.22, 0.8, 0.3, 1) infinite;
-  animation-delay: var(--onda-retraso, 0s);
+.marca-luz {
+  --marca-luz-tono: rgb(255 153 77 / 0.95);
+  --marca-luz-halo: rgb(244 123 32 / 0.38);
+  --marca-luz-halo-x: 2%;
+  --marca-luz-halo-y: 0%;
 }
-.cierre-onda:nth-child(even) {
-  border-color: rgb(167 139 250 / 0.55);
+.marca-luz--feniax {
+  --marca-luz-tono: rgb(243 138 63 / 0.95);
+  --marca-luz-halo: rgb(237 109 25 / 0.4);
+  --marca-luz-halo-x: 30%;
+  --marca-luz-halo-y: 20%;
 }
-@media (min-width: 768px) {
-  .cierre-onda {
-    width: 760px;
-    height: 760px;
-    margin: -380px 0 0 -380px;
-  }
+.marca-luz__base {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0.16;
 }
-@keyframes cierre-onda {
-  0% { opacity: 0; transform: scale(0.12); }
-  30% { opacity: 0.85; }
-  100% { opacity: 0; transform: scale(1); }
+.marca-luz__luz {
+  position: absolute;
+  inset: 0;
+  -webkit-mask: var(--marca-luz-src) center / contain no-repeat;
+  mask: var(--marca-luz-src) center / contain no-repeat;
+  background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.9) 46%, var(--marca-luz-tono) 52%, transparent 68%) 0 0 / 300% 100%;
+  animation: marca-luz-barrido 6.5s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+.marca-luz__halo {
+  position: absolute;
+  left: var(--marca-luz-halo-x);
+  top: var(--marca-luz-halo-y);
+  width: 36%;
+  height: 52%;
+  border-radius: 9999px;
+  background: var(--marca-luz-halo);
+  filter: blur(34px);
+  animation: marca-luz-halo 6.5s ease-in-out infinite;
+}
+@keyframes marca-luz-barrido {
+  0% { background-position: 100% 0; }
+  60%, 100% { background-position: 0 0; }
+}
+@keyframes marca-luz-halo {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.85; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .cierre-onda {
+  .marca-luz__luz,
+  .marca-luz__halo {
     animation: none;
-    opacity: 0.22;
-    transform: scale(var(--onda-quieta, 0.6));
+  }
+  .marca-luz__luz {
+    background-position: 50% 0;
   }
 }
