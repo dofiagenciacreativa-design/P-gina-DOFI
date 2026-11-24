@@ -26,11 +26,6 @@ function correr(comando) {
   if (r.status !== 0) process.exit(r.status ?? 1);
 }
 
-// Parche de Next.js (ver scripts/parchear-next.mjs): ya corre en
-// `postinstall`, se repite aqui por si la instalacion se hizo sin scripts.
-// Si no puede aplicarse, la construccion se detiene antes de publicar.
-correr("node scripts/parchear-next.mjs");
-
 correr("opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion");
 
 const rama = process.env.WORKERS_CI_BRANCH;
