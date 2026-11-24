@@ -40,7 +40,7 @@ export const VARIANTES_CTA: Record<string, string> = {
   "marketing:teamBanner": "Quiero mejorar mis ventas",
   "marketing:methodBanner": "Quiero agendar una reunión",
   "marketing:ctaBanner": "Quiero que seamos socios",
-  // Publicidad (Tráfico / Ads)
+  // Pauta digital (Tráfico / Ads)
   "trafico:teamBanner": "Quiero más clientes",
   "trafico:methodBanner": "Quiero una campaña que venda",
   "trafico:ctaBanner": "Quiero aumentar mis ventas",

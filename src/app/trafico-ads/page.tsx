@@ -9,7 +9,7 @@ export default function TraficoAdsPage() {
   return (
     <>
       <DatosEstructurados
-        datos={[datosDeServicio(SERVICIOS.traficoAds), migasDePan([{ nombre: "Tráfico / Ads", ruta: PAGINAS.traficoAds.ruta }])]}
+        datos={[datosDeServicio(SERVICIOS.traficoAds), migasDePan([{ nombre: "Pauta digital", ruta: PAGINAS.traficoAds.ruta }])]}
       />
       <PaginaTrafico />
     </>

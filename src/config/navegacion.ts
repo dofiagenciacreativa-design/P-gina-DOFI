@@ -39,10 +39,13 @@ export const NAV_LINKS: NavLink[] = [
     match: esRuta("/marketing-digital"),
   },
   // NOMBRES EN PALABRAS DEL CLIENTE (2026-11-23): «Tráfico / Ads» y
-  // «ChatBots / CRM» eran jerga de agencia. Un dueño de negocio busca
-  // «publicidad» y «chatbots». Las rutas no cambian (SEO y enlaces viejos).
+  // «ChatBots / CRM» eran jerga de agencia. «Pauta digital» (elegido por el
+  // propietario): tiene que decir ANUNCIOS PAGADOS; «Publicidad» se
+  // confundia con marketing. Es la palabra del dueño de negocio en Ecuador
+  // («quiero pautar») y la misma del formulario y de la tarjeta del inicio.
+  // Las rutas no cambian (SEO y enlaces viejos).
   {
-    label: "Publicidad",
+    label: "Pauta digital",
     href: "/trafico-ads",
     match: esRuta("/trafico-ads"),
   },

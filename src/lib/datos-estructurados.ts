@@ -161,7 +161,7 @@ export function datosDeServicio(s: Servicio) {
   };
 }
 
-/** Las migas de pan («Inicio › Tráfico / Ads»): Google las muestra en el resultado. */
+/** Las migas de pan («Inicio › Pauta digital»): Google las muestra en el resultado. */
 export function migasDePan(pasos: { nombre: string; ruta: string }[]) {
   return {
     "@context": "https://schema.org",

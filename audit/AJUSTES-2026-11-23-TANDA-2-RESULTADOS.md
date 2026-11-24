@@ -12,10 +12,11 @@ Rama `ajustes-tanda-2`. Puntos 2, 5 y 7 de `audit/REVISION-DISENO-2026-11-23.md`
 | Botón de contacto | No había | «Contáctanos →» naranja, siempre visible (también en el teléfono, al lado del menú) |
 | Destino del botón | — | El formulario (`/contactanos`), el mismo que el botón flotante de WhatsApp |
 | Letra de los enlaces | 13 px | 14 px (15 px en pantallas grandes) |
-| «Tráfico / Ads» | | **Publicidad** |
+| «Tráfico / Ads» | | **Pauta digital** |
 | «ChatBots / CRM» | | **Chatbots y CRM** |
 | Redes | Cajas blancas con borde | Íconos sueltos, más discretos (siguen siempre visibles) |
 
+- «Pauta digital» lo eligió el propietario: tiene que decir anuncios pagados; «Publicidad» se confundía con marketing. Es la misma palabra del formulario y de la tarjeta del inicio. Las migas de pan de Google también dicen «Pauta digital».
 - Las direcciones de las páginas no cambian (`/trafico-ads`, `/chatbots-crm`): Google y los enlaces viejos siguen funcionando.
 - El botón dice «Contáctanos» y no «Cotizar por WhatsApp» (lo que proponía la revisión) porque lleva al formulario, no a un chat. El formulario abre WhatsApp al enviarlo.
 - Con el logo al centro no cabían los enlaces más el botón ni a 1440 px; por eso el logo pasa a la izquierda.
@@ -27,7 +28,7 @@ Rama `ajustes-tanda-2`. Puntos 2, 5 y 7 de `audit/REVISION-DISENO-2026-11-23.md`
 | Tarjeta | Lleva a |
 |---|---|
 | Redes Sociales | Marketing Digital |
-| Pauta en TikTok y Meta | Publicidad |
+| Pauta en TikTok y Meta | Pauta digital |
 | +3M$ Vendidos en Redes | Clientes de Marketing Digital |
 | Rescatando Emprendedores | Asesorías |
 | Academia | Ninguna: su página todavía no existe (no se inventa una) |
@@ -43,7 +44,7 @@ Pedido del propietario: «el texto puede ser distinto en cada uno, pero tiene qu
 |---|---|
 | Inicio (banners) | Quiero redes que vendan · Quiero vender con publicidad · Quiero automatizar mis ventas · Quiero agendar mi asesoría |
 | Marketing Digital | Quiero mejorar mis ventas · Quiero agendar una reunión · Quiero que seamos socios |
-| Publicidad | Quiero más clientes · Quiero una campaña que venda · Quiero aumentar mis ventas |
+| Pauta digital | Quiero más clientes · Quiero una campaña que venda · Quiero aumentar mis ventas |
 | Chatbots y CRM | Quiero vender con IA · Quiero agendar una reunión · Quiero que mis ventas renazcan |
 | Asesorías | Quiero agendar mi asesoría · Quiero rescatar mi negocio |
 | Redes | Quiero trabajar con DOFI |
