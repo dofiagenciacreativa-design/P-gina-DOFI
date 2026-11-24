@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
+import { vaciarMemoriaSanity } from "@/lib/sanity";
 
 /**
  * Webhook de Sanity: se llama al publicar/editar/borrar una Cuenta, un
@@ -36,6 +37,10 @@ export async function POST(request: Request) {
   }
 
   revalidatePath("/", "layout");
+  // La memoria de 60 s de los datos de Sanity (src/lib/sanity.ts). Vive en
+  // cada copia del Worker: esta llamada vacia la de la copia que la recibe;
+  // las demas se renuevan solas en menos de 60 s.
+  vaciarMemoriaSanity();
 
   return NextResponse.json({ revalidated: true, now: Date.now() });
 }

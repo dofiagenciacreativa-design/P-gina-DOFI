@@ -71,6 +71,48 @@ function buildQueryUrl(
 }
 
 // ============================================================
+// Cache de datos en memoria (2026-11-23)
+// ============================================================
+
+/**
+ * Desde el arreglo del «Internal Server Error» (ver src/app/layout.tsx), cada
+ * visita arma su pagina. Para que eso no la haga mas lenta, las respuestas
+ * de Sanity se guardan en memoria 60 segundos -- lo mismo que antes hacia el
+ * `revalidate: 60` de cada fetch.
+ *
+ * Se guardan DATOS YA LEIDOS (objetos JSON), nunca promesas: en Cloudflare
+ * una promesa no puede pasar de una visita a otra (justo ese era el error).
+ * Si dos visitas llegan a la vez sin nada guardado, cada una hace su propia
+ * consulta. Cada visita recibe una copia, asi nadie puede modificar lo que
+ * ven las demas. /api/revalidate vacia esta memoria al publicar en Sanity.
+ */
+const VIGENCIA_MS = 60_000;
+const MAX_ENTRADAS = 300;
+const memoria = new Map<string, { hasta: number; datos: unknown }>();
+
+/** Consulta a Sanity con memoria de 60 s. Lanza si Sanity responde con error. */
+async function pedirJsonSanity<T>(url: string): Promise<T> {
+  const guardado = memoria.get(url);
+  if (guardado && guardado.hasta > Date.now()) return structuredClone(guardado.datos) as T;
+
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Sanity respondio ${res.status} ${res.statusText}`);
+  const datos = (await res.json()) as T;
+
+  if (memoria.size >= MAX_ENTRADAS) {
+    const masVieja = memoria.keys().next().value;
+    if (masVieja !== undefined) memoria.delete(masVieja);
+  }
+  memoria.set(url, { hasta: Date.now() + VIGENCIA_MS, datos });
+  return structuredClone(datos);
+}
+
+/** Vacia la memoria de datos de Sanity (la usa /api/revalidate). */
+export function vaciarMemoriaSanity(): void {
+  memoria.clear();
+}
+
+// ============================================================
 // Cuentas
 // ============================================================
 
@@ -257,14 +299,8 @@ export async function getActiveAccounts(): Promise<Client[]> {
   const url = buildQueryUrl(projectId, dataset, QUERY_CUENTAS_ACTIVAS);
 
   try {
-    const res = await fetch(url, {
-      // ISR: revalida cada 60s en vez de pegarle a Sanity en cada request.
-      // /api/revalidate invalida esto al instante cuando se publica algo.
-      next: { revalidate: 60 },
-    });
-    if (!res.ok) throw new Error(`Sanity respondio ${res.status} ${res.statusText}`);
-
-    const { result } = (await res.json()) as { result: SanityCuentaResumen[] };
+    // Memoria de 60 s (pedirJsonSanity); /api/revalidate la vacia al publicar.
+    const { result } = await pedirJsonSanity<{ result: SanityCuentaResumen[] }>(url);
     const cuentas = result.map(toAccountSummary).filter((c): c is Client => c !== null);
 
     return cuentas.length > 0 ? cuentas : clientesRespaldo;
@@ -286,10 +322,7 @@ export async function getAllActiveSlugs(): Promise<string[]> {
   const url = buildQueryUrl(projectId, dataset, QUERY_SLUGS_ACTIVOS);
 
   try {
-    const res = await fetch(url, { next: { revalidate: 60 } });
-    if (!res.ok) throw new Error(`Sanity respondio ${res.status} ${res.statusText}`);
-
-    const { result } = (await res.json()) as { result: (string | null)[] };
+    const { result } = await pedirJsonSanity<{ result: (string | null)[] }>(url);
     const slugs = result.filter((s): s is string => Boolean(s));
 
     return slugs.length > 0 ? slugs : clientesRespaldo.map((c) => c.slug);
@@ -316,10 +349,7 @@ export async function getAccountBySlug(slug: string): Promise<Client | null> {
   const url = buildQueryUrl(projectId, dataset, QUERY_CUENTA_POR_SLUG, { slug });
 
   try {
-    const res = await fetch(url, { next: { revalidate: 60 } });
-    if (!res.ok) throw new Error(`Sanity respondio ${res.status} ${res.statusText}`);
-
-    const { result } = (await res.json()) as { result: SanityCuentaCompleta | null };
+    const { result } = await pedirJsonSanity<{ result: SanityCuentaCompleta | null }>(url);
     if (!result) return clientesRespaldo.find((c) => c.slug === slug) ?? null;
 
     return toAccountFull(result);
@@ -372,11 +402,7 @@ export async function sanityQuery<T>(query: string): Promise<T | null> {
   const url = `https://${projectId}.apicdn.sanity.io/v${API_VERSION}/data/query/${dataset}?query=${encodeURIComponent(query)}`;
 
   try {
-    const res = await fetch(url, { next: { revalidate: 60 } });
-    if (!res.ok) {
-      throw new Error(`Sanity respondio ${res.status} ${res.statusText}`);
-    }
-    const { result } = (await res.json()) as { result: T | null };
+    const { result } = await pedirJsonSanity<{ result: T | null }>(url);
     return result ?? null;
   } catch (err) {
     console.error("[sanity] fetch fallo:", err);
