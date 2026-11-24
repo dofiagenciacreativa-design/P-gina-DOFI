@@ -20,6 +20,7 @@ import type { SeccionCierre } from "@/lib/marketing-digital";
  *    es el isotipo de FENIAX, con sus colores.
  *  - Texto a la izquierda y la marca a la derecha. En el teléfono la marca
  *    va ARRIBA, chica, y el texto empieza enseguida: sin espacio vacío.
+ *    En el teléfono todo va CENTRADO (pedido del propietario, 2026-11-24).
  *
  * La imagen del cierre que sigue cargada en Sanity (y su versión para
  * teléfono) ya no se usa. Textos y botón siguen viniendo de Sanity.
@@ -81,13 +82,13 @@ export function CierreDofi({
             tono={variante}
             className={
               variante === "feniax"
-                ? "w-[44%] max-w-[180px] md:ml-auto md:w-[78%] md:max-w-[420px]"
-                : "w-[62%] max-w-[260px] md:ml-auto md:w-[112%] md:max-w-[620px] md:translate-x-[6%]"
+                ? "mx-auto w-[44%] max-w-[180px] md:mr-0 md:ml-auto md:w-[78%] md:max-w-[420px]"
+                : "mx-auto w-[62%] max-w-[260px] md:mr-0 md:ml-auto md:w-[112%] md:max-w-[620px] md:translate-x-[6%]"
             }
           />
         </div>
 
-        <div className="order-2 flex min-w-0 flex-col items-start md:order-1">
+        <div className="order-2 flex min-w-0 flex-col items-center text-center md:order-1 md:items-start md:text-left">
           {subtitulo && (
             <Anim animar={animar} y={12} duration={0.6}>
               <p className="mb-5 inline-flex w-fit items-center rounded-full border border-white/15 bg-white/[0.06] px-4 py-1.5 font-sans text-sm text-foam/85">
@@ -99,7 +100,7 @@ export function CierreDofi({
           <Anim animar={animar} y={16} delay={0.08} duration={0.6}>
             <Titulo
               id={`${id}-titulo`}
-              className="max-w-[17ch] text-balance font-display text-[clamp(2rem,1.2rem+2.6vw,3.75rem)] font-extrabold leading-[1.05] tracking-[-0.025em]"
+              className="mx-auto max-w-[17ch] text-balance font-display md:mx-0 text-[clamp(2rem,1.2rem+2.6vw,3.75rem)] font-extrabold leading-[1.05] tracking-[-0.025em]"
             >
               {inicio}
               {final && (
@@ -113,7 +114,7 @@ export function CierreDofi({
 
           {descripcion && (
             <Anim animar={animar} y={14} delay={0.16} duration={0.6}>
-              <p className="mt-5 max-w-[46ch] font-sans text-lg leading-relaxed text-foam/80 md:text-xl">
+              <p className="mx-auto mt-5 max-w-[46ch] font-sans text-lg leading-relaxed text-foam/80 md:mx-0 md:text-xl">
                 {descripcion}
               </p>
             </Anim>
@@ -121,7 +122,7 @@ export function CierreDofi({
 
           {destacado && (
             <Anim animar={animar} y={14} delay={0.24} duration={0.6}>
-              <p className="mt-5 flex items-center gap-3 font-display text-lg font-semibold tracking-tight text-accent-lift">
+              <p className="mt-5 flex items-center justify-center gap-3 font-display text-lg font-semibold tracking-tight text-accent-lift md:justify-start">
                 <span aria-hidden="true" className="h-px w-10 bg-accent-lift/70" />
                 {destacado}
               </p>
