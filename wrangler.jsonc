@@ -17,7 +17,18 @@
   // El arreglo real esta en el comando de "Deploy" configurado en el
   // dashboard de Cloudflare, no en este archivo. Ver README.
   "compatibility_date": "2025-03-25",
-  "compatibility_flags": ["nodejs_compat"],
+  // no_handle_cross_request_promise_resolution (arreglo del 2026-11-23):
+  // en el dominio real 1 de cada 4-5 visitas daba «Internal Server Error»
+  // con «This promise was created by a request that has since ended, so it
+  // can never settle». Next.js hace esperar a visitas simultaneas UNA misma
+  // promesa (el batcher de su ResponseCache); si la visita que la creo
+  // termina antes, Cloudflare (con su comportamiento nuevo) la descarta y
+  // las demas fallan. Esta opcion vuelve al comportamiento anterior: la
+  // promesa si llega a las demas visitas. Es lo que recomienda el propio
+  // mensaje de Cloudflare. NO se arreglo con «cada visita se arma sola»
+  // (force-dynamic): con el plan gratuito eso pasa el limite de CPU
+  // (error 1102) cuando llegan varias visitas a la vez.
+  "compatibility_flags": ["nodejs_compat", "no_handle_cross_request_promise_resolution"],
   // Van aca (versionadas en git) y no solo en el dashboard de Cloudflare
   // porque cada deploy nuevo (disparado por un push a main) usa ESTE
   // archivo como fuente de verdad y borra cualquier variable que no este
