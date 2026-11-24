@@ -11,6 +11,7 @@
     "cf:build": "opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion",
     "cf:preview": "opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion && opennextjs-cloudflare preview",
     "cf:deploy": "node scripts/cf-deploy.mjs",
+    "postinstall": "node scripts/parchear-next.mjs",
     "cf:typegen": "wrangler types cloudflare-env.d.ts",
     "seed:sanity": "tsx scripts/seed-sanity-accounts.ts",
     "sembrar:feniax": "tsx --env-file=.env.local scripts/sembrar-feniax.mts",

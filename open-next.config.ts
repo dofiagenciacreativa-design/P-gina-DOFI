@@ -31,6 +31,13 @@ const config = defineCloudflareConfig();
  * Los dos problemas solo se evitan a la vez con AMBAS piezas en su lugar:
  * el script "build" apuntando a opennextjs-cloudflare build, Y esta linea.
  */
-config.buildCommand = "npx next build";
+config.buildCommand = "npx next build && node scripts/parchear-next.mjs";
+
+/*
+ * «&& node scripts/parchear-next.mjs» (2026-11-24): parcha el Batcher de
+ * Next.js tambien en lo que acaba de armar `next build` (.next/server), antes
+ * de que OpenNext lo empaquete para Cloudflare. Sin esto, una cache vieja de
+ * `next build` podia dejar una copia sin parchar. Ver ese archivo.
+ */
 
 export default config;
