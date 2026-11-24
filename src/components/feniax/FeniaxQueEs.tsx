@@ -112,7 +112,7 @@ export function FeniaxQueEs({ seccion, id, nivel }: { seccion: SeccionQueEs; id:
                     </span>
                     <span className="pt-1">
                       <span className="block font-display text-lg font-bold leading-snug tracking-tight text-ink">{v.nombre}</span>
-                      <span className="mt-1 block font-sans text-[15px] leading-relaxed text-ink-muted">{v.lema}</span>
+                      <span className="mt-1 block font-sans text-base leading-relaxed text-ink-muted">{v.lema}</span>
                     </span>
                   </Anim>
                 </li>

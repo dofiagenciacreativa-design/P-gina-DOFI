@@ -322,7 +322,7 @@ export function RutaMetodo({
                   {paso.titulo}
                 </h3>
                 {paso.descripcion && (
-                  <p className="mt-1.5 font-sans text-[15px] leading-relaxed text-ink-muted">{paso.descripcion}</p>
+                  <p className="mt-1.5 font-sans text-base leading-relaxed text-ink-muted">{paso.descripcion}</p>
                 )}
               </div>
             </motion.li>

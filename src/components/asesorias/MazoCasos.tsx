@@ -128,11 +128,11 @@ function Tarjeta({
       >
         {caso.titulo}
       </h3>
-      {caso.texto && <p className={`mt-3 font-sans text-[15px] leading-relaxed ${tema.tenue}`}>{caso.texto}</p>}
+      {caso.texto && <p className={`mt-3 font-sans text-base leading-relaxed ${tema.tenue}`}>{caso.texto}</p>}
 
       <div className="mt-auto flex items-end justify-between gap-4 pt-6">
         {caso.cliente ? (
-          <p className={`flex min-w-0 items-center gap-3 font-sans text-sm font-semibold ${tema.texto}`}>
+          <p className={`flex min-w-0 items-center gap-3 font-sans text-[15px] font-semibold ${tema.texto}`}>
             <span aria-hidden="true" className="h-[2px] w-6 shrink-0 rounded-full bg-accent" />
             {/* Se parte en dos lineas si no entra: es el resultado del caso
                 («...en un 200%») y cortado con puntos suspensivos se perdia. */}

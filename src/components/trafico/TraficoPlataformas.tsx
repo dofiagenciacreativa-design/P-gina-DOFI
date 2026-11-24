@@ -93,7 +93,7 @@ export function TraficoPlataformas({ seccion, id, nivel }: { seccion: SeccionPla
                       <p className="mt-2 font-display text-base font-semibold leading-snug text-brand">{p.etiqueta}</p>
                     )}
                     {p.descripcion && (
-                      <p className="mt-4 font-sans text-[15px] leading-relaxed text-ink-muted">{p.descripcion}</p>
+                      <p className="mt-4 font-sans text-base leading-relaxed text-ink-muted">{p.descripcion}</p>
                     )}
                   </article>
                 </Anim>

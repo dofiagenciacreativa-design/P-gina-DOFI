@@ -222,31 +222,45 @@ body {
 }
 
 /* ============================================================
-   UNA SECCION = UNA PANTALLA (pedido del 2026-10-07)
+   SECCIONES: LA PORTADA A PANTALLA COMPLETA, EL RESTO A SU MEDIDA
    ------------------------------------------------------------
-   "Cada seccion cuadre el 100% de la pantalla": en tablet y escritorio cada
-   seccion mide al menos el alto de la ventana, centra su contenido y ese
-   contenido esta dimensionado para ENTRAR entero (titulos con
-   --text-titulo, medios con alturas en svh). Antes casi todas pasaban de
-   la pantalla: Clientes media 1527px en una laptop de 730px de alto.
+   Historia:
+   - 2026-10-07 (pedido «cada sección cuadre el 100% de la pantalla»): en
+     tablet y escritorio TODA seccion media al menos el alto de la ventana,
+     con un «iman» en el scroll que la encuadraba al soltar la rueda.
+   - 2026-11-23 (pedido: espacios «muy amplios», paginas «cansonas»): con
+     eso, secciones de 30 palabras ocupaban una pantalla entera y las paginas
+     de servicios llegaban a 8-10 pantallas. Ahora solo la PORTADA (la
+     primera seccion de cada pagina) mide una pantalla; el resto mide lo que
+     su contenido, con el mismo margen arriba y abajo (--seccion-y), y el
+     iman del scroll se quito. Las paginas quedan entre 17 y 24 % mas cortas
+     sin quitar contenido (audit/REVISION-DISENO-2026-11-23.md).
 
-   - padding-top suma el alto del header fijo (--alto-nav): cuando la seccion
-     queda arriba, nada queda tapado por la barra.
-   - svh y no vh: en telefonos la barra del navegador no deja el contenido
-     a medias. vh queda como respaldo para navegadores viejos.
-   - En telefono no se fuerza el alto: el contenido apilado ya es mas alto
-     que la pantalla y estirarlo solo agregaria aire.
+   Lo que se mantiene:
+   - El contenido de cada seccion sigue dimensionado para ENTRAR en una
+     pantalla (titulos con --text-titulo, medios con alturas en svh y
+     --alto-util como tope).
+   - La portada suma el alto del header fijo (--alto-nav) arriba: nada queda
+     tapado por la barra.
+   - svh y no vh: en telefonos la barra del navegador no deja el contenido a
+     medias. vh queda como respaldo para navegadores viejos.
    - Las secciones son flex en columna para centrar en alto: su contenedor
      interior lleva w-full (con mx-auto, un hijo flex se encogeria a su
      contenido).
+   - Un enlace a una seccion (#clientes) la deja debajo del header, no
+     tapada (scroll-margin-top).
    ============================================================ */
 :root {
   --alto-nav: 64px;
   --pantalla-arriba: calc(var(--alto-nav) + clamp(1.25rem, 4svh, 3rem));
   --pantalla-abajo: clamp(2rem, 5.5svh, 4rem);
   /* Alto util de una seccion: la pantalla sin el header ni los margenes.
-     Las secciones con contenido "elastico" (Clientes) miden exacto esto. */
+     Las secciones con contenido "elastico" (Clientes) miden exacto esto, y
+     varios medios lo usan como tope para entrar en una pantalla. */
   --alto-util: calc(100svh - var(--pantalla-arriba) - var(--pantalla-abajo));
+  /* Margen arriba y abajo de las secciones que no son la portada:
+     56 px en telefono, unos 90 px en una laptop, 104 px como maximo. */
+  --seccion-y: clamp(3.5rem, 2rem + 4vw, 6.5rem);
 }
 
 @media (min-width: 1024px) {
@@ -260,32 +274,22 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    padding-top: var(--seccion-y);
+    padding-bottom: var(--seccion-y);
+    scroll-margin-top: var(--alto-nav);
+  }
+
+  /* La portada: la primera seccion de la pagina. */
+  main > .pantalla:first-child {
     padding-top: var(--pantalla-arriba);
     padding-bottom: var(--pantalla-abajo);
   }
 
   @media (min-width: 768px) {
-    .pantalla {
+    main > .pantalla:first-child {
       min-height: 100vh;
       min-height: 100svh;
     }
-  }
-}
-
-/* Iman suave entre secciones (solo escritorio): al soltar el scroll cerca
-   del borde de una seccion, la pagina la encuadra completa. "proximity" y no
-   "mandatory": nunca impide detenerse a mitad de camino ni llegar al pie. */
-@media (min-width: 1024px) and (min-height: 620px) {
-  html {
-    scroll-snap-type: y proximity;
-  }
-
-  .pantalla {
-    scroll-snap-align: start;
-  }
-
-  footer {
-    scroll-snap-align: end;
   }
 }
 

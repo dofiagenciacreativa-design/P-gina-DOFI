@@ -69,7 +69,7 @@ function Tarjeta({ r, repeticion }: { r: Resena; repeticion: boolean }) {
       <Estrellas n={r.estrellas} />
       {/* Siete lineas como tope: todas las tarjetas miden parecido y la franja
           entra en una pantalla. La reseña completa esta en Google (enlace). */}
-      <p className="mt-4 line-clamp-[7] flex-1 font-sans text-[15px] leading-relaxed text-ink md:text-base">{r.comentario}</p>
+      <p className="mt-4 line-clamp-[7] flex-1 font-sans text-base leading-relaxed text-ink">{r.comentario}</p>
       <div className="mt-6 flex items-center gap-3 border-t border-brand/10 pt-5">
         {r.foto ? (
           // eslint-disable-next-line @next/next/no-img-element

@@ -120,7 +120,7 @@ function Tarjeta({ titulo, descripcion, icono, enlace }: Capacidad) {
       </div>
       <div className="min-w-0">
         <h3 className="font-display text-[15.5px] font-bold leading-snug tracking-tight text-foam">{titulo}</h3>
-        <p className="mt-1 font-sans text-[13.5px] leading-snug text-mist">{descripcion}</p>
+        <p className="mt-1 font-sans text-[15px] leading-snug text-mist">{descripcion}</p>
       </div>
     </>
   );

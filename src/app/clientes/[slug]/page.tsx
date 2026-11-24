@@ -29,6 +29,10 @@ export async function generateStaticParams() {
 
 type Params = { params: Promise<{ slug: string }> };
 
+/** La portada generica que se usa cuando el cliente no tiene foto propia
+ *  (src/lib/sanity.ts y src/data/clients.ts). */
+const PORTADA_DE_RELLENO = "/media/cover-16-9.jpg";
+
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const client = await getAccountBySlug(slug);
@@ -61,7 +65,12 @@ export default async function ClientePage({ params }: Params) {
   return (
     <>
       <Nav />
-      <main>
+      {/* FONDO OSCURO (2026-11-23): la pagina se diseño para el fondo oscuro
+          del sitio, pero desde que el fondo general es claro (lienzo de la
+          portada) los textos claros de cada seccion -- «Tu marca puede ser la
+          siguiente», «Las piezas», el reto, el testimonio -- quedaban casi
+          invisibles. La pagina entera vuelve a su fondo oscuro. */}
+      <main className="bg-abyss">
         {/* Cabecera del caso */}
         <header className="relative overflow-hidden pt-36 pb-20 md:pt-44 md:pb-28">
           <div
@@ -175,19 +184,23 @@ export default async function ClientePage({ params }: Params) {
           </div>
         </header>
 
-        {/* Portada grande */}
-        <section className="mx-auto max-w-[1400px] px-5 md:px-8">
-          <div className="relative aspect-[16/9] overflow-hidden rounded-[20px] border border-brand-lift/25">
-            <Image
-              src={client.cover}
-              alt={`Trabajo para ${client.name}`}
-              fill
-              priority
-              sizes="(max-width: 1400px) 100vw, 1400px"
-              className="object-cover"
-            />
-          </div>
-        </section>
+        {/* Portada grande: solo si el cliente tiene una foto propia. La de
+            relleno (un degradado igual para las 26 cuentas) ocupaba casi una
+            pantalla y hacia ver la pagina vacia. */}
+        {client.cover && client.cover !== PORTADA_DE_RELLENO && (
+          <section className="mx-auto max-w-[1400px] px-5 md:px-8">
+            <div className="relative aspect-[16/9] overflow-hidden rounded-[20px] border border-brand-lift/25">
+              <Image
+                src={client.cover}
+                alt={`Trabajo para ${client.name}`}
+                fill
+                priority
+                sizes="(max-width: 1400px) 100vw, 1400px"
+                className="object-cover"
+              />
+            </div>
+          </section>
+        )}
 
         {/* Reto y enfoque */}
         {(client.challenge || client.approach) && (
