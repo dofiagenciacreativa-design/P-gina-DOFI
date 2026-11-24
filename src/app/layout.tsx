@@ -56,6 +56,29 @@ const archivo = localFont({
  * *.workers.dev seria peor que no tenerlo). En cuanto se defina el dominio
  * definitivo, el mismo codigo pasa a emitir canonical e indexable.
  */
+/**
+ * CADA VISITA SE ARMA SOLA (arreglo del 2026-11-23).
+ *
+ * El sintoma: en dofiagenciacreativa.com 1 de cada 4-5 visitas recibia
+ * «Internal Server Error». El registro de Cloudflare decia: «This promise was
+ * created by a request that has since ended, so it can never settle».
+ *
+ * La causa: con las paginas «pre-armadas» (ISR), Next.js junta las visitas
+ * que llegan a la vez a la misma pagina y las hace esperar UNA sola promesa
+ * (el «batcher» de su ResponseCache). Si la visita que creo esa promesa
+ * termina antes (un robot que corta la conexion, por ejemplo), Cloudflare no
+ * deja que esa promesa se resuelva en otra visita, y las que esperaban
+ * fallan. Solo pasaba en el dominio real, que es donde hay trafico de verdad.
+ *
+ * El arreglo: todas las paginas son dinamicas, asi Next.js no les da clave de
+ * cache y no comparte nada entre visitas. No cambia la velocidad: este sitio
+ * no tiene cache incremental configurado en OpenNext (open-next.config.ts), y
+ * cada visita ya se armaba desde cero (respondia siempre «x-nextjs-cache:
+ * MISS»). Si algun dia se configura un cache incremental (R2/KV), revisar
+ * esta linea junto con esa configuracion.
+ */
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   // Titulo, descripcion e imagen para compartir de respaldo (los del inicio).

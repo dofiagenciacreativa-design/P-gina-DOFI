@@ -9,7 +9,7 @@ import {
   TiktokLogo,
   Globe,
 } from "@phosphor-icons/react/dist/ssr";
-import { getAccountBySlug, getAllActiveSlugs } from "@/lib/sanity";
+import { getAccountBySlug } from "@/lib/sanity";
 import { company } from "@/config/company";
 import { metadatosDePagina } from "@/config/seo";
 import { Nav } from "@/components/Nav";
@@ -19,13 +19,12 @@ import { MagneticCta } from "@/components/MagneticCta";
 import { RUTA_FORMULARIO, VARIANTES_CTA } from "@/lib/cta";
 import { Reveal } from "@/components/Reveal";
 
-/** Genera una ruta estatica por cada cuenta activa en tiempo de build.
- *  Una cuenta creada despues sigue funcionando: dynamicParams (por defecto
- *  en Next) la renderiza on-demand la primera vez que alguien entra. */
-export async function generateStaticParams() {
-  const slugs = await getAllActiveSlugs();
-  return slugs.map((slug) => ({ slug }));
-}
+/* SIN generateStaticParams (arreglo del 2026-11-23): antes cada cuenta se
+ * pre-armaba al compilar, y las paginas pre-armadas son las que Next.js
+ * comparte entre visitas simultaneas -- lo que en Cloudflare daba «Internal
+ * Server Error» (ver la explicacion en src/app/layout.tsx). Ahora cada
+ * pagina de cliente se arma en cada visita, como el resto del sitio. El
+ * mapa del sitio (src/app/sitemap.ts) sigue listando todas las cuentas. */
 
 type Params = { params: Promise<{ slug: string }> };
 
