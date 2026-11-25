@@ -6,31 +6,32 @@ Este archivo es el punto de partida para quien ejecute el proyecto (pensado para
 
 ## Qué hay que lograr
 
-Reemplazar Sanity por un panel administrativo propio en `https://dofiagenciacreativa.com/admin`, donde el equipo de DOFI edite todo el contenido de la web **viendo cómo queda antes de publicar**. El contenido pasa a guardarse en la cuenta de Cloudflare de DOFI (D1 para los datos, R2 para imágenes y videos).
+Reemplazar Sanity por un panel administrativo propio en `https://dofiagenciacreativa.com/admin`, donde DOFI edite todo el contenido de la web **viendo cómo queda antes de publicar**, con un solo usuario administrador. Desde el 2026-11-25 el contenido (textos y fotos) se guarda **como archivos en este repositorio** (`contenido/`, `public/media/`) y los videos en R2; publicar es un commit a `main`. Ver `cambios-2026-11-25.md`.
 
 ## Qué leer, en este orden
 
 1. **Este archivo.**
-2. `docs/panel-propio/cambios-2026-11-24.md` — **lo que cambió el 2026-11-24 y manda sobre todo lo demás**: páginas armadas al construir, Guardar/Publicar con el Deploy Hook, vista previa en el navegador, aspecto del panel según las referencias del propietario y el orden nuevo de etapas. (El asistente de Claude dentro del panel se descartó el 2026-11-25: los cambios con Claude se hacen desde Claude Desktop.)
-3. `docs/panel-propio/diseno.md` — qué se construye y por qué. Las decisiones ya están tomadas con el propietario; no se reabren sin preguntarle.
-4. `docs/panel-propio/plan.md` — tareas detalladas (con la numeración vieja; la nueva está en `cambios-2026-11-24.md` §7).
-5. `docs/panel-propio/inventario-esquema.md` — todo lo que se edita hoy en Sanity, campo por campo (consultarlo al escribir cada esquema del panel).
-6. `docs/panel-propio/inventario-lectura.md` — cómo la web lee hoy el contenido, consulta por consulta (consultarlo al escribir cada proyección).
-7. `README.md`, `DESIGN.md` y `audit/AJUSTES-2026-11-23-RESULTADOS.md` del repositorio.
+2. `docs/panel-propio/cambios-2026-11-25.md` — **manda sobre todo lo demás**: un solo usuario, contenido en GitHub, videos en R2, sin asistente de Claude y el orden actual de las etapas.
+3. `docs/panel-propio/cambios-2026-11-24.md` — lo que cambió el 2026-11-24 (vigente salvo lo que corrige el del 25): páginas armadas al construir, Guardar/Publicar con el Deploy Hook, vista previa en el navegador, aspecto del panel según las referencias del propietario y el orden nuevo de etapas. (El asistente de Claude dentro del panel se descartó el 2026-11-25: los cambios con Claude se hacen desde Claude Desktop.)
+4. `docs/panel-propio/diseno.md` — qué se construye y por qué. Las decisiones ya están tomadas con el propietario; no se reabren sin preguntarle.
+5. `docs/panel-propio/plan.md` — tareas detalladas de la versión original (numeración vieja; muchas quedaron obsoletas con D1: la numeración y el alcance actuales están en `cambios-2026-11-25.md` §5).
+6. `docs/panel-propio/inventario-esquema.md` — todo lo que se edita hoy en Sanity, campo por campo (consultarlo al escribir cada esquema del panel).
+7. `docs/panel-propio/inventario-lectura.md` — cómo la web lee hoy el contenido, consulta por consulta (consultarlo al escribir cada proyección).
+8. `README.md`, `DESIGN.md` y `audit/AJUSTES-2026-11-23-RESULTADOS.md` del repositorio.
 
 ## En qué etapa estamos
 
-Numeración nueva (2026-11-24). Marcar aquí al terminar cada una (fecha y commit de `main`):
+Numeración del 2026-11-25 (`cambios-2026-11-25.md` §5). Marcar aquí al terminar cada una (fecha y commit de `main`):
 
-- [ ] Etapa 1 — El panel y su vista previa en vivo (Inicio). Rama `panel-con-vista-previa`; entra a `main` junto con la etapa 2. **Construida el 2026-11-24, en vista previa, esperando visto bueno** (`audit/PANEL-ETAPA-1-RESULTADOS.md`)
-- [ ] Etapa 2 — Cimientos: base, archivos y usuarios (etapas 0 y 1 de `plan.md`)
-- [ ] Etapa 3 — Copia del contenido, Guardar y Publicar (etapa 2 de `plan.md` + `cambios-2026-11-24.md` §2 y §3)
+- [ ] Etapa 1 — El panel y su vista previa en vivo (Inicio). Rama `panel-con-vista-previa`; entra a `main` junto con las etapas 2 y 3. **Construida el 2026-11-24; aprobada por el propietario el 2026-11-25** (`audit/PANEL-ETAPA-1-RESULTADOS.md`)
+- [ ] Etapa 2 — El contenido pasa a GitHub (copia de Sanity a `contenido/` y `public/media/`, lectura propia, paridad)
+- [ ] Etapa 3 — Entrar y publicar (contraseña, publicar con GitHub, videos en R2)
 - [ ] Etapa 4 — Las cuatro páginas de servicio
-- [ ] Etapa 5 — Clientes, reseñas, historial y actividad
+- [ ] Etapa 5 — Clientes, reseñas e historial
 - [ ] Etapa 6 — El cambio (la web deja de leer de Sanity)
 - [ ] Etapa 7 — Baja de Sanity (30 días después del cambio)
 
-Estado al 2026-11-24: plan aprobado por el propietario; **etapa 1 construida** en la rama `panel-con-vista-previa` (vista previa: `https://panel-con-vista-previa-pagina-dofi.dofiagenciacreativa.workers.dev/admin`), esperando su visto bueno. Nada en `main`.
+Estado al 2026-11-25: plan aprobado por el propietario con los cambios del 25; **etapa 1 construida y aprobada** en la rama `panel-con-vista-previa` (vista previa: `https://panel-con-vista-previa-pagina-dofi.dofiagenciacreativa.workers.dev/admin`), Siguiente: etapa 2. Nada en `main`.
 
 ## Con quién se trabaja
 
@@ -56,10 +57,8 @@ Su forma de trabajo, que no se negocia:
 
 | Cuándo | Qué | Por qué no lo puede hacer el agente |
 |---|---|---|
-| Etapa 1 | Aprobar el aspecto del panel y su vista previa | Es su gusto |
-| Antes de la etapa 2 | Activar R2, crear 2 almacenes y 2 bases, pasar los 2 ids de base, crear 1 secreto (texto listo en `plan.md`, tarea 0.1) | Requiere su tarjeta y su sesión de Cloudflare; el secreto no debe pasar por la conversación |
-| Etapa 2 | Ejecutar «instalar» una vez en la vista previa y otra en producción con su `ADMIN_SETUP_TOKEN`, y crear su usuario | Es su contraseña |
-| Etapa 3 | Escribir `PANEL_URL`, `PANEL_CORREO` y `PANEL_CLAVE` en `C:\WEB DOFI\.env.local`; crear el token `D1_TOKEN_LECTURA` (solo lectura de D1) como secreto de construcción; crear un Deploy Hook para la rama de prueba | Son sus credenciales y su sesión de Cloudflare |
+| Etapa 1 | Aprobar el aspecto del panel y su vista previa (hecho el 2026-11-25) | Es su gusto |
+| Antes de la etapa 3 | Activar R2 con su tarjeta y crear los almacenes `dofi-media` y `dofi-media-pruebas`; crear en GitHub un *fine-grained token* solo para `P-gina-DOFI` con *Contents: Read and write* y guardarlo como secreto `GITHUB_TOKEN_PANEL` del Worker; elegir su contraseña del panel y guardarla como secreto `PANEL_CLAVE` (ambos en *Production* y en *Previews Base*) | Su tarjeta, sus cuentas y su contraseña: nada de eso pasa por la conversación |
 | Etapa 6 | Elegir el día del cambio y no editar en Sanity esa mañana | Es su operación |
 | Etapa 7 | Dar de baja Sanity y el proyecto «studio» de Vercel | Son sus cuentas |
 

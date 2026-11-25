@@ -1,5 +1,7 @@
 # Panel propio de DOFI: plan de ejecución
 
+> **Actualizado el 2026-11-25:** ver `cambios-2026-11-25.md`, que manda sobre este documento: un solo usuario, contenido como archivos en el repositorio (no D1), videos en R2, publicar = commit a `main`.
+
 > **Para quien lo ejecute (agente):** SUB-SKILL REQUERIDA: `superpowers:subagent-driven-development` (recomendada) o `superpowers:executing-plans`, tarea por tarea. Los pasos usan casillas (`- [ ]`) para llevar el avance. Lee primero `ENCARGO.md` y `diseno.md`.
 
 > **Actualizado el 2026-11-24 — leer primero `cambios-2026-11-24.md`.** Manda sobre este plan donde se contradigan. Cambios principales: (1) las etapas se renumeran (la nueva etapa 1 es el panel con su vista previa en vivo para el Inicio; las etapas 0 y 1 de abajo pasan a ser la nueva etapa 2, la 2 pasa a la 3, y la 7 de abajo, baja de Sanity, sigue siendo la 7; el asistente de Claude que se agregó el 2026-11-24 se descartó el 2026-11-25); (2) quedan **obsoletas** la tarea 0.6 paso 4 (medición de CPU para decidir `force-dynamic`), la tarea 2.5 (rutas `force-dynamic`) y las tareas 3 y 4 de la etapa 3 (guardado automático y vista previa con `draftMode`); (3) la construcción lee D1 por su API REST y «Publicar» dispara el Deploy Hook. Los nombres de rama de abajo (`panel-0-cimientos`, …) se ajustan a la numeración nueva.

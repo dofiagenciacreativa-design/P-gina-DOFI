@@ -1,5 +1,7 @@
 # Panel propio de DOFI: diseño
 
+> **Actualizado el 2026-11-25:** ver `cambios-2026-11-25.md`, que manda sobre este documento: un solo usuario, contenido como archivos en el repositorio (no D1), videos en R2, publicar = commit a `main`.
+
 Fecha: 2026-11-23 · Rama de trabajo: `panel-propio-sin-sanity` · Estado: **diseño, nada construido**.
 
 > **Actualizado el 2026-11-24.** Leer antes `cambios-2026-11-24.md`, que manda sobre este documento donde se contradigan. En resumen: la web ya no se dibuja en cada visita (se arma al construir y se publica con el Deploy Hook), así que §6.2, §6.3, §7.1 y §11 quedan reemplazados; la vista previa se dibuja en el navegador del panel con los componentes reales; y el panel sigue las imágenes de referencia del propietario. (Un asistente de Claude dentro del panel se pensó el 2026-11-24 y se descartó el 2026-11-25.)
