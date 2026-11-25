@@ -1,0 +1,173 @@
+{
+  "bannersDoc": {
+    "seccionesContenido": [
+      {
+        "ajusteFoto": "cubrir",
+        "alto": 757,
+        "ancho": 2077,
+        "backgroundImage": "https://cdn.sanity.io/images/59r5krzd/production/c948e9e530cb7c6a3b8c8d24f21f22ea66d2f13a-2077x757.png?w=2400&auto=format",
+        "backgroundImageAlt": "Redes Sociales que SI VENDEN",
+        "ctaColor": "blanco",
+        "ctaEnlace": "/marketing-digital",
+        "ctaPosicionDesktop": {
+          "desplazamientoX": null,
+          "desplazamientoY": 9,
+          "horizontal": "izquierda",
+          "vertical": "centro-abajo"
+        },
+        "ctaPosicionMobile": {
+          "desplazamientoX": null,
+          "desplazamientoY": null,
+          "horizontal": "centro",
+          "vertical": "abajo"
+        },
+        "ctaTexto": "Quiero Mejorar mis Ventas",
+        "escena": "redes",
+        "foto": {
+          "alto": 757,
+          "ancho": 1137,
+          "hotspot": null,
+          "url": "https://cdn.sanity.io/images/59r5krzd/production/0c241a21778d9f184a4da28618af2374cfadbc41-1137x757.webp?w=1600&auto=format"
+        },
+        "hotspot": null,
+        "id": "axzhfwjOxKlDVob5Dbk8nh",
+        "lineas": [
+          "Redes Sociales que",
+          "SÍ VENDEN"
+        ]
+      },
+      {
+        "ajusteFoto": "cubrir",
+        "alto": 757,
+        "ancho": 2077,
+        "backgroundImage": "https://cdn.sanity.io/images/59r5krzd/production/2fb63823f30212a6179cc1709f428f8981b7e227-2077x757.png?w=2400&auto=format",
+        "backgroundImageAlt": "PAUTA INTELIGENTE = VENTAS INTELIGENTES",
+        "ctaColor": "naranja",
+        "ctaEnlace": "/trafico-ads",
+        "ctaPosicionDesktop": {
+          "desplazamientoX": -5.5,
+          "desplazamientoY": 10,
+          "horizontal": "derecha",
+          "vertical": "centro"
+        },
+        "ctaPosicionMobile": {
+          "desplazamientoX": null,
+          "desplazamientoY": null,
+          "horizontal": "centro",
+          "vertical": "abajo"
+        },
+        "ctaTexto": "Quiero Mejorar mis Ventas",
+        "escena": "pauta",
+        "foto": {
+          "alto": 757,
+          "ancho": 830,
+          "hotspot": null,
+          "url": "https://cdn.sanity.io/images/59r5krzd/production/ca26b0e956f056590179b6aeb0144cdd8fa86275-830x757.webp?w=1600&auto=format"
+        },
+        "hotspot": null,
+        "id": "axzhfwjOxKlDVob5Dbk8r7",
+        "lineas": [
+          "PAUTA INTELIGENTE =",
+          "VENTAS INTELIGENTES"
+        ]
+      },
+      {
+        "ajusteFoto": "cubrir",
+        "alto": 757,
+        "ancho": 2077,
+        "backgroundImage": "https://cdn.sanity.io/images/59r5krzd/production/b89b77c8fb6f47312f278a0a9dd704ac5fc5e19a-2077x757.png?w=2400&auto=format",
+        "backgroundImageAlt": "con RESPUESTAS RÁPIDAS hay CLIENTES FELICES",
+        "ctaColor": "naranja",
+        "ctaEnlace": "/chatbots-crm",
+        "ctaPosicionDesktop": {
+          "desplazamientoX": -2,
+          "desplazamientoY": 12,
+          "horizontal": "centro-izquierda",
+          "vertical": "centro-abajo"
+        },
+        "ctaPosicionMobile": {
+          "desplazamientoX": null,
+          "desplazamientoY": null,
+          "horizontal": "centro",
+          "vertical": "abajo"
+        },
+        "ctaTexto": "Quiero Mejorar mis Ventas",
+        "escena": "crm",
+        "foto": {
+          "alto": 757,
+          "ancho": 1147,
+          "hotspot": null,
+          "url": "https://cdn.sanity.io/images/59r5krzd/production/499bf6b37a83ffdf494743713d9e356283159a80-1147x757.webp?w=1600&auto=format"
+        },
+        "hotspot": null,
+        "id": "axzhfwjOxKlDVob5Dbk8uX",
+        "lineas": [
+          "con",
+          "RESPUESTAS RÁPIDAS",
+          "hay",
+          "CLIENTES FELICES"
+        ]
+      },
+      {
+        "ajusteFoto": "cubrir",
+        "alto": 757,
+        "ancho": 2077,
+        "backgroundImage": "https://cdn.sanity.io/images/59r5krzd/production/144be9ecdf40410b34043f360e04d71791d7e556-2077x757.png?w=2400&auto=format",
+        "backgroundImageAlt": "RESCATANDO EMPRENDEDORES",
+        "ctaColor": "naranja",
+        "ctaEnlace": "/asesorias",
+        "ctaPosicionDesktop": {
+          "desplazamientoX": 5,
+          "desplazamientoY": 10,
+          "horizontal": "centro-derecha",
+          "vertical": "centro"
+        },
+        "ctaPosicionMobile": {
+          "desplazamientoX": null,
+          "desplazamientoY": null,
+          "horizontal": "centro",
+          "vertical": "abajo"
+        },
+        "ctaTexto": "Quiero Mejorar mis Ventas",
+        "escena": "asesorias",
+        "foto": {
+          "alto": 757,
+          "ancho": 920,
+          "hotspot": {
+            "x": 0.636,
+            "y": 0.5
+          },
+          "url": "https://cdn.sanity.io/images/59r5krzd/production/69d724709ed55e28b8806a61c7d16c809c04199a-920x757.webp?w=1600&auto=format"
+        },
+        "hotspot": null,
+        "id": "axzhfwjOxKlDVob5Dbk8xx",
+        "lineas": [
+          "RESCATANDO",
+          "EMPRENDEDORES"
+        ]
+      }
+    ]
+  },
+  "heroDoc": {
+    "hotspot": {
+      "x": 0.5,
+      "y": 0.3417058217247689
+    },
+    "imagen": "https://cdn.sanity.io/images/59r5krzd/production/b4761da415407363181c1b7389ad9810c2895ec1-1676x939.png?w=2400&auto=format",
+    "imagenAlt": "TEXTO DE PRUEBA"
+  },
+  "pagina": {
+    "capacidades": null,
+    "hero": {
+      "ctaPrincipalEnlace": "https://api.whatsapp.com/send?phone=593978626069&text=Hola%2C%20quiero%20mejorar%20mis%20ventas.%20%C2%BFMe%20pueden%20ayudar%3F",
+      "ctaPrincipalTexto": "Quiero Mejorar Mis Ventas",
+      "ctaSecundarioEnlace": "/redes",
+      "ctaSecundarioTexto": "Mira Nuestro Trabajo",
+      "marca": null,
+      "mensaje": "Pasa de 0 a $10K con nuestro Sistema de Ventas Inteligentes",
+      "titulo": "Ventas Inteligentes"
+    },
+    "secciones": null,
+    "titulo": "Página de inicio"
+  }
+}
