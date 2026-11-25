@@ -22,7 +22,7 @@ Reemplazar Sanity por un panel administrativo propio en `https://dofiagenciacrea
 
 Numeración nueva (2026-11-24). Marcar aquí al terminar cada una (fecha y commit de `main`):
 
-- [ ] Etapa 1 — El panel y su vista previa en vivo (Inicio). Rama `panel-con-vista-previa`; entra a `main` junto con la etapa 2
+- [ ] Etapa 1 — El panel y su vista previa en vivo (Inicio). Rama `panel-con-vista-previa`; entra a `main` junto con la etapa 2. **Construida el 2026-11-24, en vista previa, esperando visto bueno** (`audit/PANEL-ETAPA-1-RESULTADOS.md`)
 - [ ] Etapa 2 — Cimientos: base, archivos y usuarios (etapas 0 y 1 de `plan.md`)
 - [ ] Etapa 3 — Copia del contenido, Guardar y Publicar (etapa 2 de `plan.md` + `cambios-2026-11-24.md` §2 y §3)
 - [ ] Etapa 4 — Las cuatro páginas de servicio
@@ -31,7 +31,7 @@ Numeración nueva (2026-11-24). Marcar aquí al terminar cada una (fecha y commi
 - [ ] Etapa 7 — Asistente de Claude
 - [ ] Etapa 8 — Baja de Sanity (30 días después del cambio)
 
-Estado al 2026-11-24: **nada construido**. Plan actualizado en la rama `panel-con-vista-previa`, esperando el visto bueno del propietario.
+Estado al 2026-11-24: plan aprobado por el propietario; **etapa 1 construida** en la rama `panel-con-vista-previa` (vista previa: `https://panel-con-vista-previa-pagina-dofi.dofiagenciacreativa.workers.dev/admin`), esperando su visto bueno. Nada en `main`.
 
 ## Con quién se trabaja
 
