@@ -31,7 +31,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/render-escena"],
+        disallow: ["/api/", "/render-escena", "/admin"],
       },
       // BUSCADORES CON IA (GEO, 2026-11-23): bienvenidos, con nombre propio.
       // La regla de arriba ya los deja pasar; declararlos uno por uno deja
@@ -52,7 +52,7 @@ export default function robots(): MetadataRoute.Robots {
           "Applebot-Extended",
         ],
         allow: "/",
-        disallow: ["/api/"],
+        disallow: ["/api/", "/admin"],
       },
     ],
     sitemap: absoluteUrl("/sitemap.xml"),
