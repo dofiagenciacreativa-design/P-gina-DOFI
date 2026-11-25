@@ -86,7 +86,13 @@ export type Logro = {
   foto: ImagenSanity | null;
 };
 
-export type SeccionPortadaAsesorias = BaseSeccion & { tipo: "splitHeroBanner"; logo: ImagenSanity | null };
+export type SeccionPortadaAsesorias = BaseSeccion & {
+  tipo: "splitHeroBanner";
+  logo: ImagenSanity | null;
+  /** Cómo se integra la imagen con el fondo (FotoIntegrada): tratamiento e
+   *  intensidad. Sin esto, el de por defecto. */
+  integracionFoto?: unknown;
+};
 
 export type SeccionLogros = BaseSeccion & {
   tipo: "achievementsBanner";

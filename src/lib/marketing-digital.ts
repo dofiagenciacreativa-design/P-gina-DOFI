@@ -163,6 +163,9 @@ export type SeccionEquipo = Base & {
    *  de la derecha del hero, sobre el fondo de siempre. Sin el, la portada se
    *  pinta como antes (`imagen` de fondo). */
   imagenDerecha?: ImagenSanity | null;
+  /** Cómo se integra `imagenDerecha` con el fondo (FotoIntegrada): tratamiento
+   *  e intensidad. Sin esto, el de por defecto. */
+  integracionFoto?: unknown;
   /** Solo ChatBots/CRM (pedido del 2026-10-20): el celular con el video
    *  estilo TikTok de la derecha de la portada. */
   video?: VideoSeccion | null;

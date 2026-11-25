@@ -1,4 +1,5 @@
-import Image, { getImageProps } from "next/image";
+import { getImageProps } from "next/image";
+import { FotoIntegrada, normalizarIntegracion } from "@/components/FotoIntegrada";
 import { MapPin } from "@phosphor-icons/react/dist/ssr";
 import { BotonCta, type TamanoBoton } from "@/components/BotonCta";
 import { Anim } from "./Anim";
@@ -144,6 +145,8 @@ export function BannerFoto({
     seccion;
   const esEquipo = seccion.tipo === "teamBanner";
   const derecha = seccion.tipo === "teamBanner" ? (seccion.imagenDerecha ?? null) : null;
+  // Cómo se integra la imagen de la derecha con el fondo (FotoIntegrada).
+  const integracion = normalizarIntegracion(seccion.tipo === "teamBanner" ? seccion.integracionFoto : null);
   // Con imagen de la derecha, el fondo es el morado de la sección: ni foto de
   // fondo ni velo.
   const fondo = derecha ? null : imagen;
@@ -191,15 +194,21 @@ export function BannerFoto({
           className="relative mx-auto mb-6 aspect-[var(--aspecto)] max-h-[42svh] w-full max-w-page px-5 sm:px-6 md:px-10 lg:landscape:absolute lg:landscape:bottom-0 lg:landscape:right-0 lg:landscape:top-[var(--alto-nav)] lg:landscape:mb-0 lg:landscape:aspect-auto lg:landscape:max-h-none lg:landscape:w-[min(56%,calc((100svh-var(--alto-nav))*1.25))] lg:landscape:max-w-none lg:landscape:px-0"
           style={{ "--aspecto": `${derecha.ancho} / ${derecha.alto}` } as React.CSSProperties}
         >
-          <div className="relative h-full w-full">
-            <Image
+          {/* Contenedor de tamaño fijo: FotoIntegrada se mide contra él para
+              quedar del tamaño exacto de la foto (centrada abajo en vertical,
+              en la esquina inferior derecha en escritorio). */}
+          <div className="relative h-full w-full [container-type:size]">
+            <FotoIntegrada
               src={derecha.url}
               alt={derecha.alt}
-              fill
-              priority={prioridad}
-              unoptimized={derecha.url.startsWith("/")}
+              ancho={derecha.ancho}
+              alto={derecha.alto}
+              integracion={integracion}
+              encaje="contenida"
+              className="bottom-0 left-1/2 -translate-x-1/2 lg:landscape:left-auto lg:landscape:right-0 lg:landscape:translate-x-0"
+              prioridad={prioridad}
               sizes="(min-width: 1024px) and (orientation: landscape) 56vw, 100vw"
-              className="object-contain object-bottom lg:landscape:object-[100%_100%]"
+              idUnico={`${id}-foto`}
             />
           </div>
         </div>
