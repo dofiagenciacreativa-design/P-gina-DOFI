@@ -2,7 +2,7 @@
 
 Fecha: 2026-11-23 · Rama de trabajo: `panel-propio-sin-sanity` · Estado: **diseño, nada construido**.
 
-> **Actualizado el 2026-11-24.** Leer antes `cambios-2026-11-24.md`, que manda sobre este documento donde se contradigan. En resumen: la web ya no se dibuja en cada visita (se arma al construir y se publica con el Deploy Hook), así que §6.2, §6.3, §7.1 y §11 quedan reemplazados; la vista previa se dibuja en el navegador del panel con los componentes reales; el panel sigue las imágenes de referencia del propietario; y se agrega un asistente de Claude como etapa posterior.
+> **Actualizado el 2026-11-24.** Leer antes `cambios-2026-11-24.md`, que manda sobre este documento donde se contradigan. En resumen: la web ya no se dibuja en cada visita (se arma al construir y se publica con el Deploy Hook), así que §6.2, §6.3, §7.1 y §11 quedan reemplazados; la vista previa se dibuja en el navegador del panel con los componentes reales; y el panel sigue las imágenes de referencia del propietario. (Un asistente de Claude dentro del panel se pensó el 2026-11-24 y se descartó el 2026-11-25.)
 
 Documentos hermanos (leer antes de construir):
 
@@ -390,7 +390,7 @@ Los **borradores** de Sanity no se migran (la API pública no los ve). Hay uno c
 
 ## 11. Orden de construcción
 
-> **REEMPLAZADO (2026-11-24)** por la tabla de `cambios-2026-11-24.md` §7 (8 etapas; primero el panel con su vista previa). La tabla de abajo queda como historia.
+> **REEMPLAZADO (2026-11-24)** por la tabla de `cambios-2026-11-24.md` §7 (7 etapas; primero el panel con su vista previa). La tabla de abajo queda como historia.
 
 Detalle en `plan.md`. Resumen:
 

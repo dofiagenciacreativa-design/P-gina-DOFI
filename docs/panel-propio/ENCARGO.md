@@ -11,7 +11,7 @@ Reemplazar Sanity por un panel administrativo propio en `https://dofiagenciacrea
 ## Qué leer, en este orden
 
 1. **Este archivo.**
-2. `docs/panel-propio/cambios-2026-11-24.md` — **lo que cambió el 2026-11-24 y manda sobre todo lo demás**: páginas armadas al construir, Guardar/Publicar con el Deploy Hook, vista previa en el navegador, aspecto del panel según las referencias del propietario, asistente de Claude y el orden nuevo de etapas.
+2. `docs/panel-propio/cambios-2026-11-24.md` — **lo que cambió el 2026-11-24 y manda sobre todo lo demás**: páginas armadas al construir, Guardar/Publicar con el Deploy Hook, vista previa en el navegador, aspecto del panel según las referencias del propietario y el orden nuevo de etapas. (El asistente de Claude dentro del panel se descartó el 2026-11-25: los cambios con Claude se hacen desde Claude Desktop.)
 3. `docs/panel-propio/diseno.md` — qué se construye y por qué. Las decisiones ya están tomadas con el propietario; no se reabren sin preguntarle.
 4. `docs/panel-propio/plan.md` — tareas detalladas (con la numeración vieja; la nueva está en `cambios-2026-11-24.md` §7).
 5. `docs/panel-propio/inventario-esquema.md` — todo lo que se edita hoy en Sanity, campo por campo (consultarlo al escribir cada esquema del panel).
@@ -28,8 +28,7 @@ Numeración nueva (2026-11-24). Marcar aquí al terminar cada una (fecha y commi
 - [ ] Etapa 4 — Las cuatro páginas de servicio
 - [ ] Etapa 5 — Clientes, reseñas, historial y actividad
 - [ ] Etapa 6 — El cambio (la web deja de leer de Sanity)
-- [ ] Etapa 7 — Asistente de Claude
-- [ ] Etapa 8 — Baja de Sanity (30 días después del cambio)
+- [ ] Etapa 7 — Baja de Sanity (30 días después del cambio)
 
 Estado al 2026-11-24: plan aprobado por el propietario; **etapa 1 construida** en la rama `panel-con-vista-previa` (vista previa: `https://panel-con-vista-previa-pagina-dofi.dofiagenciacreativa.workers.dev/admin`), esperando su visto bueno. Nada en `main`.
 
@@ -62,8 +61,7 @@ Su forma de trabajo, que no se negocia:
 | Etapa 2 | Ejecutar «instalar» una vez en la vista previa y otra en producción con su `ADMIN_SETUP_TOKEN`, y crear su usuario | Es su contraseña |
 | Etapa 3 | Escribir `PANEL_URL`, `PANEL_CORREO` y `PANEL_CLAVE` en `C:\WEB DOFI\.env.local`; crear el token `D1_TOKEN_LECTURA` (solo lectura de D1) como secreto de construcción; crear un Deploy Hook para la rama de prueba | Son sus credenciales y su sesión de Cloudflare |
 | Etapa 6 | Elegir el día del cambio y no editar en Sanity esa mañana | Es su operación |
-| Etapa 7 | Crear `ANTHROPIC_API_KEY` como secreto del Worker (con tope de gasto en la consola de Anthropic) y aprobar la dependencia `@anthropic-ai/sdk` | Es su cuenta y su dinero |
-| Etapa 8 | Dar de baja Sanity y el proyecto «studio» de Vercel | Son sus cuentas |
+| Etapa 7 | Dar de baja Sanity y el proyecto «studio» de Vercel | Son sus cuentas |
 
 ## Cosas prácticas que ahorran horas
 
