@@ -4,16 +4,19 @@ import { AtmosferaMar } from "@/components/marketing/AtmosferaMar";
 import { FotoFondo } from "@/components/marketing/FotoFondo";
 import { parrafosDe } from "@/components/marketing/PiezaGrafica";
 import type { SeccionEquipo } from "@/lib/marketing-digital";
-import { siGoogleads, siMeta, siTiktok } from "simple-icons";
-import { HeroProblema } from "./HeroProblema";
+import { siFacebook, siGoogle, siInstagram, siMessenger, siTiktok, siWhatsapp } from "simple-icons";
+import { HeroDiana, type ClavePlataforma, type IconoPlataforma } from "./HeroDiana";
 
-/** Los logos de las tres plataformas viajan como trazos (el paquete de
- *  simple-icons se queda en el servidor). Uso nominativo, como las tarjetas de
- *  "¿Dónde traficamos?". */
-const MARCAS = {
-  meta: { path: siMeta.path, hex: siMeta.hex },
-  tiktok: { path: siTiktok.path, hex: siTiktok.hex },
-  google: { path: siGoogleads.path, hex: siGoogleads.hex },
+/** Los logos de las plataformas por las que llegan los clientes viajan como
+ *  trazos (el paquete de simple-icons se queda en el servidor). Uso
+ *  nominativo, como las tarjetas de "¿Dónde traficamos?". */
+const ICONOS: Record<ClavePlataforma, IconoPlataforma> = {
+  whatsapp: { path: siWhatsapp.path, hex: siWhatsapp.hex, nombre: "WhatsApp" },
+  instagram: { path: siInstagram.path, hex: siInstagram.hex, nombre: "Instagram" },
+  messenger: { path: siMessenger.path, hex: siMessenger.hex, nombre: "Messenger" },
+  facebook: { path: siFacebook.path, hex: siFacebook.hex, nombre: "Facebook" },
+  tiktok: { path: siTiktok.path, hex: siTiktok.hex, nombre: "TikTok" },
+  google: { path: siGoogle.path, hex: siGoogle.hex, nombre: "Google" },
 };
 
 /**
@@ -22,9 +25,9 @@ const MARCAS = {
  *
  * Mismo fondo que usa BannerFoto cuando no hay foto (AtmosferaMar: el mar de
  * ideas de DOFI, morado profundo con oleaje) y mismo texto blanco sobre
- * oscuro. A la derecha, la composicion del problema (HeroProblema): un panel
- * por plataforma (Meta, TikTok y Google Ads) con las cifras contando desde
- * cero; en el de ventas, la conexion que falta.
+ * oscuro. A la derecha, la diana (HeroDiana, elegida el 2026-11-25): un
+ * radar que encuentra a las personas correctas en un público enorme y las
+ * convierte en mensajes, registros y pedidos por cada plataforma.
  *
  * SI SE SUBE UNA FOTO en el Studio, la foto pasa al fondo con su velo (como
  * en Marketing Digital) y la composicion se retira: la foto ya tiene la suya.
@@ -104,7 +107,7 @@ export function TraficoPortada({ seccion, id, nivel }: { seccion: SeccionEquipo;
         {!imagen && (
           <div className="min-w-0 lg:col-span-5">
             <Anim animar={animar} y={24} delay={0.2} duration={0.8}>
-              <HeroProblema marcas={MARCAS} />
+              <HeroDiana iconos={ICONOS} />
             </Anim>
           </div>
         )}

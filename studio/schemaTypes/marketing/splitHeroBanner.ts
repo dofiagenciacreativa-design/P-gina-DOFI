@@ -1,6 +1,7 @@
 import { defineType } from "sanity";
 import { camposBase } from "./camposBase";
 import { campoImagen } from "../objects/campoImagen";
+import { campoIntegracionFoto } from "../objects/integracionFoto";
 
 /**
  * Portada con logo e imagen (página Asesorías).
@@ -40,6 +41,7 @@ export const splitHeroBanner = defineType({
         description:
           "Ej.: el logo de «Rescatando Emprendedores». PNG o WebP con fondo transparente; se muestra completo. En el texto alternativo escribe lo que dice el logo.",
       }),
+      campoIntegracionFoto(),
     ],
   }),
   preview: {

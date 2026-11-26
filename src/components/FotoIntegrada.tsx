@@ -15,10 +15,11 @@ import { getImageProps } from "next/image";
  * Tratamientos (los mismos para cualquier foto nueva):
  *  - «fundido»:   el borde recto se disuelve en el fondo (abajo y, más suave,
  *                 a los lados) y un charco de luz de marca la apoya.
- *  - «luz»:       fundido + la foto toma la luz de la escena: un poco más
- *                 oscura abajo, morado de un lado y naranja del otro (solo
- *                 sobre la gente, no sobre el fondo) y un contraluz suave en
- *                 el contorno.
+ *  - «luz»:       fundido + la foto toma la luz de la escena: un color más
+ *                 de noche, contraluz en el contorno (morado de un lado y
+ *                 naranja del otro) y un resplandor morado detrás. ES LA
+ *                 ELEGIDA por el propietario (2026-11-25) para Marketing
+ *                 Digital y Asesorías.
  *  - «escenario»: luz + un aro de luz de marca detrás, como un escenario.
  *  - «ninguno»:   la foto tal cual (como estaba).
  *
@@ -36,7 +37,8 @@ export type IntegracionFoto = {
   intensidad: number;
 };
 
-/** Lo que se usa si la sección no dice nada. */
+/** Lo que se usa si la sección no dice nada (lo elegido el 2026-11-25). Se
+ *  cambia por sección con el campo «integracionFoto» del contenido. */
 export const INTEGRACION_POR_DEFECTO: IntegracionFoto = { tratamiento: "luz", intensidad: 60 };
 
 export const TRATAMIENTOS: readonly TratamientoFoto[] = ["ninguno", "fundido", "luz", "escenario"];
@@ -69,11 +71,7 @@ type Props = {
   encaje: "contenida" | "flujo";
   /** Posición de la caja (solo con encaje "contenida"). */
   className?: string;
-  /** Lados que NO se funden porque tocan el borde de la pantalla. */
-  bordesLibres?: { derecha?: boolean; izquierda?: boolean; abajo?: boolean };
   prioridad?: boolean;
-  /** Estilo extra para la caja (por ejemplo, un ancho máximo). */
-  estilo?: React.CSSProperties;
   /** Para el srcset (como en next/image). */
   sizes?: string;
   /** Único en la página (para los degradados del aro). */
@@ -87,9 +85,7 @@ export function FotoIntegrada({
   alto,
   integracion,
   encaje,
-  bordesLibres = {},
   prioridad = false,
-  estilo,
   sizes = "100vw",
   idUnico,
   className = "",
@@ -112,12 +108,12 @@ export function FotoIntegrada({
 
   const conFundido = tratamiento !== "ninguno";
   // Largo del fundido: de 14% a 34% del alto (abajo) y de 4% a 12% a los lados.
-  const abajo = conFundido && !bordesLibres.abajo ? 14 + 20 * k : 0;
+  const abajo = conFundido ? 14 + 20 * k : 0;
   const lado = conFundido ? 4 + 8 * k : 0;
   const capas = [
     abajo > 0 ? `linear-gradient(to top, transparent 0%, #000 ${abajo.toFixed(1)}%)` : null,
-    lado > 0 && !bordesLibres.izquierda ? `linear-gradient(to right, transparent 0%, #000 ${lado.toFixed(1)}%)` : null,
-    lado > 0 && !bordesLibres.derecha ? `linear-gradient(to left, transparent 0%, #000 ${lado.toFixed(1)}%)` : null,
+    lado > 0 ? `linear-gradient(to right, transparent 0%, #000 ${lado.toFixed(1)}%)` : null,
+    lado > 0 ? `linear-gradient(to left, transparent 0%, #000 ${lado.toFixed(1)}%)` : null,
   ].filter(Boolean) as string[];
   const mascara: React.CSSProperties =
     capas.length > 0
@@ -150,7 +146,7 @@ export function FotoIntegrada({
   const filtroLuz = `url(#${idUnico}-luz) drop-shadow(0 0 ${(10 + 14 * k).toFixed(0)}px rgba(138,91,255,${(0.22 + 0.22 * k).toFixed(2)}))`;
 
   return (
-    <div style={{ ...caja, ...estilo }} className={`isolate ${className}`}>
+    <div style={caja} className={`isolate ${className}`}>
       {/* Charco de luz de marca donde la foto «pisa»: la apoya en la escena. */}
       {conFundido && (
         <div
