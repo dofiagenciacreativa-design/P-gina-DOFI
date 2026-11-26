@@ -655,11 +655,15 @@ function conDatos(s: SeccionMarketing, resenas: Resena[]): SeccionMarketing {
   return s;
 }
 
-export async function getPaginaMarketingDigital(): Promise<{ secciones: SeccionMarketing[] }> {
-  const [respuesta, resenasGoogle] = await Promise.all([
-    sanityQuery<RespuestaRaw>(QUERY_MARKETING),
-    obtenerResenasGoogle(),
-  ]);
+/**
+ * Arma la página con la respuesta de QUERY_MARKETING y las reseñas de Google. Puro: lo usa
+ * la web al construir y el panel en el navegador para la vista previa
+ * (docs/panel-propio/plan-etapa-4.md).
+ */
+export function armarPaginaMarketingDigital(
+  respuesta: RespuestaRaw | null,
+  resenasGoogle: Resena[] | null
+): { secciones: SeccionMarketing[] } {
   const resenas =
     resenasGoogle && resenasGoogle.length > 0 ? resenasGoogle : normalizarResenas(respuesta?.resenas);
 
@@ -674,4 +678,9 @@ export async function getPaginaMarketingDigital(): Promise<{ secciones: SeccionM
       "marketing"
     ),
   };
+}
+
+export async function getPaginaMarketingDigital(): Promise<{ secciones: SeccionMarketing[] }> {
+  const [respuesta, resenasGoogle] = await Promise.all([sanityQuery<RespuestaRaw>(QUERY_MARKETING), obtenerResenasGoogle()]);
+  return armarPaginaMarketingDigital(respuesta, resenasGoogle);
 }

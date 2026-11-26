@@ -21,6 +21,7 @@ import {
   type BaseSeccion,
   type GiroNegocio,
   type GiroRaw,
+  type Resena,
   type RespuestaRaw,
   type SeccionCierre,
   type SeccionEquipo,
@@ -218,7 +219,7 @@ type SeccionTraficoRaw = SeccionRaw & {
   giros?: GiroMetricasRaw[] | null;
 };
 
-type RespuestaTrafico = {
+export type RespuestaTrafico = {
   pagina: { sections?: SeccionTraficoRaw[] | null } | null;
   girosMarketing: GiroRaw[] | null;
   resenas: RespuestaRaw["resenas"];
@@ -289,11 +290,12 @@ function normalizarSeccionTrafico(
   }
 }
 
-export async function getPaginaTrafico(): Promise<PaginaTrafico> {
-  const [respuesta, resenasGoogle] = await Promise.all([
-    sanityQuery<RespuestaTrafico>(QUERY_TRAFICO),
-    obtenerResenasGoogle(),
-  ]);
+/**
+ * Arma la página con la respuesta de QUERY_TRAFICO y las reseñas de Google. Puro: lo usa
+ * la web al construir y el panel en el navegador para la vista previa
+ * (docs/panel-propio/plan-etapa-4.md).
+ */
+export function armarPaginaTrafico(respuesta: RespuestaTrafico | null, resenasGoogle: Resena[] | null): PaginaTrafico {
   const resenas =
     resenasGoogle && resenasGoogle.length > 0 ? resenasGoogle : normalizarResenas(respuesta?.resenas);
   const girosMarketing = girosConMetricas(respuesta?.girosMarketing);
@@ -303,4 +305,9 @@ export async function getPaginaTrafico(): Promise<PaginaTrafico> {
     .filter((s): s is SeccionTrafico => s !== null);
 
   return { secciones: variarCtas(secciones.length > 0 ? secciones : respaldo(girosMarketing, resenas), "trafico") };
+}
+
+export async function getPaginaTrafico(): Promise<PaginaTrafico> {
+  const [respuesta, resenasGoogle] = await Promise.all([sanityQuery<RespuestaTrafico>(QUERY_TRAFICO), obtenerResenasGoogle()]);
+  return armarPaginaTrafico(respuesta, resenasGoogle);
 }

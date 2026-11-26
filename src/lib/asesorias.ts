@@ -21,6 +21,7 @@ import {
   type GiroRaw,
   type ImagenSanity,
   type ImgRaw,
+  type Resena,
   type RespuestaRaw,
   type SeccionCierre,
   type SeccionClientes,
@@ -292,7 +293,7 @@ type SeccionAsesoriasRaw = SeccionRaw & {
   segundosPorLogro?: number | null;
 };
 
-type RespuestaAsesorias = {
+export type RespuestaAsesorias = {
   pagina: { sections?: SeccionAsesoriasRaw[] | null } | null;
   girosMarketing: GiroRaw[] | null;
   clientesMarketing: SeccionAsesoriasRaw | null;
@@ -388,11 +389,15 @@ function normalizarSeccionAsesorias(
   }
 }
 
-export async function getPaginaAsesorias(): Promise<{ secciones: SeccionAsesorias[] }> {
-  const [respuesta, resenasGoogle] = await Promise.all([
-    sanityQuery<RespuestaAsesorias>(QUERY_ASESORIAS),
-    obtenerResenasGoogle(),
-  ]);
+/**
+ * Arma la página con la respuesta de QUERY_ASESORIAS y las reseñas de Google. Puro: lo usa
+ * la web al construir y el panel en el navegador para la vista previa
+ * (docs/panel-propio/plan-etapa-4.md).
+ */
+export function armarPaginaAsesorias(
+  respuesta: RespuestaAsesorias | null,
+  resenasGoogle: Resena[] | null
+): { secciones: SeccionAsesorias[] } {
   const resenas =
     resenasGoogle && resenasGoogle.length > 0 ? resenasGoogle : normalizarResenas(respuesta?.resenas);
   const girosMarketing = normalizarGiros(respuesta?.girosMarketing);
@@ -412,4 +417,9 @@ export async function getPaginaAsesorias(): Promise<{ secciones: SeccionAsesoria
     .filter((s): s is SeccionAsesorias => s !== null);
 
   return { secciones: variarCtas(secciones.length > 0 ? secciones : respaldo(girosMarketing, marketing), "asesorias") };
+}
+
+export async function getPaginaAsesorias(): Promise<{ secciones: SeccionAsesorias[] }> {
+  const [respuesta, resenasGoogle] = await Promise.all([sanityQuery<RespuestaAsesorias>(QUERY_ASESORIAS), obtenerResenasGoogle()]);
+  return armarPaginaAsesorias(respuesta, resenasGoogle);
 }

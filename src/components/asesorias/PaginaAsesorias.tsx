@@ -74,29 +74,38 @@ function Seccion({
   }
 }
 
-export async function PaginaAsesorias() {
-  const { secciones } = await getPaginaAsesorias();
+/** Las secciones de Asesorías, en orden (sin <main>): las usa la página y la vista previa del panel. */
+export function SeccionesAsesorias({ secciones }: { secciones: SeccionAsesorias[] }) {
   const vistas = new Map<string, number>();
   const giros = secciones.find((s) => s.tipo === "clientsBanner")?.giros ?? [];
 
   return (
     <>
+      {secciones.map((seccion, i) => {
+        const base = ANCLA[seccion.tipo];
+        const n = (vistas.get(base) ?? 0) + 1;
+        vistas.set(base, n);
+        return (
+          <Seccion
+            key={seccion.key}
+            seccion={seccion}
+            id={n === 1 ? base : `${base}-${n}`}
+            nivel={i === 0 ? "h1" : "h2"}
+            giros={giros}
+          />
+        );
+      })}
+    </>
+  );
+}
+
+export async function PaginaAsesorias() {
+  const { secciones } = await getPaginaAsesorias();
+  return (
+    <>
       <Nav />
       <main>
-        {secciones.map((seccion, i) => {
-          const base = ANCLA[seccion.tipo];
-          const n = (vistas.get(base) ?? 0) + 1;
-          vistas.set(base, n);
-          return (
-            <Seccion
-              key={seccion.key}
-              seccion={seccion}
-              id={n === 1 ? base : `${base}-${n}`}
-              nivel={i === 0 ? "h1" : "h2"}
-              giros={giros}
-            />
-          );
-        })}
+        <SeccionesAsesorias secciones={secciones} />
       </main>
       <Footer />
     </>

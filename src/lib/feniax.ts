@@ -21,6 +21,7 @@ import {
   type BaseSeccion,
   type GiroNegocio,
   type GiroRaw,
+  type Resena,
   type RespuestaRaw,
   type SeccionCierre,
   type SeccionEquipo,
@@ -188,7 +189,7 @@ type GiroChatRaw = NonNullable<GiroRaw> & { chat?: ChatRaw };
 
 type SeccionFeniaxRaw = SeccionRaw & { giros?: GiroChatRaw[] | null; temaChat?: Txt };
 
-type RespuestaFeniax = {
+export type RespuestaFeniax = {
   pagina: { sections?: SeccionFeniaxRaw[] | null } | null;
   girosMarketing: GiroRaw[] | null;
   resenas: RespuestaRaw["resenas"];
@@ -261,11 +262,12 @@ function normalizarSeccionFeniax(
   return s && s.tipo !== "clientsBanner" ? s : null;
 }
 
-export async function getPaginaFeniax(): Promise<PaginaFeniax> {
-  const [respuesta, resenasGoogle] = await Promise.all([
-    sanityQuery<RespuestaFeniax>(QUERY_FENIAX),
-    obtenerResenasGoogle(),
-  ]);
+/**
+ * Arma la página con la respuesta de QUERY_FENIAX y las reseñas de Google. Puro: lo usa
+ * la web al construir y el panel en el navegador para la vista previa
+ * (docs/panel-propio/plan-etapa-4.md).
+ */
+export function armarPaginaFeniax(respuesta: RespuestaFeniax | null, resenasGoogle: Resena[] | null): PaginaFeniax {
   const resenas =
     resenasGoogle && resenasGoogle.length > 0 ? resenasGoogle : normalizarResenas(respuesta?.resenas);
   const girosMarketing = girosConChat(respuesta?.girosMarketing);
@@ -275,4 +277,9 @@ export async function getPaginaFeniax(): Promise<PaginaFeniax> {
     .filter((s): s is SeccionFeniax => s !== null);
 
   return { secciones: variarCtas(secciones.length > 0 ? secciones : respaldo(girosMarketing, resenas), "feniax") };
+}
+
+export async function getPaginaFeniax(): Promise<PaginaFeniax> {
+  const [respuesta, resenasGoogle] = await Promise.all([sanityQuery<RespuestaFeniax>(QUERY_FENIAX), obtenerResenasGoogle()]);
+  return armarPaginaFeniax(respuesta, resenasGoogle);
 }

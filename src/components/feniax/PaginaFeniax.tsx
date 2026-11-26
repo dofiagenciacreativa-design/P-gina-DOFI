@@ -62,8 +62,8 @@ function Seccion({
   }
 }
 
-export async function PaginaFeniax() {
-  const { secciones } = await getPaginaFeniax();
+/** Las secciones de ChatBots/CRM, en orden (sin <main>): las usa la página y la vista previa del panel. */
+export function SeccionesFeniax({ secciones }: { secciones: SeccionFeniax[] }) {
   const vistas = new Map<string, number>();
 
   // El celular de la portada reproduce las conversaciones por giro que se
@@ -77,16 +77,28 @@ export async function PaginaFeniax() {
 
   return (
     <>
+      {secciones.map((seccion, i) => {
+        const base = ANCLA[seccion.tipo];
+        const n = (vistas.get(base) ?? 0) + 1;
+        vistas.set(base, n);
+        return (
+          <Seccion key={seccion.key} seccion={seccion} id={n === 1 ? base : `${base}-${n}`} nivel={i === 0 ? "h1" : "h2"} hero={hero} />
+        );
+      })}
+    </>
+  );
+}
+
+/** La clase del <main> de ChatBots/CRM (la vista previa del panel usa la misma). */
+export const CLASE_MAIN_FENIAX = "tema-feniax bg-canvas";
+
+export async function PaginaFeniax() {
+  const { secciones } = await getPaginaFeniax();
+  return (
+    <>
       <Nav />
-      <main className="tema-feniax bg-canvas">
-        {secciones.map((seccion, i) => {
-          const base = ANCLA[seccion.tipo];
-          const n = (vistas.get(base) ?? 0) + 1;
-          vistas.set(base, n);
-          return (
-            <Seccion key={seccion.key} seccion={seccion} id={n === 1 ? base : `${base}-${n}`} nivel={i === 0 ? "h1" : "h2"} hero={hero} />
-          );
-        })}
+      <main className={CLASE_MAIN_FENIAX}>
+        <SeccionesFeniax secciones={secciones} />
       </main>
       <Footer />
     </>

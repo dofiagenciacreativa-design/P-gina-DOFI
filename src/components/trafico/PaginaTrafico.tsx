@@ -60,27 +60,36 @@ function Seccion({ seccion, id, nivel }: { seccion: SeccionTrafico; id: string; 
   }
 }
 
-export async function PaginaTrafico() {
-  const { secciones } = await getPaginaTrafico();
+/** Las secciones de Tráfico/Ads, en orden (sin <main>): las usa la página y la vista previa del panel. */
+export function SeccionesTrafico({ secciones }: { secciones: SeccionTrafico[] }) {
   const vistas = new Map<string, number>();
 
   return (
     <>
+      {secciones.map((seccion, i) => {
+        const base = ANCLA[seccion.tipo];
+        const n = (vistas.get(base) ?? 0) + 1;
+        vistas.set(base, n);
+        return (
+          <Seccion
+            key={seccion.key}
+            seccion={seccion}
+            id={n === 1 ? base : `${base}-${n}`}
+            nivel={i === 0 ? "h1" : "h2"}
+          />
+        );
+      })}
+    </>
+  );
+}
+
+export async function PaginaTrafico() {
+  const { secciones } = await getPaginaTrafico();
+  return (
+    <>
       <Nav />
       <main>
-        {secciones.map((seccion, i) => {
-          const base = ANCLA[seccion.tipo];
-          const n = (vistas.get(base) ?? 0) + 1;
-          vistas.set(base, n);
-          return (
-            <Seccion
-              key={seccion.key}
-              seccion={seccion}
-              id={n === 1 ? base : `${base}-${n}`}
-              nivel={i === 0 ? "h1" : "h2"}
-            />
-          );
-        })}
+        <SeccionesTrafico secciones={secciones} />
       </main>
       <Footer />
     </>
