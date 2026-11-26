@@ -1,4 +1,5 @@
 import { defineField, defineType } from "sanity";
+import { campoIntegracionFoto } from "../objects/integracionFoto";
 import { camposBase, campoAlineacion, campoOverlay } from "./camposBase";
 import { camposVideoTikTok } from "./camposVideoTikTok";
 
@@ -67,6 +68,7 @@ export const teamBanner = defineType({
         }),
       ],
     }),
+    campoIntegracionFoto({ hidden: (contexto) => !esMarketing(contexto) }),
   ],
   preview: {
     select: { titulo: "titulo", activo: "activo", media: "imagen", derecha: "imagenDerecha" },

@@ -86,7 +86,13 @@ export type Logro = {
   foto: ImagenSanity | null;
 };
 
-export type SeccionPortadaAsesorias = BaseSeccion & { tipo: "splitHeroBanner"; logo: ImagenSanity | null };
+export type SeccionPortadaAsesorias = BaseSeccion & {
+  tipo: "splitHeroBanner";
+  logo: ImagenSanity | null;
+  /** Cómo se integra la imagen con el fondo (FotoIntegrada): tratamiento e
+   *  intensidad. Sin esto, el de por defecto. */
+  integracionFoto?: unknown;
+};
 
 export type SeccionLogros = BaseSeccion & {
   tipo: "achievementsBanner";
@@ -230,7 +236,7 @@ export const QUERY_ASESORIAS = `{
       "imagenMovil": imagenMovil{ ${IMG} },
       _type in ["teamBanner", "ctaBanner"] => { alineacion, overlay },
       _type == "methodBanner" => { mostrarPasos, pasos[]{ titulo, descripcion } },
-      _type == "splitHeroBanner" => { "logo": logo{ ${IMG} } },
+      _type == "splitHeroBanner" => { "logo": logo{ ${IMG} }, integracionFoto },
       _type == "clientsBanner" => {
         "giros": categorias[]{ ${GIRO_GROQ} },
         rotacionAutomatica,
@@ -277,6 +283,7 @@ type CelularRaw = { url?: Txt; titulo?: Txt; portada?: ImgRaw } | null;
 
 type SeccionAsesoriasRaw = SeccionRaw & {
   logo?: ImgRaw;
+  integracionFoto?: unknown;
   izquierdo?: CelularRaw;
   central?: CelularRaw;
   derecho?: CelularRaw;
@@ -333,7 +340,13 @@ function normalizarSeccionAsesorias(
 
   switch (raw._type) {
     case "splitHeroBanner":
-      return { ...camposBase(raw, false), tipo: "splitHeroBanner", logo: imagen(raw.logo, 1400) };
+      return {
+        ...camposBase(raw, false),
+        tipo: "splitHeroBanner",
+        logo: imagen(raw.logo, 1400),
+        // Tratamiento e intensidad: los valida FotoIntegrada (normalizarIntegracion).
+        integracionFoto: raw.integracionFoto ?? null,
+      };
 
     case "clientsBanner": {
       // La normalización es la de Marketing Digital; sin giros propios se

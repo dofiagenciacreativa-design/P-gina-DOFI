@@ -1,4 +1,5 @@
 import { BotonCta } from "@/components/BotonCta";
+import { FotoIntegrada, normalizarIntegracion } from "@/components/FotoIntegrada";
 import { Anim } from "@/components/marketing/Anim";
 import type { SeccionPortadaAsesorias } from "@/lib/asesorias";
 
@@ -43,6 +44,7 @@ export function AsesoriasPortada({
 }) {
   const { imagen, imagenMovil, subtitulo, titulo, descripcion, destacado, cta, animar, logo } = seccion;
   const Titulo = nivel;
+  const integracion = normalizarIntegracion(seccion.integracionFoto);
 
   return (
     <section
@@ -160,20 +162,31 @@ export function AsesoriasPortada({
               className="absolute inset-x-[8%] bottom-0 top-[18%] -z-10 rounded-full bg-[radial-gradient(closest-side,rgba(109,75,201,0.55),rgba(244,123,32,0.12)_62%,transparent)] blur-2xl"
             />
             <Anim animar={animar} y={24} delay={0.1} duration={0.8}>
-              <picture>
-                {imagenMovil && <source media="(max-width: 767px)" srcSet={imagenMovil.url} />}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={imagen.url}
-                  alt={imagen.alt}
-                  width={imagen.ancho}
-                  height={imagen.alto}
-                  decoding="async"
-                  fetchPriority={prioridad ? "high" : undefined}
-                  className="mx-auto block h-auto w-full object-contain"
-                  style={{ maxWidth: `min(760px, calc((var(--alto-util) + var(--pantalla-abajo) - var(--apoyo)) * ${imagen.ancho} / ${imagen.alto}))` }}
-                />
-              </picture>
+              {/* La foto, del ancho que permite el alto útil (como antes), con
+                  su borde fundido en el fondo y la luz de la escena
+                  (FotoIntegrada). Con versión de teléfono, una para cada uno. */}
+              {[
+                { foto: imagenMovil ?? imagen, clase: imagenMovil ? "md:hidden" : "", sufijo: "m" },
+                ...(imagenMovil ? [{ foto: imagen, clase: "max-md:hidden", sufijo: "d" }] : []),
+              ].map(({ foto, clase, sufijo }) => (
+                <div
+                  key={sufijo}
+                  className={`mx-auto w-full ${clase}`}
+                  style={{ maxWidth: `min(760px, calc((var(--alto-util) + var(--pantalla-abajo) - var(--apoyo)) * ${foto.ancho} / ${foto.alto}))` }}
+                >
+                  <FotoIntegrada
+                    src={foto.url}
+                    alt={foto.alt}
+                    ancho={foto.ancho}
+                    alto={foto.alto}
+                    integracion={integracion}
+                    encaje="flujo"
+                    prioridad={prioridad}
+                    sizes="(min-width: 1024px) 50vw, 100vw"
+                    idUnico={`${id}-foto-${sufijo}`}
+                  />
+                </div>
+              ))}
             </Anim>
           </div>
         )}

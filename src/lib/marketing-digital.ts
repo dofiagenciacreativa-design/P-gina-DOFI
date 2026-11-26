@@ -163,6 +163,9 @@ export type SeccionEquipo = Base & {
    *  de la derecha del hero, sobre el fondo de siempre. Sin el, la portada se
    *  pinta como antes (`imagen` de fondo). */
   imagenDerecha?: ImagenSanity | null;
+  /** Cómo se integra `imagenDerecha` con el fondo (FotoIntegrada): tratamiento
+   *  e intensidad. Sin esto, el de por defecto. */
+  integracionFoto?: unknown;
   /** Solo ChatBots/CRM (pedido del 2026-10-20): el celular con el video
    *  estilo TikTok de la derecha de la portada. */
   video?: VideoSeccion | null;
@@ -325,7 +328,7 @@ export const QUERY_MARKETING = `{
       "imagen": imagen{ ${IMG} },
       "imagenMovil": imagenMovil{ ${IMG} },
       _type in ["teamBanner", "ctaBanner"] => { alineacion, overlay },
-      _type == "teamBanner" => { "imagenDerecha": imagenDerecha{ ${IMG} } },
+      _type == "teamBanner" => { "imagenDerecha": imagenDerecha{ ${IMG} }, integracionFoto },
       _type == "methodBanner" => { mostrarPasos, pasos[]{ titulo, descripcion } },
       _type == "clientsBanner" => {
         "giros": categorias[]{
@@ -399,6 +402,7 @@ export type SeccionRaw = {
   imagen?: ImgRaw;
   imagenMovil?: ImgRaw;
   imagenDerecha?: ImgRaw;
+  integracionFoto?: unknown;
   portadaVideo?: ImgRaw;
   ajusteLogos?: { forma?: Txt; tamano?: number | null; tamanoMovil?: number | null } | null;
   alineacion?: Txt;
@@ -570,6 +574,8 @@ export function normalizarSeccion(raw: SeccionRaw, resenas: Resena[]): SeccionMa
         // Es decorativa: el titulo ya dice lo que muestra (alt vacio salvo que
         // se escriba uno en el Studio).
         imagenDerecha: imagen(raw.imagenDerecha, 1600, ""),
+        // Tratamiento e intensidad: los valida FotoIntegrada (normalizarIntegracion).
+        integracionFoto: raw.integracionFoto ?? null,
         // Solo llegan en la portada de ChatBots/CRM (ver feniax.ts).
         video: normalizarVideo(raw),
         portadaVideo: imagen(raw.portadaVideo, 900, ""),
