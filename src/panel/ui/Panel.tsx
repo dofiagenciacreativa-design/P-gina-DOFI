@@ -85,6 +85,8 @@ export function Panel({
     faltan: [],
     llave: null,
   });
+  /** Sin rama destino (la web real hasta la etapa 6): se edita y se ve, pero no se publica. */
+  const soloMirar = sesion === "si" && !ajustes.rama;
   const [publicacion, setPublicacion] = useState<Publicacion>({ estado: "nada" });
   const [recuperado, setRecuperado] = useState(false);
   const restaurado = useRef(false);
@@ -387,7 +389,8 @@ export function Panel({
         <button
           type="button"
           onClick={() => setPublicacion({ estado: "confirmar" })}
-          disabled={n === 0 || publicacion.estado === "enviando" || publicacion.estado === "confirmar"}
+          disabled={soloMirar || n === 0 || publicacion.estado === "enviando" || publicacion.estado === "confirmar"}
+          title={soloMirar ? "En la web real, publicar desde el panel se activa el día del cambio (etapa 6)" : undefined}
           className="rounded-[10px] bg-accent px-3.5 py-2 text-[0.88rem] font-semibold text-ink transition-colors hover:bg-accent-lift disabled:bg-white/10 disabled:text-foam/55"
         >
           {n ? `Publicar cambios (${n})` : "Publicar cambios"}
@@ -468,6 +471,10 @@ export function Panel({
             Descartarlos todos
           </button>
         </p>
+      ) : soloMirar ? (
+        <p className="border-b border-brand/15 bg-brand/[0.07] px-4 py-2 text-[0.85rem] text-brand sm:px-6">
+          <strong>Solo para mirar.</strong> La web real todavía se edita en Sanity: aquí puedes probar cambios y ver cómo quedan, pero «Publicar cambios» se activa el día del cambio (etapa 6). Lo que escribas aquí no sale a la web.
+        </p>
       ) : ajustes.rama && ajustes.rama !== "main" ? (
         <p className="border-b border-brand/15 bg-brand/[0.07] px-4 py-2 text-[0.85rem] text-brand sm:px-6">
           <strong>Vista previa de prueba:</strong> al publicar, el cambio va a la rama «{ajustes.rama}» y a su propia vista previa, no a la web real.
@@ -483,7 +490,7 @@ export function Panel({
         </p>
       ) : null}
 
-      {videosEnSanity > 0 && videos.estado !== "listo" ? (
+      {soloMirar ? null : videosEnSanity > 0 && videos.estado !== "listo" ? (
         <p className="flex flex-wrap items-center gap-2 border-b border-canvas-border bg-white px-4 py-2 text-[0.85rem] text-ink-muted sm:px-6">
           <span>
             {videosEnSanity === 1 ? "Hay 1 video que todavía se ve desde Sanity." : `Hay ${videosEnSanity} videos que todavía se ven desde Sanity.`} Pásalos a Cloudflare una sola vez (tarda un par de minutos).

@@ -5,8 +5,10 @@
  *  - PANEL_CLAVE         secreto: la contraseña del panel (16+ caracteres)
  *  - GITHUB_TOKEN_PANEL  secreto: token de GitHub de un solo repositorio, Contents: Read and write
  *  - PANEL_RAMA_DESTINO  variable (wrangler.jsonc): dónde publica el panel.
- *                        «main» en producción; una rama de pruebas en las vistas previas.
- *                        Si falta, el panel NO publica (nunca cae a main por descuido).
+ *                        Una rama de pruebas en las vistas previas; «main» en producción
+ *                        desde la etapa 6. Si falta, el panel queda «solo para mirar»
+ *                        (nunca cae a main por descuido). Así está en producción hasta
+ *                        la etapa 6: la web real todavía se edita en Sanity.
  */
 
 export const REPOSITORIO = { dueno: "dofiagenciacreativa-design", nombre: "P-gina-DOFI" } as const;
@@ -22,7 +24,7 @@ export function ajustesFaltantes(): string[] {
   if (!claveDelPanel()) faltan.push("la contraseña del panel (secreto PANEL_CLAVE)");
   else if ((claveDelPanel() ?? "").length < 16) faltan.push("una contraseña de 16 caracteres o más (PANEL_CLAVE es muy corta)");
   if (!tokenDeGithub()) faltan.push("la llave de GitHub (secreto GITHUB_TOKEN_PANEL)");
-  if (!ramaDestino()) faltan.push("la rama donde publicar (variable PANEL_RAMA_DESTINO)");
+  // Sin PANEL_RAMA_DESTINO no falta nada: el panel queda «solo para mirar» a propósito.
   return faltan;
 }
 
