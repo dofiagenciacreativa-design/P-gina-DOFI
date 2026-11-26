@@ -1,5 +1,5 @@
 import { tokenDeGithub } from "@/lib/panel/config";
-import { ErrorDeGithub, reenviarBlob } from "@/lib/panel/github";
+import { ErrorDeGithub, problemaDeLlave, reenviarBlob } from "@/lib/panel/github";
 import { exigirSesion, json } from "../_comun";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +29,8 @@ export async function POST(req: Request) {
   } catch (e) {
     const estado = e instanceof ErrorDeGithub ? e.estado : 500;
     console.error("[panel] No se pudo guardar un archivo en GitHub:", e);
+    const llave = problemaDeLlave(e);
+    if (llave) return json({ error: llave }, 502);
     return json({ error: "GitHub no aceptó el archivo. Intenta de nuevo en un momento." }, estado >= 500 ? 502 : estado);
   }
 }

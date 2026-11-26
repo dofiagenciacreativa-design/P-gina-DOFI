@@ -1,7 +1,7 @@
 import type { Doc } from "@/lib/contenido/tipos";
 import { ARCHIVO_DE_ACTIVOS, ARCHIVO_DE_DOCUMENTO, rutaDeMedioPermitida, serializarJson } from "@/lib/contenido/serializar";
 import { ramaDestino, tokenDeGithub } from "@/lib/panel/config";
-import { ErrorDeGithub, archivosCambiados, commitDeRama, crearCommit, leerTexto, type ArchivoAPublicar } from "@/lib/panel/github";
+import { ErrorDeGithub, archivosCambiados, commitDeRama, crearCommit, leerTexto, problemaDeLlave, type ArchivoAPublicar } from "@/lib/panel/github";
 import { exigirSesion, json } from "../_comun";
 
 export const dynamic = "force-dynamic";
@@ -92,9 +92,8 @@ export async function POST(req: Request) {
     if (e instanceof ErrorDeGithub && e.estado === 409) {
       return json({ error: "Alguien publicó justo al mismo tiempo. Espera unos segundos y vuelve a pulsar «Publicar cambios»." }, 409);
     }
-    if (e instanceof ErrorDeGithub && (e.estado === 401 || e.estado === 403 || e.estado === 404)) {
-      return json({ error: "GitHub rechazó la llave del panel (puede haber vencido). Revisa GITHUB_TOKEN_PANEL en Cloudflare." }, 502);
-    }
+    const llave = problemaDeLlave(e);
+    if (llave) return json({ error: llave }, 502);
     return json({ error: "No se pudo publicar. Intenta de nuevo en un momento; tus cambios siguen guardados en este navegador." }, 502);
   }
 }

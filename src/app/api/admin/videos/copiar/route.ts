@@ -1,7 +1,7 @@
 import type { Doc } from "@/lib/contenido/tipos";
 import { ARCHIVO_DE_ACTIVOS, serializarJson } from "@/lib/contenido/serializar";
 import { ramaDestino, tokenDeGithub } from "@/lib/panel/config";
-import { ErrorDeGithub, commitDeRama, crearCommit, leerTexto } from "@/lib/panel/github";
+import { ErrorDeGithub, commitDeRama, crearCommit, leerTexto, problemaDeLlave } from "@/lib/panel/github";
 import { NOMBRE_DE_VIDEO, TIPO_DE_VIDEO, almacenDeVideos, claveDeVideo } from "@/lib/panel/media";
 import { exigirSesion, json } from "../../_comun";
 
@@ -56,6 +56,8 @@ export async function POST(req: Request) {
   } catch (e) {
     console.error("[panel] No se pudieron pasar los videos a R2:", e);
     if (e instanceof ErrorDeGithub && e.estado === 409) return json({ error: "Alguien publicó justo al mismo tiempo. Vuelve a intentar en unos segundos." }, 409);
+    const llave = problemaDeLlave(e);
+    if (llave) return json({ error: llave }, 502);
     return json({ error: "No se pudieron pasar los videos. Vuelve a intentar; lo que ya se copió no se repite." }, 502);
   }
 }
