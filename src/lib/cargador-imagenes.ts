@@ -29,6 +29,9 @@ export default function cargadorImagenes({ src, width, quality }: { src: string;
   // `width`. Ver src/lib/contenido/medios.ts.
   if (src.startsWith("/media/")) return direccionParaAncho(src.split("?")[0], width) ?? src;
 
+  // Foto nueva del panel, todavía sin publicar (vista previa): se usa tal cual.
+  if (src.startsWith("data:") || src.startsWith("blob:")) return src.split("?")[0];
+
   if (!src.startsWith("https://cdn.sanity.io/")) return src;
 
   const url = new URL(src);

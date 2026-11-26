@@ -19,6 +19,7 @@ export function TarjetaSeccion({
   alCambiar,
   alCopiarDeFabrica,
   alDeshacer,
+  alSubirFoto,
 }: {
   seccion: SeccionPanel;
   docs: Record<string, Doc>;
@@ -27,6 +28,7 @@ export function TarjetaSeccion({
   alCambiar: (documento: string, ruta: Ruta, valor: unknown) => void;
   alCopiarDeFabrica: () => void;
   alDeshacer: () => void;
+  alSubirFoto: (documento: string, ruta: Ruta, archivo: File, avance: (texto: string) => void) => Promise<void>;
 }) {
   const idCampo = (b: Bloque, nombre: string) =>
     `campo-${seccion.clave}-${b.titulo}-${nombre}`.toLowerCase().replace(/[^a-z0-9-]+/g, "-");
@@ -86,6 +88,7 @@ export function TarjetaSeccion({
                     valor={leer(docs[b.documento], [...b.ruta, c.nombre])}
                     alCambiar={(v) => alCambiar(b.documento, [...b.ruta, c.nombre], v)}
                     resolver={resolver}
+                    alCambiarFoto={c.clase === "imagen" ? (archivo, avance) => alSubirFoto(b.documento, [...b.ruta, c.nombre], archivo, avance) : undefined}
                   />
                 </div>
               );

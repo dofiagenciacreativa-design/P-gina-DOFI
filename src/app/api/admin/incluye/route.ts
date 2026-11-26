@@ -1,16 +1,10 @@
-import { ramaDestino, tokenDeGithub } from "@/lib/panel/config";
+import { ramaDestino, sitioDeRama, tokenDeGithub } from "@/lib/panel/config";
 import { incluye } from "@/lib/panel/github";
 import { haySesion, json } from "../_comun";
 
 export const dynamic = "force-dynamic";
 
 const SHA = /^[a-f0-9]{40}$/;
-
-/** La dirección de la web que se construye con la rama destino. */
-export function sitioDeRama(rama: string): string | null {
-  if (rama === "main") return null; // es este mismo sitio: el navegador lee su propio /contenido-version.json
-  return `https://${rama.toLowerCase().replace(/[^a-z0-9-]/g, "-")}-pagina-dofi.dofiagenciacreativa.workers.dev`;
-}
 
 /**
  * GET ?publicado=<sha>[&construido=<sha>] → { incluido, construido }: ¿la web

@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowSquareOut, ArrowsOut, CheckCircle, SignOut, Warning, X } from "@phosphor-icons/react";
 import { armarPaginaInicio } from "@/lib/inicio";
-import { resolverDeActivos, type Activo } from "@/lib/contenido/archivos-activos";
+import { referenciasDeActivos, resolverDeActivos, type Activo } from "@/lib/contenido/archivos-activos";
+import { subirImagen, type FotoNueva } from "@/panel/archivos/subir-imagen";
 import { proyectarPaginaInicio } from "@/lib/contenido/proyecciones/pagina-inicio";
 import type { Doc } from "@/lib/contenido/tipos";
 import { seccionesInicio } from "@/panel/esquema/inicio";
@@ -77,6 +78,10 @@ export function Panel({
   const [publicacion, setPublicacion] = useState<Publicacion>({ estado: "nada" });
   const [recuperado, setRecuperado] = useState(false);
   const restaurado = useRef(false);
+  /** Fotos subidas desde el panel que todavía no se publicaron. */
+  const [fotosNuevas, setFotosNuevas] = useState<FotoNueva[]>([]);
+  /** Fotos ya publicadas en esta sesión: se siguen viendo en la vista previa hasta recargar. */
+  const [fotosPublicadas, setFotosPublicadas] = useState<FotoNueva[]>([]);
   const [docs, setDocs] = useState(documentos);
   const [clave, setClave] = useState("portada");
   const [dispositivo, setDispositivo] = useState<Dispositivo>("computadora");
@@ -84,7 +89,10 @@ export function Panel({
   const [ampliada, setAmpliada] = useState(false);
   const [brindis, setBrindis] = useState<string | null>(null);
 
-  const resolver = useMemo(() => resolverDeActivos(activos), [activos]);
+  const resolver = useMemo(
+    () => resolverDeActivos([...activos, ...[...fotosPublicadas, ...fotosNuevas].map((f) => ({ ...f.activo, url: f.vistaPrevia }))]),
+    [activos, fotosNuevas, fotosPublicadas]
+  );
   const secciones = useMemo(() => seccionesInicio(docs), [docs]);
   const seccion = secciones.find((s) => s.clave === clave) ?? secciones[0];
 
@@ -139,9 +147,10 @@ export function Panel({
   // Los cambios sin publicar viven en este navegador: recargar no los pierde.
   useEffect(() => {
     try {
-      const guardado = JSON.parse(localStorage.getItem(CLAVE_LOCAL) ?? "null") as { docs?: Record<string, Doc> } | null;
+      const guardado = JSON.parse(localStorage.getItem(CLAVE_LOCAL) ?? "null") as { docs?: Record<string, Doc>; fotos?: FotoNueva[] } | null;
       if (guardado?.docs && Object.keys(guardado.docs).length) {
         setDocs((d) => ({ ...d, ...guardado.docs }));
+        setFotosNuevas(guardado.fotos ?? []);
         setRecuperado(true);
       }
     } catch {
@@ -154,14 +163,18 @@ export function Panel({
     const t = setTimeout(() => {
       try {
         const cambiados = Object.fromEntries(Object.entries(docs).filter(([id, d]) => !mismo(d, original[id])));
-        if (Object.keys(cambiados).length) localStorage.setItem(CLAVE_LOCAL, JSON.stringify({ base, docs: cambiados, guardadoEn: Date.now() }));
+        if (Object.keys(cambiados).length) {
+          const usadas = referenciasDeActivos(cambiados);
+          const fotos = fotosNuevas.filter((f) => usadas.has(f.activo._id));
+          localStorage.setItem(CLAVE_LOCAL, JSON.stringify({ base, docs: cambiados, fotos, guardadoEn: Date.now() }));
+        }
         else localStorage.removeItem(CLAVE_LOCAL);
       } catch {
         // sin almacenamiento: los cambios viven solo en esta pestaña
       }
     }, 400);
     return () => clearTimeout(t);
-  }, [docs, original, base]);
+  }, [docs, original, base, fotosNuevas]);
 
   // Después de publicar: mirar cada 20 s si la web ya se construyó con el cambio.
   useEffect(() => {
@@ -207,11 +220,20 @@ export function Panel({
     setPublicacion({ estado: "enviando" });
     const documentos = Object.values(docs).filter((d) => !mismo(d, original[d._id]));
     const resumen = secciones.filter((s) => cambiadas.has(s.clave)).map((s) => `Inicio · ${s.titulo}`);
+    const usadas = referenciasDeActivos(documentos);
+    const fotosUsadas = fotosNuevas.filter((f) => usadas.has(f.activo._id));
     try {
       const r = await fetch("/api/admin/publicar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ base, documentos, resumen }),
+        body: JSON.stringify({
+          base,
+          documentos,
+          resumen,
+          // Solo las fotos nuevas que de verdad usan los documentos que se publican.
+          medios: fotosUsadas.flatMap((f) => f.medios),
+          activosNuevos: fotosUsadas.map((f) => f.activo),
+        }),
       });
       const j = (await r.json().catch(() => ({}))) as { commit?: string; error?: string };
       if (!r.ok || !j.commit) {
@@ -220,6 +242,8 @@ export function Panel({
         return;
       }
       setOriginal(docs);
+      setFotosPublicadas((p) => [...p, ...fotosUsadas]);
+      setFotosNuevas([]);
       setRecuperado(false);
       try {
         localStorage.removeItem(CLAVE_LOCAL);
@@ -239,7 +263,21 @@ export function Panel({
 
   function descartarTodo() {
     setDocs(original);
+    setFotosNuevas([]);
     setRecuperado(false);
+  }
+
+  /** «Cambiar foto»: sube la foto (variantes incluidas) y la pone en el campo; se publica con lo demás. */
+  async function subirFoto(documento: string, ruta: Ruta, archivo: File, avance: (texto: string) => void) {
+    const foto = await subirImagen(archivo, avance);
+    setFotosNuevas((f) => [...f.filter((x) => x.activo._id !== foto.activo._id), foto]);
+    const actual = (leer(docs[documento], ruta) ?? {}) as Record<string, unknown>;
+    // El punto focal y el recorte eran de la foto anterior: no sirven para la nueva.
+    const { asset: _a, hotspot: _h, crop: _c, ...resto } = actual;
+    void _a;
+    void _h;
+    void _c;
+    cambiar(documento, ruta, { ...resto, _type: "image", asset: { _ref: foto.activo._id, _type: "reference" } });
   }
 
   const deshacer = () =>
@@ -473,6 +511,7 @@ export function Panel({
           alCambiar={cambiar}
           alCopiarDeFabrica={() => seccion.vacia && setDocs((d) => seccion.vacia!.aplicar(d))}
           alDeshacer={deshacer}
+          alSubirFoto={subirFoto}
         />
 
         <section className="flex min-w-0 flex-col gap-3 md:sticky md:top-3 md:self-start" aria-label="Vista previa">

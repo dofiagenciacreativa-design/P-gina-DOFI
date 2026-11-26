@@ -1,5 +1,7 @@
 "use client";
 
+import { useRef, useState } from "react";
+
 import type { ResolverArchivo } from "@/lib/contenido/tipos";
 import type { Campo } from "@/panel/esquema/tipos";
 import { direccionParaAncho } from "@/lib/contenido/medios";
@@ -50,12 +52,15 @@ export function CampoPanel({
   alCambiar,
   id,
   resolver,
+  alCambiarFoto,
 }: {
   campo: Campo;
   valor: unknown;
   alCambiar: (nuevo: unknown) => void;
   id: string;
   resolver: ResolverArchivo;
+  /** Para los campos de imagen: sube la foto elegida y la pone en el campo. */
+  alCambiarFoto?: (archivo: File, avance: (texto: string) => void) => Promise<void>;
 }) {
   const texto = typeof valor === "string" ? valor : "";
   const falta = campo.obligatorio && campo.clase !== "imagen" && campo.clase !== "booleano" && (valor === undefined || valor === null || texto.trim() === "") && typeof valor !== "number";
@@ -243,34 +248,80 @@ export function CampoPanel({
       );
     }
 
-    case "imagen": {
-      const info = resolver(valor);
-      const miniatura = info
-        ? info.url.includes("cdn.sanity.io")
-          ? `${info.url}?w=480&auto=format`
-          : (direccionParaAncho(info.url, 240) ?? info.url)
-        : null;
-      return (
-        <div className="flex flex-col gap-1.5">
-          <span className="text-sm font-semibold text-ink">{campo.titulo}</span>
-          <div className="flex items-center gap-3 rounded-[12px] border border-canvas-border bg-white p-2">
-            {miniatura ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={miniatura} alt="" className="h-16 w-24 rounded-lg bg-canvas-raised object-cover" />
-            ) : (
-              <span className="grid h-16 w-24 place-items-center rounded-lg bg-canvas-raised text-xs text-ink-subtle">Sin foto</span>
-            )}
-            <div className="flex min-w-0 flex-col gap-0.5 text-xs text-ink-subtle">
-              {info?.ancho && info.alto ? (
-                <span className="tabular-nums">
-                  {info.ancho} × {info.alto} px
-                </span>
-              ) : null}
-              <span>Cambiar la foto se activa en la etapa 3, junto con la biblioteca de archivos.</span>
-            </div>
-          </div>
-        </div>
-      );
+    case "imagen":
+      return <CampoImagen campo={campo} valor={valor} resolver={resolver} alCambiarFoto={alCambiarFoto} />;
+  }
+}
+
+/** Un campo de imagen: la foto actual y «Cambiar foto». */
+function CampoImagen({
+  campo,
+  valor,
+  resolver,
+  alCambiarFoto,
+}: {
+  campo: Campo;
+  valor: unknown;
+  resolver: ResolverArchivo;
+  alCambiarFoto?: (archivo: File, avance: (texto: string) => void) => Promise<void>;
+}) {
+  const entrada = useRef<HTMLInputElement>(null);
+  const [avance, setAvance] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const info = resolver(valor);
+  const miniatura = info
+    ? info.url.includes("cdn.sanity.io")
+      ? `${info.url}?w=480&auto=format`
+      : (direccionParaAncho(info.url, 240) ?? info.url)
+    : null;
+
+  async function elegida(e: React.ChangeEvent<HTMLInputElement>) {
+    const archivo = e.target.files?.[0];
+    e.target.value = "";
+    if (!archivo || !alCambiarFoto) return;
+    setError(null);
+    try {
+      await alCambiarFoto(archivo, setAvance);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo cambiar la foto.");
+    } finally {
+      setAvance(null);
     }
   }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="text-sm font-semibold text-ink">{campo.titulo}</span>
+      <div className="flex items-center gap-3 rounded-[12px] border border-canvas-border bg-white p-2">
+        {miniatura ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={miniatura} alt="" className="h-16 w-24 rounded-lg bg-canvas-raised object-cover" />
+        ) : (
+          <span className="grid h-16 w-24 place-items-center rounded-lg bg-canvas-raised text-xs text-ink-subtle">Sin foto</span>
+        )}
+        <div className="flex min-w-0 flex-1 flex-col gap-1 text-xs text-ink-subtle">
+          {info?.ancho && info.alto ? (
+            <span className="tabular-nums">
+              {info.ancho} × {info.alto} px
+            </span>
+          ) : null}
+          {alCambiarFoto ? (
+            <>
+              <input ref={entrada} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={elegida} />
+              <button
+                type="button"
+                disabled={avance !== null}
+                onClick={() => entrada.current?.click()}
+                className="self-start rounded-full border border-brand px-3 py-1 text-[0.8rem] font-semibold text-brand hover:bg-brand hover:text-white disabled:opacity-60"
+              >
+                {avance ?? "Cambiar foto"}
+              </button>
+              <span>JPG, PNG o WebP, hasta 15 MB. La web la recibe en el mismo tamaño y en versiones más livianas.</span>
+            </>
+          ) : null}
+          {error ? <span className="font-medium text-[#B4520B]">{error}</span> : null}
+        </div>
+      </div>
+    </div>
+  );
 }
