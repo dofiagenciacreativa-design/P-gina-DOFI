@@ -61,7 +61,7 @@
       "SANITY_DATASET": "production",
       // Panel propio (etapa 3): en las vistas previas, «Publicar cambios» va a
       // esta rama de pruebas, nunca a main. En produccion NO se define todavia:
-      // sin ella el panel no publica (la web real lee de Sanity hasta la etapa 6).
+      // sin ella el panel queda «solo para mirar» (la web real lee de Sanity hasta la etapa 6).
       "PANEL_RAMA_DESTINO": "panel-pruebas-contenido"
     },
     // Las vistas previas usan su propio almacen: nunca tocan los videos de produccion.
