@@ -356,6 +356,10 @@ export function HeroDiana({ iconos, className = "" }: { iconos: Record<ClavePlat
         const x = (1 - q) * (1 - q) * v.x0 + 2 * (1 - q) * q * mx + q * q * cx;
         const y = (1 - q) * (1 - q) * v.y0 + 2 * (1 - q) * q * my + q * q * cy;
         if (vuelo > 0) {
+          // Si el ícono «saltó» (la animación estuvo en pausa o cambió el
+          // tamaño), la estela empieza de nuevo: nunca una raya larga.
+          const ult = v.estela[v.estela.length - 1];
+          if (ult && Math.hypot(x - ult.x, y - ult.y) > 30) v.estela = [];
           v.estela.push({ x, y });
           if (v.estela.length > 14) v.estela.shift();
           for (let i = 1; i < v.estela.length; i++) {
