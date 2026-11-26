@@ -24,14 +24,14 @@ Reemplazar Sanity por un panel administrativo propio en `https://dofiagenciacrea
 Numeración del 2026-11-25 (`cambios-2026-11-25.md` §5). Marcar aquí al terminar cada una (fecha y commit de `main`):
 
 - [ ] Etapa 1 — El panel y su vista previa en vivo (Inicio). Rama `panel-con-vista-previa`; entra a `main` junto con las etapas 2 y 3. **Construida el 2026-11-24; aprobada por el propietario el 2026-11-25** (`audit/PANEL-ETAPA-1-RESULTADOS.md`)
-- [ ] Etapa 2 — El contenido pasa a GitHub (copia de Sanity a `contenido/` y `public/media/`, lectura propia, paridad)
+- [ ] Etapa 2 — El contenido pasa a GitHub (copia de Sanity a `contenido/` y `public/media/`, lectura propia, paridad). **Construida el 2026-11-25 en la rama `panel-2-contenido-github`: paridad 0, en vista previa, esperando visto bueno** (`audit/PANEL-ETAPA-2-RESULTADOS.md`). Su commit «SOLO VISTA PREVIA» de `.env.production` se revierte antes de `main`.
 - [ ] Etapa 3 — Entrar y publicar (contraseña, publicar con GitHub, videos en R2)
 - [ ] Etapa 4 — Las cuatro páginas de servicio
 - [ ] Etapa 5 — Clientes, reseñas e historial
 - [ ] Etapa 6 — El cambio (la web deja de leer de Sanity)
 - [ ] Etapa 7 — Baja de Sanity (30 días después del cambio)
 
-Estado al 2026-11-25: plan aprobado por el propietario con los cambios del 25; **etapa 1 construida y aprobada** en la rama `panel-con-vista-previa` (vista previa: `https://panel-con-vista-previa-pagina-dofi.dofiagenciacreativa.workers.dev/admin`), Siguiente: etapa 2. Nada en `main`.
+Estado al 2026-11-25: plan aprobado por el propietario con los cambios del 25; **etapa 1 construida y aprobada** en la rama `panel-con-vista-previa` (vista previa: `https://panel-con-vista-previa-pagina-dofi.dofiagenciacreativa.workers.dev/admin`), Etapa 2 construida (rama `panel-2-contenido-github`), esperando visto bueno. Nada del panel en `main`.
 
 ## Con quién se trabaja
 
