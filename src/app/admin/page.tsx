@@ -12,8 +12,8 @@ import { Panel } from "@/panel/ui/Panel";
  * la web (Sanity o los archivos del repositorio, según CONTENT_SOURCE), y se
  * los pasa al panel, que los edita en memoria.
  *
- * Sin inicio de sesión todavía: solo muestra contenido que ya es público y no
- * puede guardar nada. Por eso no pasa a main antes de la etapa 3.
+ * La sesión se comprueba al abrir la página (/api/admin/yo): sin contraseña
+ * solo se ve la pantalla de entrada. El contenido que trae es el ya público.
  */
 export default async function PaginaPanel() {
   const lista = (await sanityQuery<Doc[]>(`*[_id in ["hero", "paginaInicio", "banners"]]`)) ?? [];
@@ -28,5 +28,9 @@ export default async function PaginaPanel() {
       ? ((await sanityQuery<Activo[]>(`*[_id in ${JSON.stringify(ids)}]{ _id, url, metadata{ dimensions{ width, height } } }`)) ?? [])
       : [];
 
-  return <Panel documentos={documentos} activos={activos} />;
+  // El commit con el que se construye esta página: al publicar, el panel avisa si
+  // alguien cambió lo mismo después (lo define Cloudflare Workers Builds).
+  const base = process.env.WORKERS_CI_COMMIT_SHA ?? null;
+
+  return <Panel documentos={documentos} activos={activos} base={base} />;
 }

@@ -9,7 +9,7 @@ import { leer } from "./rutas";
 
 /**
  * La tarjeta central: cabecera de la sección, «¿Cómo funciona?», los grupos
- * de campos y los botones Guardar / Deshacer.
+ * de campos y el botón Deshacer (lo cambiado se publica con «Publicar cambios», arriba).
  */
 export function TarjetaSeccion({
   seccion,
@@ -19,7 +19,6 @@ export function TarjetaSeccion({
   alCambiar,
   alCopiarDeFabrica,
   alDeshacer,
-  alGuardar,
 }: {
   seccion: SeccionPanel;
   docs: Record<string, Doc>;
@@ -28,7 +27,6 @@ export function TarjetaSeccion({
   alCambiar: (documento: string, ruta: Ruta, valor: unknown) => void;
   alCopiarDeFabrica: () => void;
   alDeshacer: () => void;
-  alGuardar: () => void;
 }) {
   const idCampo = (b: Bloque, nombre: string) =>
     `campo-${seccion.clave}-${b.titulo}-${nombre}`.toLowerCase().replace(/[^a-z0-9-]+/g, "-");
@@ -97,14 +95,6 @@ export function TarjetaSeccion({
       ))}
 
       <footer className="flex flex-wrap items-center gap-3 border-t border-canvas-border pt-4">
-        <button
-          type="button"
-          onClick={alGuardar}
-          disabled={!cambiada}
-          className="rounded-[10px] bg-accent px-4 py-2.5 font-display text-[0.8rem] font-bold uppercase tracking-[0.06em] text-ink transition-colors hover:bg-accent-lift focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-[#EDE7DC] disabled:text-[#A39C8E]"
-        >
-          Guardar {seccion.titulo.split(" · ")[0]}
-        </button>
         <button
           type="button"
           onClick={alDeshacer}

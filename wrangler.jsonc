@@ -53,7 +53,11 @@
   "previews": {
     "vars": {
       "SANITY_PROJECT_ID": "59r5krzd",
-      "SANITY_DATASET": "production"
+      "SANITY_DATASET": "production",
+      // Panel propio (etapa 3): en las vistas previas, «Publicar cambios» va a
+      // esta rama de pruebas, nunca a main. En produccion NO se define todavia:
+      // sin ella el panel no publica (la web real lee de Sanity hasta la etapa 6).
+      "PANEL_RAMA_DESTINO": "panel-pruebas-contenido"
     },
     "services": [
       {

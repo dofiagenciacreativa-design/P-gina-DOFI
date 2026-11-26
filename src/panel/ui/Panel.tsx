@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowSquareOut, ArrowsOut, X } from "@phosphor-icons/react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowSquareOut, ArrowsOut, CheckCircle, SignOut, Warning, X } from "@phosphor-icons/react";
 import { armarPaginaInicio } from "@/lib/inicio";
 import { resolverDeActivos, type Activo } from "@/lib/contenido/archivos-activos";
 import { proyectarPaginaInicio } from "@/lib/contenido/proyecciones/pagina-inicio";
@@ -13,11 +13,27 @@ import { TarjetaSeccion } from "@/panel/motor/TarjetaSeccion";
 import { Marco } from "@/panel/vista-previa/Marco";
 import type { Dispositivo, ModoVista, VistaPrevia } from "@/panel/vista-previa/mensajes";
 import { IconoSeccion } from "./iconos";
+import { Entrar } from "./Entrar";
 
 /**
- * El panel (etapa 1): la página de Inicio, editable en memoria, con la vista
- * previa al lado. Nada se guarda todavía (docs/panel-propio/cambios-2026-11-24.md §7).
+ * El panel: la página de Inicio con la vista previa al lado. Se entra con la
+ * contraseña; lo que se cambia queda guardado en este navegador hasta que se
+ * pulsa «Publicar cambios», que lo guarda en GitHub (y Cloudflare vuelve a
+ * armar la web sola). docs/panel-propio/cambios-2026-11-25.md §4 y plan-etapa-3.md.
  */
+
+const CLAVE_LOCAL = "dofi-panel:cambios:v1";
+const CADA = 20_000; // cada cuánto se mira si la web ya está construida
+const LENTO = 15 * 60_000;
+
+type Publicacion =
+  | { estado: "nada" }
+  | { estado: "confirmar" }
+  | { estado: "enviando" }
+  | { estado: "publicando"; commit: string; pedidoEn: number }
+  | { estado: "listo"; commit: string }
+  | { estado: "lento"; commit: string }
+  | { estado: "error"; mensaje: string };
 
 const PESTANAS = ["Inicio", "Marketing Digital", "Tráfico / Ads", "ChatBots / CRM", "Asesorías", "Clientes", "Reseñas", "Archivos"];
 
@@ -47,12 +63,20 @@ function zonas(s: SeccionPanel, original: Record<string, Doc>): { documento: str
 export function Panel({
   documentos,
   activos,
+  base,
 }: {
   documentos: Record<string, Doc>;
   /** Las fotos que usan los documentos (de Sanity o del repositorio). */
   activos: Activo[];
+  /** El commit con el que se construyó esta página (null fuera de Cloudflare). */
+  base: string | null;
 }) {
-  const [original] = useState(documentos);
+  const [original, setOriginal] = useState(documentos);
+  const [sesion, setSesion] = useState<"cargando" | "no" | "si">("cargando");
+  const [ajustes, setAjustes] = useState<{ rama: string | null; faltan: string[] }>({ rama: null, faltan: [] });
+  const [publicacion, setPublicacion] = useState<Publicacion>({ estado: "nada" });
+  const [recuperado, setRecuperado] = useState(false);
+  const restaurado = useRef(false);
   const [docs, setDocs] = useState(documentos);
   const [clave, setClave] = useState("portada");
   const [dispositivo, setDispositivo] = useState<Dispositivo>("computadora");
@@ -97,16 +121,126 @@ export function Panel({
     return () => window.removeEventListener("keydown", alTeclear);
   }, [ampliada]);
 
-  // Aviso del navegador si se cierra la pestaña con cambios (no se guardan en esta etapa).
+  // ¿Hay sesión? (la página es estática: la sesión se consulta al abrirla)
+  const consultarSesion = useCallback(async () => {
+    try {
+      const r = await fetch("/api/admin/yo", { cache: "no-store" });
+      const j = (await r.json()) as { sesion: boolean; rama: string | null; faltan: string[] };
+      setAjustes({ rama: j.rama, faltan: j.faltan ?? [] });
+      setSesion(j.sesion ? "si" : "no");
+    } catch {
+      setSesion("no");
+    }
+  }, []);
   useEffect(() => {
-    if (cambiadas.size === 0) return;
-    const alSalir = (e: BeforeUnloadEvent) => e.preventDefault();
-    window.addEventListener("beforeunload", alSalir);
-    return () => window.removeEventListener("beforeunload", alSalir);
-  }, [cambiadas.size]);
+    void consultarSesion();
+  }, [consultarSesion]);
+
+  // Los cambios sin publicar viven en este navegador: recargar no los pierde.
+  useEffect(() => {
+    try {
+      const guardado = JSON.parse(localStorage.getItem(CLAVE_LOCAL) ?? "null") as { docs?: Record<string, Doc> } | null;
+      if (guardado?.docs && Object.keys(guardado.docs).length) {
+        setDocs((d) => ({ ...d, ...guardado.docs }));
+        setRecuperado(true);
+      }
+    } catch {
+      // almacenamiento no disponible: se sigue sin recuperar nada
+    }
+    restaurado.current = true;
+  }, []);
+  useEffect(() => {
+    if (!restaurado.current) return;
+    const t = setTimeout(() => {
+      try {
+        const cambiados = Object.fromEntries(Object.entries(docs).filter(([id, d]) => !mismo(d, original[id])));
+        if (Object.keys(cambiados).length) localStorage.setItem(CLAVE_LOCAL, JSON.stringify({ base, docs: cambiados, guardadoEn: Date.now() }));
+        else localStorage.removeItem(CLAVE_LOCAL);
+      } catch {
+        // sin almacenamiento: los cambios viven solo en esta pestaña
+      }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [docs, original, base]);
+
+  // Después de publicar: mirar cada 20 s si la web ya se construyó con el cambio.
+  useEffect(() => {
+    if (publicacion.estado !== "publicando") return;
+    const { commit, pedidoEn } = publicacion;
+    let vivo = true;
+    const mirar = async () => {
+      try {
+        let construido: string | null = null;
+        if (ajustes.rama === "main") {
+          const v = (await fetch(`/contenido-version.json?t=${Date.now()}`, { cache: "no-store" }).then((r) => r.json())) as {
+            commit: string | null;
+          };
+          construido = v.commit;
+          if (construido === commit) return vivo && setPublicacion({ estado: "listo", commit });
+          if (!construido || construido === base) construido = null;
+        }
+        if (construido !== null || ajustes.rama !== "main") {
+          const q = construido ? `&construido=${construido}` : "";
+          const r = (await fetch(`/api/admin/incluye?publicado=${commit}${q}`, { cache: "no-store" }).then((x) => x.json())) as {
+            incluido?: boolean;
+          };
+          if (r.incluido) return vivo && setPublicacion({ estado: "listo", commit });
+        }
+      } catch {
+        // sin conexión por un momento: se vuelve a mirar en la próxima vuelta
+      }
+      if (vivo && Date.now() - pedidoEn > LENTO) setPublicacion({ estado: "lento", commit });
+    };
+    const id = setInterval(mirar, CADA);
+    void mirar();
+    return () => {
+      vivo = false;
+      clearInterval(id);
+    };
+  }, [publicacion, ajustes.rama, base]);
 
   const cambiar = (documento: string, ruta: Ruta, valor: unknown) =>
     setDocs((d) => ({ ...d, [documento]: escribir(d[documento], ruta, valor) }));
+
+  /** Publica: un commit con los documentos cambiados; Cloudflare arma la web sola. */
+  async function publicar() {
+    setPublicacion({ estado: "enviando" });
+    const documentos = Object.values(docs).filter((d) => !mismo(d, original[d._id]));
+    const resumen = secciones.filter((s) => cambiadas.has(s.clave)).map((s) => `Inicio · ${s.titulo}`);
+    try {
+      const r = await fetch("/api/admin/publicar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ base, documentos, resumen }),
+      });
+      const j = (await r.json().catch(() => ({}))) as { commit?: string; error?: string };
+      if (!r.ok || !j.commit) {
+        if (r.status === 401) setSesion("no");
+        setPublicacion({ estado: "error", mensaje: j.error ?? "No se pudo publicar. Tus cambios siguen guardados en este navegador." });
+        return;
+      }
+      setOriginal(docs);
+      setRecuperado(false);
+      try {
+        localStorage.removeItem(CLAVE_LOCAL);
+      } catch {
+        // nada que limpiar
+      }
+      setPublicacion({ estado: "publicando", commit: j.commit, pedidoEn: Date.now() });
+    } catch {
+      setPublicacion({ estado: "error", mensaje: "No hay conexión. Tus cambios siguen guardados en este navegador; vuelve a intentar." });
+    }
+  }
+
+  async function salir() {
+    await fetch("/api/admin/salir", { method: "POST" }).catch(() => null);
+    setSesion("no");
+  }
+
+  function descartarTodo() {
+    setDocs(original);
+    setRecuperado(false);
+  }
 
   const deshacer = () =>
     setDocs((d) => {
@@ -163,6 +297,13 @@ export function Panel({
     </span>
   );
 
+  if (sesion !== "si") {
+    if (sesion === "cargando") {
+      return <div className="panel-dofi grid min-h-screen place-items-center bg-abyss font-sans text-foam/70">Abriendo el panel…</div>;
+    }
+    return <Entrar faltan={ajustes.faltan} alEntrar={() => void consultarSesion()} />;
+  }
+
   return (
     <div className="panel-dofi min-h-screen bg-canvas font-sans text-ink">
       <style>{SIN_ADORNOS_DEL_SITIO}</style>
@@ -174,21 +315,97 @@ export function Panel({
         <span className="flex-1" />
         <span className="inline-flex items-center gap-2 text-[0.85rem] text-foam/85" aria-live="polite">
           <span className={`h-2 w-2 rounded-full ${n ? "bg-accent" : "bg-[#5FD39A]"}`} />
-          {n ? `${n} ${n === 1 ? "sección cambiada" : "secciones cambiadas"} sin guardar` : "Igual a la web publicada"}
+          {n ? `${n} ${n === 1 ? "sección cambiada" : "secciones cambiadas"} sin publicar` : "Igual a la web publicada"}
         </span>
         <button
           type="button"
-          onClick={() => avisar("«Publicar cambios» se activa en la etapa 3: subirá a la web todo lo guardado y tardará unos 5 a 7 minutos.")}
-          className="rounded-[10px] bg-white/10 px-3.5 py-2 text-[0.88rem] font-semibold text-foam/55"
-          aria-disabled="true"
+          onClick={() => setPublicacion({ estado: "confirmar" })}
+          disabled={n === 0 || publicacion.estado === "enviando" || publicacion.estado === "confirmar"}
+          className="rounded-[10px] bg-accent px-3.5 py-2 text-[0.88rem] font-semibold text-ink transition-colors hover:bg-accent-lift disabled:bg-white/10 disabled:text-foam/55"
         >
-          Publicar cambios
+          {n ? `Publicar cambios (${n})` : "Publicar cambios"}
+        </button>
+        <button
+          type="button"
+          onClick={salir}
+          className="inline-flex items-center gap-1.5 rounded-[10px] px-2.5 py-2 text-[0.85rem] text-foam/70 hover:bg-white/10 hover:text-foam"
+          title="Cerrar la sesión en este navegador"
+        >
+          <SignOut size={16} weight="bold" aria-hidden="true" /> Salir
         </button>
       </header>
 
-      <p className="border-b border-brand/15 bg-brand/[0.07] px-4 py-2 text-[0.85rem] text-brand sm:px-6">
-        <strong>Etapa 1, de prueba:</strong> puedes cambiar los textos y ver al instante cómo quedan, pero todavía nada se guarda ni se publica. Si recargas la página, vuelve todo a como está en la web.
-      </p>
+      {publicacion.estado === "confirmar" ? (
+        <div className="flex flex-wrap items-center gap-3 border-b border-brand/15 bg-brand/[0.07] px-4 py-3 text-[0.9rem] sm:px-6">
+          <span>
+            Va a salir a la web: <strong>{secciones.filter((s) => cambiadas.has(s.clave)).map((s) => `Inicio · ${s.titulo}`).join(", ")}</strong>.
+            {ajustes.rama && ajustes.rama !== "main" ? ` (Vista previa de prueba: se publica en la rama «${ajustes.rama}», no en la web real.)` : ""}
+          </span>
+          <span className="ml-auto flex gap-2">
+            <button type="button" onClick={() => setPublicacion({ estado: "nada" })} className="rounded-[10px] border border-canvas-border bg-white px-3 py-1.5 text-sm">
+              Cancelar
+            </button>
+            <button type="button" onClick={publicar} className="rounded-[10px] bg-accent px-3 py-1.5 text-sm font-semibold text-ink hover:bg-accent-lift">
+              Publicar ahora
+            </button>
+          </span>
+        </div>
+      ) : publicacion.estado === "enviando" ? (
+        <p className="border-b border-brand/15 bg-brand/[0.07] px-4 py-2.5 text-[0.9rem] text-brand sm:px-6">Guardando el cambio en GitHub…</p>
+      ) : publicacion.estado === "publicando" ? (
+        <p className="flex items-center gap-2 border-b border-[#F4C9A5] bg-[#FFF0E3] px-4 py-2.5 text-[0.9rem] text-[#8A3F08] sm:px-6" aria-live="polite">
+          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-r-transparent motion-reduce:animate-none" aria-hidden="true" />
+          <span>
+            <strong>Publicando…</strong> Estará en la web en unos minutos (pedido a las{" "}
+            {new Date(publicacion.pedidoEn).toLocaleTimeString("es-EC", { hour: "2-digit", minute: "2-digit" })}). Puedes seguir trabajando.
+          </span>
+        </p>
+      ) : publicacion.estado === "listo" ? (
+        <p className="flex items-center gap-2 border-b border-[#BFE3CF] bg-[#E2F3EA] px-4 py-2.5 text-[0.9rem] text-[#1F6B47] sm:px-6" aria-live="polite">
+          <CheckCircle size={18} weight="fill" aria-hidden="true" />
+          <span>
+            <strong>Ya está en la web.</strong>{" "}
+            {ajustes.rama && ajustes.rama !== "main" ? (
+              <a className="underline" href={`https://${ajustes.rama}-pagina-dofi.dofiagenciacreativa.workers.dev/`} target="_blank" rel="noopener">
+                Ver la vista previa de prueba
+              </a>
+            ) : (
+              <a className="underline" href="/" target="_blank" rel="noopener">
+                Ver la página
+              </a>
+            )}
+          </span>
+          <button type="button" onClick={() => setPublicacion({ estado: "nada" })} className="ml-auto text-sm underline">
+            Cerrar
+          </button>
+        </p>
+      ) : publicacion.estado === "lento" ? (
+        <p className="flex items-center gap-2 border-b border-[#F4C9A5] bg-[#FFF0E3] px-4 py-2.5 text-[0.9rem] text-[#8A3F08] sm:px-6" aria-live="polite">
+          <Warning size={18} weight="bold" aria-hidden="true" />
+          <span>
+            <strong>Está tardando más de lo normal.</strong> El cambio quedó guardado en GitHub; si en unos minutos no aparece, avísale a Claude Desktop para revisar la construcción en Cloudflare. La web sigue mostrando la versión anterior, sin errores.
+          </span>
+        </p>
+      ) : publicacion.estado === "error" ? (
+        <p className="flex items-center gap-2 border-b border-[#F4C9A5] bg-[#FFF0E3] px-4 py-2.5 text-[0.9rem] text-[#8A3F08] sm:px-6" role="alert">
+          <Warning size={18} weight="bold" aria-hidden="true" />
+          <span>{publicacion.mensaje}</span>
+          <button type="button" onClick={() => setPublicacion({ estado: "nada" })} className="ml-auto text-sm underline">
+            Cerrar
+          </button>
+        </p>
+      ) : recuperado ? (
+        <p className="flex flex-wrap items-center gap-2 border-b border-brand/15 bg-brand/[0.07] px-4 py-2 text-[0.85rem] text-brand sm:px-6">
+          <span>Recuperé los cambios que dejaste sin publicar en este navegador.</span>
+          <button type="button" onClick={descartarTodo} className="underline">
+            Descartarlos todos
+          </button>
+        </p>
+      ) : ajustes.rama && ajustes.rama !== "main" ? (
+        <p className="border-b border-brand/15 bg-brand/[0.07] px-4 py-2 text-[0.85rem] text-brand sm:px-6">
+          <strong>Vista previa de prueba:</strong> al publicar, el cambio va a la rama «{ajustes.rama}» y a su propia vista previa, no a la web real.
+        </p>
+      ) : null}
 
       <nav className="flex items-end gap-1 overflow-x-auto border-b border-canvas-border px-4 pt-2 sm:px-6" aria-label="Páginas de la web">
         {PESTANAS.map((p) =>
@@ -216,7 +433,7 @@ export function Panel({
       <div className="flex flex-col gap-1.5 px-4 pb-4 pt-5 sm:px-6">
         <h1 className="font-display text-[clamp(1.35rem,1rem+1.2vw,1.9rem)] font-extrabold uppercase tracking-[0.01em]">Contenido · Inicio</h1>
         <p className="max-w-4xl text-[0.93rem] text-ink-muted">
-          Portada, tarjetas y los cuatro banners de la página de Inicio. Escribe en los campos y mira el cambio en la vista previa. Cuando se active «Guardar» (etapa 3), el cambio quedará listo para publicar; al publicar, saldrá a la web en unos 5 a 7 minutos.
+          Portada, tarjetas y los cuatro banners de la página de Inicio. Escribe en los campos y mira el cambio en la vista previa. Lo que cambies queda guardado en este navegador hasta que pulses «Publicar cambios»; entonces sale a la web en unos 5 a 7 minutos.
         </p>
       </div>
 
@@ -256,7 +473,6 @@ export function Panel({
           alCambiar={cambiar}
           alCopiarDeFabrica={() => seccion.vacia && setDocs((d) => seccion.vacia!.aplicar(d))}
           alDeshacer={deshacer}
-          alGuardar={() => avisar("«Guardar» se activa en la etapa 3, cuando el panel tenga su propia base de datos. Por ahora el cambio vive solo en esta pestaña.")}
         />
 
         <section className="flex min-w-0 flex-col gap-3 md:sticky md:top-3 md:self-start" aria-label="Vista previa">
