@@ -25,7 +25,7 @@ Numeración del 2026-11-25 (`cambios-2026-11-25.md` §5). Marcar aquí al termin
 
 - [ ] Etapa 1 — El panel y su vista previa en vivo (Inicio). Rama `panel-con-vista-previa`; entra a `main` junto con las etapas 2 y 3. **Construida el 2026-11-24; aprobada por el propietario el 2026-11-25** (`audit/PANEL-ETAPA-1-RESULTADOS.md`)
 - [ ] Etapa 2 — El contenido pasa a GitHub (copia de Sanity a `contenido/` y `public/media/`, lectura propia, paridad). **Construida el 2026-11-25 en la rama `panel-2-contenido-github`: paridad 0, en vista previa, esperando visto bueno** (`audit/PANEL-ETAPA-2-RESULTADOS.md`). Su commit «SOLO VISTA PREVIA» de `.env.production` se revierte antes de `main`.
-- [ ] Etapa 3 — Entrar y publicar (contraseña, publicar con GitHub, videos en R2)
+- [ ] Etapa 3 — Entrar y publicar (contraseña, publicar con GitHub, videos en R2). **Construida y probada en local el 2026-11-26 en `panel-3-publicar`** (`audit/PANEL-ETAPA-3-RESULTADOS.md`); falta la prueba en su vista previa con los secretos del propietario.
 - [ ] Etapa 4 — Las cuatro páginas de servicio
 - [ ] Etapa 5 — Clientes, reseñas e historial
 - [ ] Etapa 6 — El cambio (la web deja de leer de Sanity)
