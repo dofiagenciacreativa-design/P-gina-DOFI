@@ -23,15 +23,15 @@ Reemplazar Sanity por un panel administrativo propio en `https://dofiagenciacrea
 
 Numeración del 2026-11-25 (`cambios-2026-11-25.md` §5). Marcar aquí al terminar cada una (fecha y commit de `main`):
 
-- [ ] Etapa 1 — El panel y su vista previa en vivo (Inicio). Rama `panel-con-vista-previa`; entra a `main` junto con las etapas 2 y 3. **Construida el 2026-11-24; aprobada por el propietario el 2026-11-25** (`audit/PANEL-ETAPA-1-RESULTADOS.md`)
-- [ ] Etapa 2 — El contenido pasa a GitHub (copia de Sanity a `contenido/` y `public/media/`, lectura propia, paridad). **Construida el 2026-11-25 en la rama `panel-2-contenido-github`: paridad 0.** El propietario pasó a la etapa 3 sin pedir cambios y aprobó la 3, que corre sobre esta (`audit/PANEL-ETAPA-2-RESULTADOS.md`). Su commit «SOLO VISTA PREVIA» de `.env.production` se revierte antes de `main`.
-- [ ] Etapa 3 — Entrar y publicar (contraseña, publicar con GitHub, videos en R2). **Construida y probada en local el 2026-11-26 en `panel-3-publicar`** (`audit/PANEL-ETAPA-3-RESULTADOS.md`). El propietario la probó en la vista previa `panel-3-vista-2` el mismo día: publicar y videos en R2 funcionan; el aviso «Ya está en la web» no llegaba y se arregló (`8d5768b`). **Aprobada por el propietario el 2026-11-26.** Siguiente paso: las etapas 1 a 3 entran juntas a `main` (rama `panel-1-3-a-main`), solo con su «sí».
+- [x] Etapa 1 — El panel y su vista previa en vivo (Inicio). **En `main` el 2026-11-26 (`8761015`).** Rama `panel-con-vista-previa`; entra a `main` junto con las etapas 2 y 3. **Construida el 2026-11-24; aprobada por el propietario el 2026-11-25** (`audit/PANEL-ETAPA-1-RESULTADOS.md`)
+- [x] Etapa 2 — El contenido pasa a GitHub (copia de Sanity a `contenido/` y `public/media/`, lectura propia, paridad). **Construida el 2026-11-25 en la rama `panel-2-contenido-github`: paridad 0.** El propietario pasó a la etapa 3 sin pedir cambios y aprobó la 3, que corre sobre esta (`audit/PANEL-ETAPA-2-RESULTADOS.md`). **En `main` el 2026-11-26 (`8761015`)**, con la web todavía leyendo de Sanity. Su commit «SOLO VISTA PREVIA» de `.env.production` se revierte antes de `main`.
+- [x] Etapa 3 — Entrar y publicar (contraseña, publicar con GitHub, videos en R2). **Construida y probada en local el 2026-11-26 en `panel-3-publicar`** (`audit/PANEL-ETAPA-3-RESULTADOS.md`). El propietario la probó en la vista previa `panel-3-vista-2` el mismo día: publicar y videos en R2 funcionan; el aviso «Ya está en la web» no llegaba y se arregló (`8d5768b`). **Aprobada por el propietario el 2026-11-26.** **En `main` el 2026-11-26 (`8761015`) con su «Sí, pásalas»**: en la web real el panel es «solo para mirar» hasta la etapa 6.
 - [ ] Etapa 4 — Las cuatro páginas de servicio
 - [ ] Etapa 5 — Clientes, reseñas e historial
 - [ ] Etapa 6 — El cambio (la web deja de leer de Sanity)
 - [ ] Etapa 7 — Baja de Sanity (30 días después del cambio)
 
-Estado al 2026-11-26: **etapas 1 a 3 construidas y aprobadas** (ramas `panel-con-vista-previa` → `panel-2-contenido-github` → `panel-3-publicar`). Se preparan para entrar juntas a `main` en `panel-1-3-a-main`: en la web real el panel queda «solo para mirar» (sin `PANEL_RAMA_DESTINO`) y la web sigue leyendo de Sanity hasta la etapa 6. Nada del panel en `main` todavía.
+Estado al 2026-11-26: **etapas 1 a 3 construidas y aprobadas** (ramas `panel-con-vista-previa` → `panel-2-contenido-github` → `panel-3-publicar`). **Entraron juntas a `main` el 2026-11-26 (`8761015`)**: `dofiagenciacreativa.com/admin` pide la contraseña y es «solo para mirar» (sin `PANEL_RAMA_DESTINO`); la web sigue leyendo de Sanity hasta la etapa 6 y se vio igual en las 10 páginas. Siguiente: etapa 4, en una rama nueva desde `main`; para probar publicar se usa una vista previa (publica en `panel-pruebas-contenido`).
 
 ## Con quién se trabaja
 
