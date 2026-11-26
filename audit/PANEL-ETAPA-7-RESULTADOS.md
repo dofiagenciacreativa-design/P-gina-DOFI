@@ -24,7 +24,13 @@ Fecha: 2026-11-26 · Rama: `panel-7-sin-sanity` (sale de `panel-6-cambio` + `mai
 
 ## Qué se comprobó
 
-(ver la sección final, se completa con la vista previa)
+| Prueba | Resultado |
+|---|---|
+| `npm run probar` | 83 pruebas en verde (se quitó la que probaba el traductor de direcciones de Sanity) |
+| `next build` sin ningún ajuste de Sanity | sin errores; 26 páginas de clientes armadas |
+| Vista previa `https://panel-7-sin-sanity-pagina-dofi.dofiagenciacreativa.workers.dev` (`6e2f802`) contra la web real | **14 páginas iguales** (texto, y fotos y videos por su huella): Inicio, las 4 de servicio, /feniax, Redes, Contacto, El Socio, /clientes y 4 clientes |
+| Pedidos a Sanity en esas páginas | 0 |
+| `/api/revalidate` | ya no existe (404) |
 
 ## Lo que le toca al propietario (fuera del repositorio)
 
