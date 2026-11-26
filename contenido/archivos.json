@@ -8,7 +8,7 @@
     "originalFilename": "Download (2).mp4",
     "sha1hash": "07e3d12d075e09bf87f6783f7637cd52d16c2df1",
     "size": 30713856,
-    "url": "https://cdn.sanity.io/files/59r5krzd/production/07e3d12d075e09bf87f6783f7637cd52d16c2df1.mp4"
+    "url": "/videos/07e3d12d075e09bf87f6783f7637cd52d16c2df1.mp4"
   },
   {
     "_id": "file-181b0a424900f6c269473c7d194dbfd22bdd191d-mp4",
@@ -19,7 +19,7 @@
     "originalFilename": "Download.mp4",
     "sha1hash": "181b0a424900f6c269473c7d194dbfd22bdd191d",
     "size": 20491101,
-    "url": "https://cdn.sanity.io/files/59r5krzd/production/181b0a424900f6c269473c7d194dbfd22bdd191d.mp4"
+    "url": "/videos/181b0a424900f6c269473c7d194dbfd22bdd191d.mp4"
   },
   {
     "_id": "file-f3e2a71f35b079df16844f8d5d52c810573d25f4-mp4",
@@ -30,7 +30,7 @@
     "originalFilename": "Download (1).mp4",
     "sha1hash": "f3e2a71f35b079df16844f8d5d52c810573d25f4",
     "size": 107218944,
-    "url": "https://cdn.sanity.io/files/59r5krzd/production/f3e2a71f35b079df16844f8d5d52c810573d25f4.mp4"
+    "url": "/videos/f3e2a71f35b079df16844f8d5d52c810573d25f4.mp4"
   },
   {
     "_id": "image-01f3ef0fef0259f96f8a9bfcf293775b471d2982-512x512-webp",
