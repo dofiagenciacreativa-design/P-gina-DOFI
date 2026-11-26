@@ -68,3 +68,13 @@ export function nuevaClave(): string {
   crypto.getRandomValues(bytes);
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
+
+/** Copia un elemento con claves nuevas (también las de sus listas internas). */
+export function conClavesNuevas(v: unknown): unknown {
+  if (Array.isArray(v)) return v.map(conClavesNuevas);
+  if (v && typeof v === "object") {
+    const o = Object.fromEntries(Object.entries(v as Record<string, unknown>).map(([k, x]) => [k, conClavesNuevas(x)]));
+    return "_key" in o ? { ...o, _key: nuevaClave() } : o;
+  }
+  return v;
+}

@@ -4,7 +4,7 @@ import { Info, Warning } from "@phosphor-icons/react";
 import type { Doc, ResolverArchivo } from "@/lib/contenido/tipos";
 import type { Bloque, Ruta, SeccionPanel } from "@/panel/esquema/tipos";
 import { IconoSeccion } from "@/panel/ui/iconos";
-import { CampoPanel } from "./CampoPanel";
+import { CampoPanel, type Subidas } from "./CampoPanel";
 import { leer } from "./rutas";
 
 /**
@@ -19,7 +19,7 @@ export function TarjetaSeccion({
   alCambiar,
   alCopiarDeFabrica,
   alDeshacer,
-  alSubirFoto,
+  subidas,
 }: {
   seccion: SeccionPanel;
   docs: Record<string, Doc>;
@@ -28,7 +28,7 @@ export function TarjetaSeccion({
   alCambiar: (documento: string, ruta: Ruta, valor: unknown) => void;
   alCopiarDeFabrica: () => void;
   alDeshacer: () => void;
-  alSubirFoto: (documento: string, ruta: Ruta, archivo: File, avance: (texto: string) => void) => Promise<void>;
+  subidas: Subidas;
 }) {
   const idCampo = (b: Bloque, nombre: string) =>
     `campo-${seccion.clave}-${b.titulo}-${nombre}`.toLowerCase().replace(/[^a-z0-9-]+/g, "-");
@@ -88,7 +88,7 @@ export function TarjetaSeccion({
                     valor={leer(docs[b.documento], [...b.ruta, c.nombre])}
                     alCambiar={(v) => alCambiar(b.documento, [...b.ruta, c.nombre], v)}
                     resolver={resolver}
-                    alCambiarFoto={c.clase === "imagen" ? (archivo, avance) => alSubirFoto(b.documento, [...b.ruta, c.nombre], archivo, avance) : undefined}
+                    subidas={subidas}
                   />
                 </div>
               );

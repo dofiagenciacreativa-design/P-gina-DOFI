@@ -75,9 +75,10 @@ function Seccion({
 }
 
 /** Las secciones de Asesorías, en orden (sin <main>): las usa la página y la vista previa del panel. */
-export function SeccionesAsesorias({ secciones }: { secciones: SeccionAsesorias[] }) {
+export function SeccionesAsesorias({ secciones, todas = secciones }: { secciones: SeccionAsesorias[]; todas?: SeccionAsesorias[] }) {
   const vistas = new Map<string, number>();
-  const giros = secciones.find((s) => s.tipo === "clientsBanner")?.giros ?? [];
+  // `todas`: la página entera, cuando la vista previa dibuja una sola sección (Logros toma de Clientes los íconos).
+  const giros = todas.find((s) => s.tipo === "clientsBanner")?.giros ?? [];
 
   return (
     <>

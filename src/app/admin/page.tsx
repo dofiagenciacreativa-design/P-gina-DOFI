@@ -1,40 +1,50 @@
 import { sanityQuery } from "@/lib/sanity";
 import type { Doc } from "@/lib/contenido/tipos";
-import { referenciasDeActivos, type Activo } from "@/lib/contenido/archivos-activos";
+import { obtenerResenasGoogle } from "@/lib/google-places";
 import { Panel } from "@/panel/ui/Panel";
 
 /**
  * /admin — el panel propio (docs/panel-propio/cambios-2026-11-25.md).
  *
  * Página ESTÁTICA: se arma una vez al construir, como el resto del sitio, y no
- * gasta CPU del Worker en cada visita. Al construir lee los documentos
- * COMPLETOS del Inicio y los activos (fotos) que usan, de la misma fuente que
- * la web (Sanity o los archivos del repositorio, según CONTENT_SOURCE), y se
- * los pasa al panel, que los edita en memoria.
+ * gasta CPU del Worker en cada visita. Al construir trae el CONJUNTO de
+ * documentos que usan las páginas que se editan (Inicio y las 4 de servicio,
+ * con las cuentas, reseñas y servicios que leen) y los activos (solo id,
+ * dirección y medidas), de la misma fuente que la web (Sanity o los archivos
+ * del repositorio, según CONTENT_SOURCE), más las reseñas de Google. Con eso
+ * el panel arma la vista previa en el navegador con las mismas consultas que
+ * la web (plan-etapa-4.md).
  *
  * La sesión se comprueba al abrir la página (/api/admin/yo): sin contraseña
  * solo se ve la pantalla de entrada. El contenido que trae es el ya público.
  */
-export default async function PaginaPanel() {
-  const lista = (await sanityQuery<Doc[]>(`*[_id in ["hero", "paginaInicio", "banners"]]`)) ?? [];
-  const documentos: Record<string, Doc> = {};
-  for (const id of ["paginaInicio", "banners", "hero"]) {
-    documentos[id] = lista.find((d) => d._id === id) ?? { _id: id, _type: id };
-  }
 
-  const ids = [...referenciasDeActivos(lista)].sort();
-  const activos =
-    ids.length > 0
-      ? ((await sanityQuery<Activo[]>(`*[_id in ${JSON.stringify(ids)}]{ _id, url, metadata{ dimensions{ width, height } } }`)) ?? [])
-      : [];
+const TIPOS = [
+  "paginaInicio",
+  "hero",
+  "banners",
+  "marketingDigitalPage",
+  "traficoAdsPage",
+  "chatbotsCrmPage",
+  "asesoriasPage",
+  "cuenta",
+  "resena",
+  "servicio",
+  "contenido",
+];
+
+export default async function PaginaPanel() {
+  const [documentos, activos, resenasGoogle] = await Promise.all([
+    sanityQuery<Doc[]>(`*[_type in ${JSON.stringify(TIPOS)} && !(_id in path("drafts.**"))]`),
+    sanityQuery<Doc[]>(
+      `*[_type in ["sanity.imageAsset", "sanity.fileAsset"]]{ _id, _type, url, extension, mimeType, originalFilename, metadata{ dimensions{ width, height } } }`
+    ),
+    obtenerResenasGoogle(),
+  ]);
 
   // El commit con el que se construye esta página: al publicar, el panel avisa si
   // alguien cambió lo mismo después (lo define Cloudflare Workers Builds).
   const base = process.env.WORKERS_CI_COMMIT_SHA ?? null;
 
-  // Videos que todavía se ven desde Sanity (se pasan a R2 con un clic en el panel).
-  const videosEnSanity =
-    (await sanityQuery<number>(`count(*[_type == "sanity.fileAsset" && string::startsWith(url, "https://cdn.sanity.io/") && count(*[references(^._id)]) > 0])`)) ?? 0;
-
-  return <Panel documentos={documentos} activos={activos} base={base} videosEnSanity={videosEnSanity} />;
+  return <Panel conjunto={[...(documentos ?? []), ...(activos ?? [])]} resenasGoogle={resenasGoogle} base={base} />;
 }

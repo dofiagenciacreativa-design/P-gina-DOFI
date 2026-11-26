@@ -15,10 +15,20 @@ export type ObjetoR2 = {
   body?: ReadableStream;
 };
 
+/** Una subida por partes de R2 (videos grandes: cada parte pasa por el Worker sin leerse). */
+export type SubidaPorPartes = {
+  uploadId: string;
+  uploadPart(numero: number, valor: ReadableStream | ArrayBuffer): Promise<{ partNumber: number; etag: string }>;
+  complete(partes: { partNumber: number; etag: string }[]): Promise<ObjetoR2>;
+  abort(): Promise<void>;
+};
+
 export type AlmacenR2 = {
   get(clave: string, opciones?: { range?: Headers }): Promise<ObjetoR2 | null>;
   head(clave: string): Promise<ObjetoR2 | null>;
   put(clave: string, valor: ReadableStream | ArrayBuffer | null, opciones?: { httpMetadata?: { contentType?: string } }): Promise<ObjetoR2>;
+  createMultipartUpload(clave: string, opciones?: { httpMetadata?: { contentType?: string } }): Promise<SubidaPorPartes>;
+  resumeMultipartUpload(clave: string, uploadId: string): SubidaPorPartes;
 };
 
 export function almacenDeVideos(): AlmacenR2 | null {
@@ -30,6 +40,4 @@ export function almacenDeVideos(): AlmacenR2 | null {
   }
 }
 
-export const NOMBRE_DE_VIDEO = /^[a-f0-9]{40}\.(mp4|webm|mov)$/;
-export const claveDeVideo = (nombre: string) => `videos/${nombre}`;
-export const TIPO_DE_VIDEO: Record<string, string> = { mp4: "video/mp4", webm: "video/webm", mov: "video/quicktime" };
+export { NOMBRE_DE_VIDEO, PARTE_DE_VIDEO, TIPO_DE_VIDEO, VIDEO_MAXIMO, claveDeVideo } from "./videos";

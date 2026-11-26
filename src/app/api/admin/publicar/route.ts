@@ -2,6 +2,7 @@ import type { Doc } from "@/lib/contenido/tipos";
 import { ARCHIVO_DE_ACTIVOS, ARCHIVO_DE_DOCUMENTO, rutaDeMedioPermitida, serializarJson } from "@/lib/contenido/serializar";
 import { ramaDestino, tokenDeGithub } from "@/lib/panel/config";
 import { ErrorDeGithub, archivosCambiados, commitDeRama, crearCommit, leerTexto, problemaDeLlave, type ArchivoAPublicar } from "@/lib/panel/github";
+import { almacenDeVideos, claveDeVideo } from "@/lib/panel/media";
 import { exigirSesion, json } from "../_comun";
 
 export const dynamic = "force-dynamic";
@@ -13,13 +14,34 @@ type Pedido = {
   documentos: Doc[];
   /** Fotos ya subidas como blobs: dónde van en el repositorio. */
   medios?: { ruta: string; blob: string }[];
-  /** Documentos de activos nuevos (sanity.imageAsset) para contenido/archivos.json. */
+  /** Documentos de activos nuevos (fotos sanity.imageAsset y videos sanity.fileAsset) para contenido/archivos.json. */
   activosNuevos?: Doc[];
   /** Lo que se publica, en palabras («Inicio · Portada»…), para el mensaje del commit. */
   resumen?: string[];
 };
 
 const SHA = /^[a-f0-9]{40}$/;
+const FOTO = /^image-[a-f0-9]{40}-\d+x\d+-[a-z0-9]+$/;
+const VIDEO = /^file-([a-f0-9]{40})-(mp4|webm)$/;
+
+/** El documento de un video nuevo, armado aquí: del navegador solo se toma el nombre original y el tamaño. */
+function videoNuevo(a: Doc): Doc | null {
+  const m = VIDEO.exec(a._id);
+  if (!m || a._type !== "sanity.fileAsset") return null;
+  const [, sha1, extension] = m;
+  const nombre = typeof a.originalFilename === "string" ? a.originalFilename.slice(0, 200) : `video.${extension}`;
+  const tamano = typeof a.size === "number" && a.size > 0 ? a.size : undefined;
+  return {
+    _id: a._id,
+    _type: "sanity.fileAsset",
+    extension,
+    mimeType: extension === "webm" ? "video/webm" : "video/mp4",
+    originalFilename: nombre,
+    sha1hash: sha1,
+    ...(tamano ? { size: tamano } : {}),
+    url: `/videos/${sha1}.${extension}`,
+  };
+}
 
 /**
  * POST → publica: un commit en la rama destino con los documentos cambiados
@@ -70,8 +92,20 @@ export async function POST(req: Request) {
       }
     }
 
-    // Fotos nuevas: se agregan a contenido/archivos.json (leído de la rama en ese momento).
-    const nuevos = (p.activosNuevos ?? []).filter((a) => a?._type === "sanity.imageAsset" && /^image-[a-f0-9]{40}-\d+x\d+-[a-z0-9]+$/.test(a._id));
+    // Fotos y videos nuevos: se agregan a contenido/archivos.json (leído de la rama en ese momento).
+    const fotos = (p.activosNuevos ?? []).filter((a) => a?._type === "sanity.imageAsset" && FOTO.test(a._id));
+    const videos = (p.activosNuevos ?? []).map((a) => (a ? videoNuevo(a) : null)).filter((a): a is Doc => a !== null);
+    if (videos.length) {
+      // Un video que no terminó de subir no se publica (la web lo pediría a R2 y no lo encontraría).
+      const almacen = almacenDeVideos();
+      if (!almacen) return json({ error: "El almacén de videos (R2) no está conectado a este sitio." }, 503);
+      for (const v of videos) {
+        if (!(await almacen.head(claveDeVideo(`${v.sha1hash}.${v.extension}`)))) {
+          return json({ error: `El video «${v.originalFilename}» no terminó de subir. Vuelve a elegirlo con «Cambiar video».` }, 400);
+        }
+      }
+    }
+    const nuevos = [...fotos, ...videos];
     if (nuevos.length) {
       const texto = await leerTexto(token, ARCHIVO_DE_ACTIVOS, actual);
       const lista = (texto ? (JSON.parse(texto) as Doc[]) : []).filter((a) => !nuevos.some((n) => n._id === a._id));

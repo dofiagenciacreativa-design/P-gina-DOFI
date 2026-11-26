@@ -1,15 +1,24 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowSquareOut, ArrowsOut, CheckCircle, SignOut, Warning, X } from "@phosphor-icons/react";
+import { ArrowDown, ArrowSquareOut, ArrowUp, ArrowsOut, CheckCircle, Copy, Eye, EyeSlash, SignOut, Trash, Warning, X } from "@phosphor-icons/react";
 import { armarPaginaInicio } from "@/lib/inicio";
 import { referenciasDeActivos, resolverDeActivos, type Activo } from "@/lib/contenido/archivos-activos";
+import { consultarSobre } from "@/lib/contenido/consulta-local";
+import { QUERY_MARKETING, armarPaginaMarketingDigital, type Resena, type RespuestaRaw } from "@/lib/marketing-digital";
+import { QUERY_TRAFICO, armarPaginaTrafico, type RespuestaTrafico } from "@/lib/trafico";
+import { QUERY_FENIAX, armarPaginaFeniax, type RespuestaFeniax } from "@/lib/feniax";
+import { QUERY_ASESORIAS, armarPaginaAsesorias, type RespuestaAsesorias } from "@/lib/asesorias";
 import { subirImagen, type FotoNueva } from "@/panel/archivos/subir-imagen";
+import { subirVideo, type VideoNuevo } from "@/panel/archivos/subir-video";
 import { proyectarPaginaInicio } from "@/lib/contenido/proyecciones/pagina-inicio";
 import type { Doc } from "@/lib/contenido/tipos";
+import { NOMBRE_PAGINA, TIPOS_DE_PAGINA, definicionBloque, tieneFormulario, type PaginaServicio } from "@/panel/esquema/bloques";
 import { seccionesInicio } from "@/panel/esquema/inicio";
+import { DOCUMENTO_DE_PAGINA, seccionesCrudas, seccionesDeServicio, type SeccionCruda } from "@/panel/esquema/servicio";
 import type { Ruta, SeccionPanel } from "@/panel/esquema/tipos";
-import { escribir, leer } from "@/panel/motor/rutas";
+import type { Subidas } from "@/panel/motor/CampoPanel";
+import { conClavesNuevas, escribir, leer, nuevaClave } from "@/panel/motor/rutas";
 import { TarjetaSeccion } from "@/panel/motor/TarjetaSeccion";
 import { Marco } from "@/panel/vista-previa/Marco";
 import type { Dispositivo, ModoVista, VistaPrevia } from "@/panel/vista-previa/mensajes";
@@ -17,7 +26,7 @@ import { IconoSeccion } from "./iconos";
 import { Entrar } from "./Entrar";
 
 /**
- * El panel: la página de Inicio con la vista previa al lado. Se entra con la
+ * El panel: cada página de la web con la vista previa al lado. Se entra con la
  * contraseña; lo que se cambia queda guardado en este navegador hasta que se
  * pulsa «Publicar cambios», que lo guarda en GitHub (y Cloudflare vuelve a
  * armar la web sola). docs/panel-propio/cambios-2026-11-25.md §4 y plan-etapa-3.md.
@@ -36,7 +45,57 @@ type Publicacion =
   | { estado: "lento"; commit: string }
   | { estado: "error"; mensaje: string };
 
-const PESTANAS = ["Inicio", "Marketing Digital", "Tráfico / Ads", "ChatBots / CRM", "Asesorías", "Clientes", "Reseñas", "Archivos"];
+type ClavePagina = "inicio" | PaginaServicio;
+
+/** Las pestañas. `lista`: ya se edita en el panel; las demás llegan en etapas próximas. */
+const PESTANAS: { clave: ClavePagina | null; titulo: string; lista: boolean; ruta: string; proxima?: string }[] = [
+  { clave: "inicio", titulo: "Inicio", lista: true, ruta: "/" },
+  { clave: "marketing", titulo: "Marketing Digital", lista: false, ruta: "/marketing-digital", proxima: "la próxima parte de la etapa 4" },
+  { clave: "trafico", titulo: "Tráfico / Ads", lista: false, ruta: "/trafico-ads", proxima: "la próxima parte de la etapa 4" },
+  { clave: "feniax", titulo: "ChatBots / CRM", lista: false, ruta: "/chatbots-crm", proxima: "la próxima parte de la etapa 4" },
+  { clave: "asesorias", titulo: "Asesorías", lista: true, ruta: "/asesorias" },
+  { clave: null, titulo: "Clientes", lista: false, ruta: "/clientes", proxima: "la etapa 5" },
+  { clave: null, titulo: "Reseñas", lista: false, ruta: "/", proxima: "la etapa 5" },
+  { clave: null, titulo: "Archivos", lista: false, ruta: "/", proxima: "la etapa 5" },
+];
+
+const SERVICIOS: PaginaServicio[] = ["marketing", "trafico", "feniax", "asesorias"];
+const PAGINAS: ClavePagina[] = ["inicio", ...SERVICIOS];
+
+const DESCRIPCION: Record<ClavePagina, string> = {
+  inicio: "Portada, tarjetas y los cuatro banners de la página de Inicio.",
+  marketing: "Las secciones de Marketing Digital, en el orden en que aparecen.",
+  trafico: "Las secciones de Tráfico / Ads, en el orden en que aparecen.",
+  feniax: "Las secciones de ChatBots / CRM, en el orden en que aparecen.",
+  asesorias: "Las secciones de Asesorías, en el orden en que aparecen: muévelas, ocúltalas, agrega otras y cambia los videos.",
+};
+
+/** Los documentos que se editan en el panel. */
+const EDITABLES = ["paginaInicio", "banners", "hero", ...SERVICIOS.map((p) => DOCUMENTO_DE_PAGINA[p])];
+
+/** La misma consulta y el mismo armado que usa la web para cada página de servicio (plan-etapa-4.md). */
+const CONSULTA: Record<PaginaServicio, string> = {
+  marketing: QUERY_MARKETING,
+  trafico: QUERY_TRAFICO,
+  feniax: QUERY_FENIAX,
+  asesorias: QUERY_ASESORIAS,
+};
+function armarServicio(pagina: PaginaServicio, respuesta: unknown, resenas: Resena[] | null): VistaPrevia {
+  const comun = { modo: "seccion" as const, vista: "" };
+  switch (pagina) {
+    case "marketing":
+      return { ...comun, pagina, secciones: armarPaginaMarketingDigital(respuesta as RespuestaRaw | null, resenas).secciones };
+    case "trafico":
+      return { ...comun, pagina, secciones: armarPaginaTrafico(respuesta as RespuestaTrafico | null, resenas).secciones };
+    case "feniax":
+      return { ...comun, pagina, secciones: armarPaginaFeniax(respuesta as RespuestaFeniax | null, resenas).secciones };
+    case "asesorias":
+      return { ...comun, pagina, secciones: armarPaginaAsesorias(respuesta as RespuestaAsesorias | null, resenas).secciones };
+  }
+}
+
+const seccionesDe = (p: ClavePagina, d: Record<string, Doc>): SeccionPanel[] => (p === "inicio" ? seccionesInicio(d) : seccionesDeServicio(p, d));
+const nombrePagina = (p: ClavePagina) => (p === "inicio" ? "Inicio" : NOMBRE_PAGINA[p]);
 
 /** Esconde, solo en esta página, el grano y el botón de WhatsApp que el layout del sitio pone en todas. */
 const SIN_ADORNOS_DEL_SITIO = `body:has(.panel-dofi) > .grain-layer, body:has(.panel-dofi) > a[aria-label="Ir al formulario de contacto"] { display: none !important; }`;
@@ -62,19 +121,29 @@ function zonas(s: SeccionPanel, original: Record<string, Doc>): { documento: str
 }
 
 export function Panel({
-  documentos,
-  activos,
+  conjunto,
+  resenasGoogle,
   base,
-  videosEnSanity,
 }: {
-  documentos: Record<string, Doc>;
-  /** Las fotos que usan los documentos (de Sanity o del repositorio). */
-  activos: Activo[];
+  /** Los documentos que leen las páginas que se editan, y los activos (id, dirección y medidas). */
+  conjunto: Doc[];
+  resenasGoogle: Resena[] | null;
   /** El commit con el que se construyó esta página (null fuera de Cloudflare). */
   base: string | null;
-  /** Cuántos videos en uso se ven todavía desde Sanity (se pasan a R2 con un clic). */
-  videosEnSanity: number;
 }) {
+  const documentos = useMemo(
+    () => Object.fromEntries(EDITABLES.map((id) => [id, conjunto.find((d) => d._id === id) ?? { _id: id, _type: id }])) as Record<string, Doc>,
+    [conjunto]
+  );
+  const activos = useMemo(
+    () => conjunto.filter((d) => d._type === "sanity.imageAsset" || d._type === "sanity.fileAsset") as unknown as Activo[],
+    [conjunto]
+  );
+  /** Cuántos videos en uso se ven todavía desde Sanity (se pasan a R2 con un clic). */
+  const videosEnSanity = useMemo(() => {
+    const usadas = referenciasDeActivos(conjunto.filter((d) => !d._type.startsWith("sanity.")));
+    return activos.filter((a) => a._id.startsWith("file-") && a.url.startsWith("https://cdn.sanity.io/") && usadas.has(a._id)).length;
+  }, [conjunto, activos]);
   const [videos, setVideos] = useState<{ estado: "nada" | "copiando" | "listo" | "error"; mensaje?: string }>({ estado: "nada" });
   const [original, setOriginal] = useState(documentos);
   const [sesion, setSesion] = useState<"cargando" | "no" | "si">("cargando");
@@ -94,28 +163,58 @@ export function Panel({
   const [fotosNuevas, setFotosNuevas] = useState<FotoNueva[]>([]);
   /** Fotos ya publicadas en esta sesión: se siguen viendo en la vista previa hasta recargar. */
   const [fotosPublicadas, setFotosPublicadas] = useState<FotoNueva[]>([]);
+  /** Videos subidos a R2 desde el panel que todavía no se publicaron (y los ya publicados en esta sesión). */
+  const [videosNuevos, setVideosNuevos] = useState<VideoNuevo[]>([]);
+  const [videosPublicados, setVideosPublicados] = useState<VideoNuevo[]>([]);
   const [docs, setDocs] = useState(documentos);
-  const [clave, setClave] = useState("portada");
+  const [pagina, setPagina] = useState<ClavePagina>("inicio");
+  const [claves, setClaves] = useState<Partial<Record<ClavePagina, string>>>({ inicio: "portada" });
+  const setClave = (k: string) => setClaves((c) => ({ ...c, [pagina]: k }));
   const [dispositivo, setDispositivo] = useState<Dispositivo>("computadora");
   const [modo, setModo] = useState<ModoVista>("seccion");
   const [ampliada, setAmpliada] = useState(false);
   const [brindis, setBrindis] = useState<string | null>(null);
 
-  const resolver = useMemo(
-    () => resolverDeActivos([...activos, ...[...fotosPublicadas, ...fotosNuevas].map((f) => ({ ...f.activo, url: f.vistaPrevia }))]),
-    [activos, fotosNuevas, fotosPublicadas]
+  /** Los activos nuevos de esta sesión, con la dirección con la que se ven ya (la foto en data:, el video en /videos/). */
+  const activosNuevos = useMemo(
+    () => [
+      ...[...fotosPublicadas, ...fotosNuevas].map((f) => ({ ...f.activo, url: f.vistaPrevia })),
+      ...[...videosPublicados, ...videosNuevos].map((v) => v.activo),
+    ],
+    [fotosNuevas, fotosPublicadas, videosNuevos, videosPublicados]
   );
-  const secciones = useMemo(() => seccionesInicio(docs), [docs]);
-  const seccion = secciones.find((s) => s.clave === clave) ?? secciones[0];
+  const resolver = useMemo(() => resolverDeActivos([...activos, ...activosNuevos]), [activos, activosNuevos]);
+  const secciones = useMemo(() => seccionesDe(pagina, docs), [pagina, docs]);
+  const seccion: SeccionPanel | undefined = secciones.find((s) => s.clave === claves[pagina]) ?? secciones[0];
+  const docServicio = pagina === "inicio" ? null : DOCUMENTO_DE_PAGINA[pagina];
 
-  const cambiadas = useMemo(
+  /** Lo cambiado en todas las páginas: "pagina:clave" por sección, y "pagina:orden" si cambió el orden de las secciones. */
+  const cambiadas = useMemo(() => {
+    const salida = new Set<string>();
+    for (const p of PAGINAS) {
+      for (const s of seccionesDe(p, docs)) {
+        if (zonas(s, original).some((z) => !mismo(leer(docs[z.documento], z.ruta), leer(original[z.documento], z.ruta)))) salida.add(`${p}:${s.clave}`);
+      }
+      if (p !== "inicio") {
+        const id = DOCUMENTO_DE_PAGINA[p];
+        const ahora = seccionesCrudas(docs[id]).map((s) => s._key).join();
+        const antes = seccionesCrudas(original[id]).map((s) => s._key).join();
+        if (ahora !== antes) salida.add(`${p}:orden`);
+      }
+    }
+    return salida;
+  }, [docs, original]);
+
+  /** Lo que se va a publicar, en palabras («Asesorías · Videos en celulares»). */
+  const resumenCambios = useMemo(
     () =>
-      new Set(
-        seccionesInicio(docs)
-          .filter((s) => zonas(s, original).some((z) => !mismo(leer(docs[z.documento], z.ruta), leer(original[z.documento], z.ruta))))
-          .map((s) => s.clave)
-      ),
-    [docs, original]
+      [...cambiadas].map((k) => {
+        const [p, c] = k.split(":") as [ClavePagina, string];
+        if (c === "orden") return `${nombrePagina(p)} · orden de las secciones`;
+        const s = seccionesDe(p, docs).find((x) => x.clave === c);
+        return `${nombrePagina(p)} · ${s?.titulo ?? "sección"}`;
+      }),
+    [cambiadas, docs]
   );
 
   const datos = useMemo(
@@ -125,7 +224,31 @@ export function Panel({
       ),
     [docs, resolver]
   );
-  const vista: VistaPrevia = useMemo(() => ({ pagina: "inicio", datos, modo, vista: seccion.vista }), [datos, modo, seccion.vista]);
+  // Páginas de servicio: la misma consulta GROQ y el mismo armado que la web, en el navegador, sobre el borrador.
+  const [datosServicio, setDatosServicio] = useState<VistaPrevia | null>(null);
+  useEffect(() => {
+    if (pagina === "inicio") return;
+    let vivo = true;
+    const t = setTimeout(async () => {
+      try {
+        const conjuntoVivo = [...conjunto.filter((d) => !(d._id in docs)), ...Object.values(docs), ...(activosNuevos as unknown as Doc[])];
+        const respuesta = await consultarSobre(conjuntoVivo, CONSULTA[pagina]);
+        if (vivo) setDatosServicio(armarServicio(pagina, respuesta, resenasGoogle));
+      } catch (e) {
+        console.error("[panel] No se pudo armar la vista previa:", e);
+      }
+    }, 120);
+    return () => {
+      vivo = false;
+      clearTimeout(t);
+    };
+  }, [pagina, docs, conjunto, activosNuevos, resenasGoogle]);
+
+  const vistaSeccion = seccion?.vista ?? "";
+  const vista: VistaPrevia | null = useMemo(() => {
+    if (pagina === "inicio") return { pagina: "inicio", datos, modo, vista: vistaSeccion };
+    return datosServicio && datosServicio.pagina === pagina ? { ...datosServicio, modo, vista: vistaSeccion } : null;
+  }, [pagina, datos, datosServicio, modo, vistaSeccion]);
 
   const avisar = useCallback((texto: string) => setBrindis(texto), []);
   useEffect(() => {
@@ -159,10 +282,15 @@ export function Panel({
   // Los cambios sin publicar viven en este navegador: recargar no los pierde.
   useEffect(() => {
     try {
-      const guardado = JSON.parse(localStorage.getItem(CLAVE_LOCAL) ?? "null") as { docs?: Record<string, Doc>; fotos?: FotoNueva[] } | null;
+      const guardado = JSON.parse(localStorage.getItem(CLAVE_LOCAL) ?? "null") as {
+        docs?: Record<string, Doc>;
+        fotos?: FotoNueva[];
+        videos?: VideoNuevo[];
+      } | null;
       if (guardado?.docs && Object.keys(guardado.docs).length) {
         setDocs((d) => ({ ...d, ...guardado.docs }));
         setFotosNuevas(guardado.fotos ?? []);
+        setVideosNuevos(guardado.videos ?? []);
         setRecuperado(true);
       }
     } catch {
@@ -178,7 +306,8 @@ export function Panel({
         if (Object.keys(cambiados).length) {
           const usadas = referenciasDeActivos(cambiados);
           const fotos = fotosNuevas.filter((f) => usadas.has(f.activo._id));
-          localStorage.setItem(CLAVE_LOCAL, JSON.stringify({ base, docs: cambiados, fotos, guardadoEn: Date.now() }));
+          const videos = videosNuevos.filter((v) => usadas.has(v.activo._id));
+          localStorage.setItem(CLAVE_LOCAL, JSON.stringify({ base, docs: cambiados, fotos, videos, guardadoEn: Date.now() }));
         }
         else localStorage.removeItem(CLAVE_LOCAL);
       } catch {
@@ -186,7 +315,7 @@ export function Panel({
       }
     }, 400);
     return () => clearTimeout(t);
-  }, [docs, original, base, fotosNuevas]);
+  }, [docs, original, base, fotosNuevas, videosNuevos]);
 
   // Después de publicar: mirar cada 20 s si la web ya se construyó con el cambio.
   // El navegador lee el /contenido-version.json del sitio destino (este mismo,
@@ -232,9 +361,10 @@ export function Panel({
   async function publicar() {
     setPublicacion({ estado: "enviando" });
     const documentos = Object.values(docs).filter((d) => !mismo(d, original[d._id]));
-    const resumen = secciones.filter((s) => cambiadas.has(s.clave)).map((s) => `Inicio · ${s.titulo}`);
+    const resumen = resumenCambios;
     const usadas = referenciasDeActivos(documentos);
     const fotosUsadas = fotosNuevas.filter((f) => usadas.has(f.activo._id));
+    const videosUsados = videosNuevos.filter((v) => usadas.has(v.activo._id));
     try {
       const r = await fetch("/api/admin/publicar", {
         method: "POST",
@@ -245,7 +375,7 @@ export function Panel({
           resumen,
           // Solo las fotos nuevas que de verdad usan los documentos que se publican.
           medios: fotosUsadas.flatMap((f) => f.medios),
-          activosNuevos: fotosUsadas.map((f) => f.activo),
+          activosNuevos: [...fotosUsadas.map((f) => f.activo), ...videosUsados.map((v) => v.activo)],
         }),
       });
       const j = (await r.json().catch(() => ({}))) as { commit?: string; error?: string };
@@ -257,6 +387,8 @@ export function Panel({
       setOriginal(docs);
       setFotosPublicadas((p) => [...p, ...fotosUsadas]);
       setFotosNuevas([]);
+      setVideosPublicados((p) => [...p, ...videosUsados]);
+      setVideosNuevos([]);
       setRecuperado(false);
       try {
         localStorage.removeItem(CLAVE_LOCAL);
@@ -295,23 +427,75 @@ export function Panel({
   function descartarTodo() {
     setDocs(original);
     setFotosNuevas([]);
+    setVideosNuevos([]);
     setRecuperado(false);
   }
 
-  /** «Cambiar foto»: sube la foto (variantes incluidas) y la pone en el campo; se publica con lo demás. */
-  async function subirFoto(documento: string, ruta: Ruta, archivo: File, avance: (texto: string) => void) {
-    const foto = await subirImagen(archivo, avance);
-    setFotosNuevas((f) => [...f.filter((x) => x.activo._id !== foto.activo._id), foto]);
-    const actual = (leer(docs[documento], ruta) ?? {}) as Record<string, unknown>;
-    // El punto focal y el recorte eran de la foto anterior: no sirven para la nueva.
-    const { asset: _a, hotspot: _h, crop: _c, ...resto } = actual;
-    void _a;
-    void _h;
-    void _c;
-    cambiar(documento, ruta, { ...resto, _type: "image", asset: { _ref: foto.activo._id, _type: "reference" } });
-  }
+  /** «Cambiar foto» y «Cambiar video»: suben el archivo y devuelven el valor nuevo del campo; se publica con lo demás. */
+  const subidas: Subidas = useMemo(
+    () => ({
+      foto: async (archivo, avance) => {
+        const foto = await subirImagen(archivo, avance);
+        setFotosNuevas((f) => [...f.filter((x) => x.activo._id !== foto.activo._id), foto]);
+        return { _type: "image", asset: { _ref: foto.activo._id, _type: "reference" } };
+      },
+      video: soloMirar
+        ? undefined
+        : async (archivo, avance) => {
+            const video = await subirVideo(archivo, avance);
+            setVideosNuevos((v) => [...v.filter((x) => x.activo._id !== video.activo._id), video]);
+            return { _type: "file", asset: { _ref: video.activo._id, _type: "reference" } };
+          },
+      motivoSinVideo: soloMirar ? "En la web real el panel es «solo para mirar»: los videos se cambian en la vista previa." : undefined,
+    }),
+    [soloMirar]
+  );
 
-  const deshacer = () =>
+  /** Cambia la lista de secciones de la página de servicio abierta. */
+  const operar = (fn: (lista: SeccionCruda[]) => SeccionCruda[]) => {
+    if (!docServicio) return;
+    setDocs((d) => ({ ...d, [docServicio]: { ...d[docServicio], sections: fn(seccionesCrudas(d[docServicio])) } }));
+  };
+  const moverSeccion = (k: string, paso: number) =>
+    operar((lista) => {
+      const i = lista.findIndex((s) => s._key === k);
+      const j = i + paso;
+      if (i < 0 || j < 0 || j >= lista.length) return lista;
+      const copia = lista.slice();
+      [copia[i], copia[j]] = [copia[j], copia[i]];
+      return copia;
+    });
+  const duplicarSeccion = (k: string) => {
+    const copia = conClavesNuevas(seccionesCrudas(docServicio ? docs[docServicio] : undefined).find((s) => s._key === k)) as SeccionCruda | undefined;
+    if (!copia) return;
+    operar((lista) => {
+      const i = lista.findIndex((s) => s._key === k);
+      return [...lista.slice(0, i + 1), copia, ...lista.slice(i + 1)];
+    });
+    setClave(copia._key);
+  };
+  const alternarSeccion = (k: string) => operar((lista) => lista.map((s) => (s._key === k ? { ...s, activo: s.activo === false } : s)));
+  const quitarSeccion = (s: SeccionPanel) => {
+    if (!window.confirm(`¿Quitar la sección «${s.titulo}» de la página? (Si solo quieres esconderla, usa «Ocultar». Se puede recuperar con «Deshacer cambios» antes de publicar.)`)) return;
+    operar((lista) => lista.filter((x) => x._key !== s.clave));
+  };
+  const agregarSeccion = (tipo: string) => {
+    if (pagina === "inicio") return;
+    const def = definicionBloque(tipo, pagina);
+    const nueva: SeccionCruda = { _key: nuevaClave(), _type: tipo, activo: true, animar: true, titulo: def.titulo, ...(def.nuevo?.() ?? {}) };
+    const i = secciones.findIndex((s) => s.clave === seccion?.clave);
+    operar((lista) => (i < 0 ? [...lista, nueva] : [...lista.slice(0, i + 1), nueva, ...lista.slice(i + 1)]));
+    setClave(nueva._key);
+  };
+
+  const deshacer = () => {
+    if (!seccion) return;
+    if (docServicio) {
+      // Una sección de servicio vuelve a como estaba; si es nueva, se quita.
+      const antes = seccionesCrudas(original[docServicio]).find((s) => s._key === seccion.clave);
+      operar((lista) => (antes ? lista.map((s) => (s._key === seccion.clave ? antes : s)) : lista.filter((s) => s._key !== seccion.clave)));
+      return;
+    }
     setDocs((d) => {
       let nuevo = d;
       for (const z of zonas(seccion, original)) {
@@ -319,9 +503,11 @@ export function Panel({
       }
       return nuevo;
     });
+  };
 
-  const cambiada = cambiadas.has(seccion.clave);
+  const cambiada = seccion ? cambiadas.has(`${pagina}:${seccion.clave}`) : false;
   const n = cambiadas.size;
+  const pestana = PESTANAS.find((p) => p.clave === pagina) ?? PESTANAS[0];
 
   const conmutadores = (
     <div className="flex flex-wrap gap-2">
@@ -408,7 +594,7 @@ export function Panel({
       {publicacion.estado === "confirmar" ? (
         <div className="flex flex-wrap items-center gap-3 border-b border-brand/15 bg-brand/[0.07] px-4 py-3 text-[0.9rem] sm:px-6">
           <span>
-            Va a salir a la web: <strong>{secciones.filter((s) => cambiadas.has(s.clave)).map((s) => `Inicio · ${s.titulo}`).join(", ")}</strong>.
+            Va a salir a la web: <strong>{resumenCambios.join(", ")}</strong>.
             {ajustes.rama && ajustes.rama !== "main" ? ` (Vista previa de prueba: se publica en la rama «${ajustes.rama}», no en la web real.)` : ""}
           </span>
           <span className="ml-auto flex gap-2">
@@ -506,31 +692,32 @@ export function Panel({
 
       <nav className="flex items-end gap-1 overflow-x-auto border-b border-canvas-border px-4 pt-2 sm:px-6" aria-label="Páginas de la web">
         {PESTANAS.map((p) =>
-          p === "Inicio" ? (
-            <span key={p} aria-current="page" className="whitespace-nowrap border-b-[3px] border-brand px-3 py-2 text-[0.9rem] font-semibold text-brand">
-              {p}
+          p.clave === pagina ? (
+            <span key={p.titulo} aria-current="page" className="whitespace-nowrap border-b-[3px] border-brand px-3 py-2 text-[0.9rem] font-semibold text-brand">
+              {p.titulo}
             </span>
           ) : (
             <button
-              key={p}
+              key={p.titulo}
               type="button"
-              onClick={() => avisar(`«${p}» llega en una etapa próxima. En esta etapa se prueba el panel con la página de Inicio.`)}
-              className="whitespace-nowrap border-b-[3px] border-transparent px-3 py-2 text-[0.9rem] text-ink-subtle hover:text-ink"
-              title="Próximamente"
+              onClick={() => (p.lista && p.clave ? setPagina(p.clave) : avisar(`«${p.titulo}» llega en ${p.proxima ?? "una etapa próxima"}.`))}
+              className={`whitespace-nowrap border-b-[3px] border-transparent px-3 py-2 text-[0.9rem] hover:text-ink ${p.lista ? "text-ink-muted" : "text-ink-subtle/70"}`}
+              title={p.lista ? undefined : "Próximamente"}
             >
-              {p}
+              {p.titulo}
+              {[...cambiadas].some((k) => k.startsWith(`${p.clave}:`)) ? <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-accent align-middle" /> : null}
             </button>
           )
         )}
-        <a href="/" target="_blank" rel="noopener" className="ml-auto inline-flex items-center gap-1 whitespace-nowrap px-1 py-2 text-[0.88rem] font-medium text-brand hover:underline">
+        <a href={pestana.ruta} target="_blank" rel="noopener" className="ml-auto inline-flex items-center gap-1 whitespace-nowrap px-1 py-2 text-[0.88rem] font-medium text-brand hover:underline">
           Ver la página <ArrowSquareOut size={15} weight="bold" aria-hidden="true" />
         </a>
       </nav>
 
       <div className="flex flex-col gap-1.5 px-4 pb-4 pt-5 sm:px-6">
-        <h1 className="font-display text-[clamp(1.35rem,1rem+1.2vw,1.9rem)] font-extrabold uppercase tracking-[0.01em]">Contenido · Inicio</h1>
+        <h1 className="font-display text-[clamp(1.35rem,1rem+1.2vw,1.9rem)] font-extrabold uppercase tracking-[0.01em]">Contenido · {pestana.titulo}</h1>
         <p className="max-w-4xl text-[0.93rem] text-ink-muted">
-          Portada, tarjetas y los cuatro banners de la página de Inicio. Escribe en los campos y mira el cambio en la vista previa. Lo que cambies queda guardado en este navegador hasta que pulses «Publicar cambios»; entonces sale a la web en unos 5 a 7 minutos.
+          {DESCRIPCION[pagina]} Escribe en los campos y mira el cambio en la vista previa. Lo que cambies queda guardado en este navegador hasta que pulses «Publicar cambios»; entonces sale a la web en unos 5 a 7 minutos.
         </p>
       </div>
 
@@ -542,15 +729,16 @@ export function Panel({
               <li key={s.clave} className="shrink-0">
                 <button
                   type="button"
-                  aria-current={s.clave === seccion.clave ? "true" : undefined}
+                  aria-current={s.clave === seccion?.clave ? "true" : undefined}
                   onClick={() => setClave(s.clave)}
                   className="flex w-full items-center gap-2.5 whitespace-nowrap rounded-[10px] px-2.5 py-2 text-left text-[0.9rem] text-ink hover:bg-brand/[0.06] aria-[current=true]:bg-white aria-[current=true]:font-semibold aria-[current=true]:shadow-[0_0_0_1px_rgba(75,42,147,0.16)]"
                 >
                   <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-brand/10 text-brand">
                     <IconoSeccion nombre={s.icono} tamano={15} />
                   </span>
-                  <span className="min-w-0 truncate">{s.titulo}</span>
-                  {cambiadas.has(s.clave) ? (
+                  <span className={`min-w-0 truncate ${s.oculta ? "text-ink-subtle line-through decoration-ink-subtle/40" : ""}`}>{s.titulo}</span>
+                  {s.oculta ? <EyeSlash size={14} weight="bold" className="shrink-0 text-ink-subtle" aria-label="Oculta" /> : null}
+                  {cambiadas.has(`${pagina}:${s.clave}`) ? (
                     <span className="ml-auto h-2 w-2 shrink-0 rounded-full bg-accent" title="Con cambios sin guardar" />
                   ) : s.cuenta ? (
                     <span className="ml-auto rounded-full bg-brand/10 px-2 text-[0.75rem] tabular-nums text-ink-muted">{s.cuenta}</span>
@@ -559,19 +747,64 @@ export function Panel({
               </li>
             ))}
           </ul>
+          {docServicio && seccion ? (
+            <div className="mt-2 flex flex-wrap items-center gap-1 rounded-xl border border-canvas-border bg-white p-1.5" aria-label="Mover u ocultar la sección elegida">
+              {[
+                { titulo: "Subir", Icono: ArrowUp, hacer: () => moverSeccion(seccion.clave, -1), apagado: secciones[0]?.clave === seccion.clave },
+                { titulo: "Bajar", Icono: ArrowDown, hacer: () => moverSeccion(seccion.clave, 1), apagado: secciones[secciones.length - 1]?.clave === seccion.clave },
+                { titulo: "Duplicar", Icono: Copy, hacer: () => duplicarSeccion(seccion.clave), apagado: false },
+                { titulo: seccion.oculta ? "Mostrar" : "Ocultar", Icono: seccion.oculta ? Eye : EyeSlash, hacer: () => alternarSeccion(seccion.clave), apagado: false },
+                { titulo: "Quitar", Icono: Trash, hacer: () => quitarSeccion(seccion), apagado: false },
+              ].map(({ titulo, Icono, hacer, apagado }) => (
+                <button
+                  key={titulo}
+                  type="button"
+                  onClick={hacer}
+                  disabled={apagado}
+                  title={`${titulo} «${seccion.titulo}»`}
+                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[0.78rem] text-ink-muted hover:bg-brand/10 hover:text-brand disabled:opacity-30 disabled:hover:bg-transparent"
+                >
+                  <Icono size={14} weight="bold" aria-hidden="true" /> {titulo}
+                </button>
+              ))}
+            </div>
+          ) : null}
+          {pagina !== "inicio" ? (
+            <label className="mt-2 flex flex-col gap-1 text-[0.8rem] text-ink-subtle">
+              <span>Agregar una sección (debajo de la elegida)</span>
+              <select
+                value=""
+                onChange={(e) => e.target.value && agregarSeccion(e.target.value)}
+                className="rounded-[10px] border border-canvas-border bg-white px-2.5 py-2 text-[0.88rem] text-ink"
+              >
+                <option value="">+ Elegir el tipo…</option>
+                {TIPOS_DE_PAGINA[pagina].filter(tieneFormulario).map((tipo) => (
+                  <option key={tipo} value={tipo}>
+                    {definicionBloque(tipo, pagina).titulo}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
         </aside>
 
-        <TarjetaSeccion
-          key={seccion.clave}
-          seccion={seccion}
-          docs={docs}
-          cambiada={cambiada}
-          resolver={resolver}
-          alCambiar={cambiar}
-          alCopiarDeFabrica={() => seccion.vacia && setDocs((d) => seccion.vacia!.aplicar(d))}
-          alDeshacer={deshacer}
-          alSubirFoto={subirFoto}
-        />
+        {seccion ? (
+          <TarjetaSeccion
+            key={`${pagina}:${seccion.clave}`}
+            seccion={seccion}
+            docs={docs}
+            cambiada={cambiada}
+            resolver={resolver}
+            alCambiar={cambiar}
+            alCopiarDeFabrica={() => seccion.vacia && setDocs((d) => seccion.vacia!.aplicar(d))}
+            alDeshacer={deshacer}
+            subidas={subidas}
+          />
+        ) : (
+          <p className="rounded-[20px] border border-dashed border-canvas-border bg-white p-6 text-sm text-ink-muted">
+            Esta página no tiene secciones. Agrega una con «Agregar una sección».
+          </p>
+        )}
 
         <section className="flex min-w-0 flex-col gap-3 md:sticky md:top-3 md:self-start" aria-label="Vista previa">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -585,7 +818,13 @@ export function Panel({
             </button>
           </div>
           {conmutadores}
-          {!ampliada ? <Marco vista={vista} dispositivo={dispositivo} /> : <div className="h-40 rounded-lg border border-dashed border-canvas-border" />}
+          {ampliada ? (
+            <div className="h-40 rounded-lg border border-dashed border-canvas-border" />
+          ) : vista ? (
+            <Marco vista={vista} dispositivo={dispositivo} />
+          ) : (
+            <div className="grid h-60 place-items-center rounded-lg border border-dashed border-canvas-border text-sm text-ink-subtle">Armando la vista previa…</div>
+          )}
           <p className="text-[0.78rem] text-ink-subtle">
             {modo === "seccion"
               ? "Dibujada con las mismas piezas de la web, en tu navegador, mientras escribes."
@@ -597,7 +836,7 @@ export function Panel({
       {ampliada ? (
         <div className="fixed inset-0 z-[80] flex flex-col gap-3 bg-abyss/95 p-3 sm:p-5" role="dialog" aria-modal="true" aria-label="Vista previa ampliada">
           <div className="flex flex-wrap items-center gap-3 text-foam">
-            <span className="font-display text-sm font-semibold">{seccion.titulo}</span>
+            <span className="font-display text-sm font-semibold">{seccion?.titulo}</span>
             <div className="rounded-xl bg-white p-1">{conmutadores}</div>
             <span className="flex-1" />
             <button
@@ -609,7 +848,7 @@ export function Panel({
             </button>
           </div>
           <div className="min-h-0 flex-1">
-            <Marco vista={vista} dispositivo={dispositivo} ajustarAlto />
+            {vista ? <Marco vista={vista} dispositivo={dispositivo} ajustarAlto /> : null}
           </div>
         </div>
       ) : null}

@@ -71,7 +71,7 @@ export function textoCta(texto: string, lugar: string): string {
  * cambian. Igual que con los botones: solo se reemplaza si en Sanity sigue
  * el texto anterior; si alguien escribe otro en el Studio, se respeta.
  */
-const CIERRES: Record<string, { anterior: string; titulo: string; descripcion?: string }> = {
+export const CIERRES: Record<string, { anterior: string; titulo: string; descripcion?: string }> = {
   "marketing:ctaBanner": {
     anterior: "¿Somos socios o le pasas tu oportunidad a alguien más?",
     titulo: "¿Listo para vender de forma inteligente?",

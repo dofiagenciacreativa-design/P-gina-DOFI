@@ -1,10 +1,18 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { ArrowDown, ArrowUp, CaretRight, Copy, Plus, Trash } from "@phosphor-icons/react";
 
 import type { ResolverArchivo } from "@/lib/contenido/tipos";
-import type { Campo } from "@/panel/esquema/tipos";
+import type { Campo, TipoElemento } from "@/panel/esquema/tipos";
 import { direccionParaAncho } from "@/lib/contenido/medios";
+import { conClavesNuevas, escribir, leer, nuevaClave } from "./rutas";
+
+/** Sube un archivo elegido y devuelve el valor nuevo del campo ({ _type, asset: { _ref } }). */
+export type Subir = (archivo: File, avance: (texto: string) => void) => Promise<Record<string, unknown>>;
+
+/** Cómo se suben las fotos y los videos (undefined = no se puede, p. ej. «solo para mirar»). */
+export type Subidas = { foto?: Subir; video?: Subir; motivoSinVideo?: string };
 
 /**
  * Un campo del formulario según su clase (src/panel/esquema/tipos.ts).
@@ -52,18 +60,20 @@ export function CampoPanel({
   alCambiar,
   id,
   resolver,
-  alCambiarFoto,
+  subidas,
 }: {
   campo: Campo;
   valor: unknown;
   alCambiar: (nuevo: unknown) => void;
   id: string;
   resolver: ResolverArchivo;
-  /** Para los campos de imagen: sube la foto elegida y la pone en el campo. */
-  alCambiarFoto?: (archivo: File, avance: (texto: string) => void) => Promise<void>;
+  subidas: Subidas;
 }) {
   const texto = typeof valor === "string" ? valor : "";
-  const falta = campo.obligatorio && campo.clase !== "imagen" && campo.clase !== "booleano" && (valor === undefined || valor === null || texto.trim() === "") && typeof valor !== "number";
+  const falta =
+    campo.obligatorio &&
+    (campo.clase === "texto" || campo.clase === "textoLargo" || campo.clase === "enlace") &&
+    texto.trim() === "";
 
   switch (campo.clase) {
     case "texto":
@@ -249,41 +259,191 @@ export function CampoPanel({
     }
 
     case "imagen":
-      return <CampoImagen campo={campo} valor={valor} resolver={resolver} alCambiarFoto={alCambiarFoto} />;
+      return <CampoArchivo campo={campo} valor={valor} resolver={resolver} subir={subidas.foto} alCambiar={alCambiar} />;
+
+    case "video":
+      return (
+        <CampoArchivo campo={campo} valor={valor} resolver={resolver} subir={subidas.video} motivoSinSubir={subidas.motivoSinVideo} alCambiar={alCambiar} />
+      );
+
+    case "lista":
+      return <CampoLista campo={campo} valor={valor} alCambiar={alCambiar} id={id} resolver={resolver} subidas={subidas} />;
   }
 }
 
-/** Un campo de imagen: la foto actual y «Cambiar foto». */
-function CampoImagen({
+/** Una lista de elementos (logros, pasos…): cada uno se abre para editar sus campos. */
+function CampoLista({
+  campo,
+  valor,
+  alCambiar,
+  id,
+  resolver,
+  subidas,
+}: {
+  campo: Campo & { clase: "lista" };
+  valor: unknown;
+  alCambiar: (nuevo: unknown) => void;
+  id: string;
+  resolver: ResolverArchivo;
+  subidas: Subidas;
+}) {
+  const elementos = (Array.isArray(valor) ? valor : []) as Record<string, unknown>[];
+  const [abierto, setAbierto] = useState<string | null>(null);
+  const tipo: TipoElemento = campo.elemento;
+  const lleno = campo.max !== undefined && elementos.length >= campo.max;
+
+  const poner = (lista: Record<string, unknown>[]) => alCambiar(lista);
+  const mover = (i: number, d: number) => {
+    const j = i + d;
+    if (j < 0 || j >= elementos.length) return;
+    const copia = elementos.slice();
+    [copia[i], copia[j]] = [copia[j], copia[i]];
+    poner(copia);
+  };
+  const agregar = () => {
+    const nuevo = { _key: nuevaClave(), _type: tipo.tipo, ...(tipo.nuevo?.() ?? {}) };
+    poner([...elementos, nuevo]);
+    setAbierto(nuevo._key);
+  };
+  const duplicar = (i: number) => {
+    const copia = conClavesNuevas(elementos[i]) as Record<string, unknown>;
+    poner([...elementos.slice(0, i + 1), copia, ...elementos.slice(i + 1)]);
+    setAbierto(copia._key as string);
+  };
+  const quitar = (i: number) => {
+    if (!window.confirm(`¿Quitar «${tipo.resumen(elementos[i])}» de la lista? (Puedes recuperarlo con «Deshacer cambios» antes de publicar.)`)) return;
+    poner(elementos.filter((_, k) => k !== i));
+  };
+
+  const botonChico =
+    "grid h-7 w-7 place-items-center rounded-lg text-ink-muted hover:bg-brand/10 hover:text-brand disabled:opacity-30 disabled:hover:bg-transparent";
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-0.5">
+        <span className="text-sm font-semibold text-ink">
+          {campo.titulo} <span className="font-normal text-ink-subtle">({elementos.length})</span>
+        </span>
+        {campo.ayuda ? <Nota>{campo.ayuda}</Nota> : null}
+      </div>
+      {elementos.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-canvas-border px-3 py-3 text-sm text-ink-subtle">{campo.vacia ?? "La lista está vacía."}</p>
+      ) : null}
+      <ol className="flex flex-col gap-1.5">
+        {elementos.map((el, i) => {
+          const clave = typeof el._key === "string" ? el._key : String(i);
+          const abiertoEste = abierto === clave;
+          return (
+            <li key={clave} className="rounded-xl border border-canvas-border bg-canvas">
+              <div className="flex items-center gap-1 px-1.5 py-1">
+                <button
+                  type="button"
+                  onClick={() => setAbierto(abiertoEste ? null : clave)}
+                  aria-expanded={abiertoEste}
+                  className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1.5 py-1 text-left text-[0.88rem] text-ink hover:bg-brand/[0.06]"
+                >
+                  <CaretRight
+                    size={13}
+                    weight="bold"
+                    className={`shrink-0 text-ink-subtle transition-transform ${abiertoEste ? "rotate-90" : ""}`}
+                    aria-hidden="true"
+                  />
+                  <span className="tabular-nums text-ink-subtle">{i + 1}.</span>
+                  <span className="truncate">{tipo.resumen(el)}</span>
+                </button>
+                <button type="button" className={botonChico} onClick={() => mover(i, -1)} disabled={i === 0} title="Subir" aria-label="Subir">
+                  <ArrowUp size={14} weight="bold" />
+                </button>
+                <button
+                  type="button"
+                  className={botonChico}
+                  onClick={() => mover(i, 1)}
+                  disabled={i === elementos.length - 1}
+                  title="Bajar"
+                  aria-label="Bajar"
+                >
+                  <ArrowDown size={14} weight="bold" />
+                </button>
+                <button type="button" className={botonChico} onClick={() => duplicar(i)} disabled={lleno} title="Duplicar" aria-label="Duplicar">
+                  <Copy size={14} weight="bold" />
+                </button>
+                <button type="button" className={botonChico} onClick={() => quitar(i)} title="Quitar" aria-label="Quitar">
+                  <Trash size={14} weight="bold" />
+                </button>
+              </div>
+              {abiertoEste ? (
+                <div className="grid gap-3 border-t border-canvas-border bg-white p-3 sm:grid-cols-2">
+                  {tipo.campos.map((c) => (
+                    <div key={c.nombre} className={c.clase === "numero" ? "" : "sm:col-span-2"}>
+                      <CampoPanel
+                        id={`${id}-${clave}-${c.nombre}`.replace(/[^a-zA-Z0-9-]+/g, "-")}
+                        campo={c}
+                        valor={leer(el, [c.nombre])}
+                        alCambiar={(v) => poner(elementos.map((x, k) => (k === i ? escribir(x, [c.nombre], v) : x)))}
+                        resolver={resolver}
+                        subidas={subidas}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </li>
+          );
+        })}
+      </ol>
+      <button
+        type="button"
+        onClick={agregar}
+        disabled={lleno}
+        className="inline-flex items-center gap-1.5 self-start rounded-full border border-brand px-3 py-1 text-[0.82rem] font-semibold text-brand hover:bg-brand hover:text-white disabled:opacity-50"
+      >
+        <Plus size={14} weight="bold" aria-hidden="true" /> Agregar {tipo.titulo.toLowerCase()}
+      </button>
+    </div>
+  );
+}
+
+
+/** Un campo de foto o de video: lo que hay ahora y «Cambiar foto» / «Cambiar video». */
+function CampoArchivo({
   campo,
   valor,
   resolver,
-  alCambiarFoto,
+  subir,
+  motivoSinSubir,
+  alCambiar,
 }: {
   campo: Campo;
   valor: unknown;
   resolver: ResolverArchivo;
-  alCambiarFoto?: (archivo: File, avance: (texto: string) => void) => Promise<void>;
+  subir?: Subir;
+  motivoSinSubir?: string;
+  alCambiar: (nuevo: unknown) => void;
 }) {
+  const esVideo = campo.clase === "video";
   const entrada = useRef<HTMLInputElement>(null);
   const [avance, setAvance] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const info = resolver(valor);
-  const miniatura = info
-    ? info.url.includes("cdn.sanity.io")
-      ? `${info.url}?w=480&auto=format`
-      : (direccionParaAncho(info.url, 240) ?? info.url)
-    : null;
+  const miniatura =
+    info && !esVideo ? (info.url.includes("cdn.sanity.io") ? `${info.url}?w=480&auto=format` : (direccionParaAncho(info.url, 240) ?? info.url)) : null;
 
-  async function elegida(e: React.ChangeEvent<HTMLInputElement>) {
+  async function elegido(e: React.ChangeEvent<HTMLInputElement>) {
     const archivo = e.target.files?.[0];
     e.target.value = "";
-    if (!archivo || !alCambiarFoto) return;
+    if (!archivo || !subir) return;
     setError(null);
     try {
-      await alCambiarFoto(archivo, setAvance);
+      const nuevo = await subir(archivo, setAvance);
+      // El punto focal y el recorte eran del archivo anterior; el texto alternativo se conserva.
+      const actual = (valor && typeof valor === "object" ? valor : {}) as Record<string, unknown>;
+      const { asset: _a, hotspot: _h, crop: _c, ...resto } = actual;
+      void _a;
+      void _h;
+      void _c;
+      alCambiar({ ...resto, ...nuevo });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo cambiar la foto.");
+      setError(err instanceof Error ? err.message : esVideo ? "No se pudo cambiar el video." : "No se pudo cambiar la foto.");
     } finally {
       setAvance(null);
     }
@@ -293,35 +453,54 @@ function CampoImagen({
     <div className="flex flex-col gap-1.5">
       <span className="text-sm font-semibold text-ink">{campo.titulo}</span>
       <div className="flex items-center gap-3 rounded-[12px] border border-canvas-border bg-white p-2">
-        {miniatura ? (
+        {esVideo ? (
+          info ? (
+            <video src={info.url} muted playsInline preload="metadata" className="h-24 w-[54px] rounded-lg bg-abyss object-cover" />
+          ) : (
+            <span className="grid h-24 w-[54px] place-items-center rounded-lg bg-canvas-raised text-center text-[0.7rem] text-ink-subtle">Sin video</span>
+          )
+        ) : miniatura ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={miniatura} alt="" className="h-16 w-24 rounded-lg bg-canvas-raised object-cover" />
         ) : (
           <span className="grid h-16 w-24 place-items-center rounded-lg bg-canvas-raised text-xs text-ink-subtle">Sin foto</span>
         )}
         <div className="flex min-w-0 flex-1 flex-col gap-1 text-xs text-ink-subtle">
-          {info?.ancho && info.alto ? (
+          {!esVideo && info?.ancho && info.alto ? (
             <span className="tabular-nums">
               {info.ancho} × {info.alto} px
             </span>
           ) : null}
-          {alCambiarFoto ? (
+          {subir ? (
             <>
-              <input ref={entrada} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={elegida} />
+              <input
+                ref={entrada}
+                type="file"
+                accept={esVideo ? "video/mp4,video/webm" : "image/jpeg,image/png,image/webp,image/gif"}
+                className="hidden"
+                onChange={elegido}
+              />
               <button
                 type="button"
                 disabled={avance !== null}
                 onClick={() => entrada.current?.click()}
                 className="self-start rounded-full border border-brand px-3 py-1 text-[0.8rem] font-semibold text-brand hover:bg-brand hover:text-white disabled:opacity-60"
               >
-                {avance ?? "Cambiar foto"}
+                {avance ?? (esVideo ? "Cambiar video" : "Cambiar foto")}
               </button>
-              <span>JPG, PNG o WebP, hasta 15 MB. La web la recibe en el mismo tamaño y en versiones más livianas.</span>
+              <span>
+                {esVideo
+                  ? "MP4 o WebM, hasta 200 MB. Se sube a Cloudflare y se ve enseguida en la vista previa; sale a la web al publicar."
+                  : "JPG, PNG o WebP, hasta 15 MB. La web la recibe en el mismo tamaño y en versiones más livianas."}
+              </span>
             </>
+          ) : motivoSinSubir ? (
+            <span>{motivoSinSubir}</span>
           ) : null}
           {error ? <span className="font-medium text-[#B4520B]">{error}</span> : null}
         </div>
       </div>
+      {campo.ayuda ? <Nota>{campo.ayuda}</Nota> : null}
     </div>
   );
 }

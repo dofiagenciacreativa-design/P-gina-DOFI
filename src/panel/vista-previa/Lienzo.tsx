@@ -5,6 +5,10 @@ import { Nav } from "@/components/Nav";
 import { Hero } from "@/components/Hero";
 import { ContentBanner } from "@/components/ContentBanner";
 import { Footer } from "@/components/Footer";
+import { SeccionesMarketing } from "@/components/marketing/SeccionesMarketing";
+import { SeccionesTrafico } from "@/components/trafico/PaginaTrafico";
+import { CLASE_MAIN_FENIAX, SeccionesFeniax } from "@/components/feniax/PaginaFeniax";
+import { SeccionesAsesorias } from "@/components/asesorias/PaginaAsesorias";
 import type { MensajeAlLienzo, VistaPrevia } from "./mensajes";
 
 /**
@@ -12,11 +16,27 @@ import type { MensajeAlLienzo, VistaPrevia } from "./mensajes";
  * panel y dibuja la página con los MISMOS componentes de la web, con los datos
  * que le manda el panel por postMessage. No pide nada al servidor.
  *
- * Mismo armado que src/app/page.tsx: Nav, Hero y los banners dentro de
- * <main>, y Footer. Las piezas van sin envoltorio a propósito: la regla
- * `main > .pantalla:first-child` de globals.css le da al Hero su alto de
- * portada, y un <div> alrededor la rompería.
+ * Mismo armado que cada página: Nav, las secciones dentro de <main> y Footer.
+ * Las piezas van sin envoltorio a propósito: la regla
+ * `main > .pantalla:first-child` de globals.css le da a la portada su alto, y
+ * un <div> alrededor la rompería.
  */
+
+/** Las secciones de una página de servicio, con la clase de su <main>. */
+function Servicio({ vista, lista }: { vista: Exclude<VistaPrevia, { pagina: "inicio" }>; lista?: string[] }) {
+  const claves = lista ? new Set(lista) : null;
+  switch (vista.pagina) {
+    case "marketing":
+      return <SeccionesMarketing secciones={claves ? vista.secciones.filter((s) => claves.has(s.key)) : vista.secciones} />;
+    case "trafico":
+      return <SeccionesTrafico secciones={claves ? vista.secciones.filter((s) => claves.has(s.key)) : vista.secciones} />;
+    case "feniax":
+      return <SeccionesFeniax secciones={claves ? vista.secciones.filter((s) => claves.has(s.key)) : vista.secciones} todas={vista.secciones} />;
+    case "asesorias":
+      return <SeccionesAsesorias secciones={claves ? vista.secciones.filter((s) => claves.has(s.key)) : vista.secciones} todas={vista.secciones} />;
+  }
+}
+
 export function Lienzo() {
   const [vista, setVista] = useState<VistaPrevia | null>(null);
   const principal = useRef<HTMLElement>(null);
@@ -43,14 +63,17 @@ export function Lienzo() {
   // Al cambiar de sección o de modo (no en cada letra), llevar la vista a esa pieza.
   const pieza = vista?.vista;
   const modo = vista?.modo;
-  const banners = vista?.datos.seccionesContenido;
+  const orden =
+    vista?.pagina === "inicio"
+      ? ["hero", ...vista.datos.seccionesContenido.map((b) => `banner:${b.id}`)]
+      : (vista?.secciones.map((s) => s.key) ?? []);
   useEffect(() => {
-    if (!pieza || !banners) return;
+    if (!pieza) return;
     if (modo !== "completa") {
       window.scrollTo({ top: 0 });
       return;
     }
-    const indice = pieza === "hero" ? 0 : 1 + banners.findIndex((b) => `banner:${b.id}` === pieza);
+    const indice = orden.indexOf(pieza);
     const destino = principal.current?.children[Math.max(0, indice)] as HTMLElement | undefined;
     destino?.scrollIntoView({ block: "start" });
     // Solo al cambiar de pieza o de modo.
@@ -58,8 +81,37 @@ export function Lienzo() {
   }, [pieza, modo]);
 
   if (!vista) {
+    return <div className="grid min-h-screen place-items-center bg-canvas font-sans text-ink-subtle">Preparando la vista previa…</div>;
+  }
+
+  if (vista.pagina !== "inicio") {
+    const claseMain = vista.pagina === "feniax" ? CLASE_MAIN_FENIAX : undefined;
+    if (vista.modo === "seccion") {
+      const indice = orden.indexOf(vista.vista);
+      if (indice < 0) {
+        return (
+          <div className="grid min-h-screen place-items-center bg-canvas px-6 text-center font-sans text-ink-subtle">
+            Esta sección está oculta («Mostrar en la página» apagado) o le falta el título: no se ve en la web.
+          </div>
+        );
+      }
+      return (
+        <>
+          {indice === 0 ? <Nav /> : null}
+          <main ref={principal} className={claseMain}>
+            <Servicio vista={vista} lista={[vista.vista]} />
+          </main>
+        </>
+      );
+    }
     return (
-      <div className="grid min-h-screen place-items-center bg-canvas font-sans text-ink-subtle">Preparando la vista previa…</div>
+      <>
+        <Nav />
+        <main ref={principal} className={claseMain}>
+          <Servicio vista={vista} />
+        </main>
+        <Footer />
+      </>
     );
   }
 

@@ -2,12 +2,14 @@
 
 import {
   ArrowRight,
+  DeviceMobile,
   FilmStrip,
   ImageSquare,
   ListNumbers,
   SquaresFour,
   Star,
   TextAa,
+  Trophy,
   UsersThree,
   type Icon,
 } from "@phosphor-icons/react";
@@ -22,6 +24,8 @@ const ICONOS: Record<NombreIcono, Icon> = {
   clientes: UsersThree,
   resenas: Star,
   cierre: ArrowRight,
+  logros: Trophy,
+  videos: DeviceMobile,
 };
 
 export function IconoSeccion({ nombre, tamano = 16 }: { nombre: NombreIcono; tamano?: number }) {

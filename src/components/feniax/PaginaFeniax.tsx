@@ -63,13 +63,14 @@ function Seccion({
 }
 
 /** Las secciones de ChatBots/CRM, en orden (sin <main>): las usa la página y la vista previa del panel. */
-export function SeccionesFeniax({ secciones }: { secciones: SeccionFeniax[] }) {
+export function SeccionesFeniax({ secciones, todas = secciones }: { secciones: SeccionFeniax[]; todas?: SeccionFeniax[] }) {
   const vistas = new Map<string, number>();
 
   // El celular de la portada reproduce las conversaciones por giro que se
   // cargan en «Clientes» (solo la clave y el chat: el resto de cada giro no
   // viaja al navegador).
-  const clientes = secciones.find((s): s is SeccionClientesChat => s.tipo === "chatClientsBanner");
+  // `todas`: la página entera, cuando la vista previa dibuja una sola sección.
+  const clientes = todas.find((s): s is SeccionClientesChat => s.tipo === "chatClientsBanner");
   const hero: ConversacionesHero = {
     conversaciones: (clientes?.giros ?? []).map((g) => ({ clave: g.key, chat: g.chat })),
     rotacion: clientes?.rotacionAutomatica ?? true,
