@@ -1,0 +1,789 @@
+[
+  {
+    "_createdAt": "2026-08-24T19:36:07Z",
+    "_id": "cuenta-baby-dance",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:36:07Z",
+    "activa": true,
+    "categoria": "Moda infantil",
+    "ciudad": "Cuenca",
+    "nombre": "Baby Dance",
+    "orden": 16,
+    "resumen": "Catálogo de producto y seguimiento de pedidos de ropa y artículos para bebés.",
+    "servicios": [
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "baby-dance"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:36:01Z",
+    "_id": "cuenta-blue-360",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:36:01Z",
+    "activa": true,
+    "categoria": "Servicios",
+    "ciudad": "Cuenca",
+    "nombre": "Blue 360",
+    "orden": 11,
+    "resumen": "Gestión de clientes y seguimiento comercial centralizado en un embudo de Kommo.",
+    "servicios": [
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "blue-360"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:35:55Z",
+    "_id": "cuenta-bondia",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:35:55Z",
+    "activa": true,
+    "categoria": "Panadería",
+    "ciudad": "Cuenca",
+    "nombre": "BonDía",
+    "orden": 5,
+    "resumen": "Contenido de vitrina para tres locales y venta directa por WhatsApp con seguimiento.",
+    "servicios": [
+      {
+        "_key": "servicio-audiovisual",
+        "_ref": "servicio-audiovisual",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-pauta",
+        "_ref": "servicio-pauta",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "bondia"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:36:14Z",
+    "_id": "cuenta-cardona-shoes",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:36:14Z",
+    "activa": true,
+    "categoria": "Calzado",
+    "ciudad": "Cuenca",
+    "nombre": "Cardona Shoes",
+    "orden": 22,
+    "resumen": "Catálogo de calzado con seguimiento de pedidos y clientes por WhatsApp.",
+    "servicios": [
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "cardona-shoes"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:36:13Z",
+    "_id": "cuenta-casa-del-repuesto-japones",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:36:13Z",
+    "activa": true,
+    "categoria": "Repuestos automotrices",
+    "ciudad": "Cuenca",
+    "nombre": "Casa del Repuesto Japonés",
+    "orden": 21,
+    "resumen": "Catálogo de repuestos y seguimiento de pedidos organizado en el CRM.",
+    "servicios": [
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "casa-del-repuesto-japones"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:36:05Z",
+    "_id": "cuenta-ceviches-huayna-capac",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:36:05Z",
+    "activa": true,
+    "categoria": "Gastronomía",
+    "ciudad": "Cuenca",
+    "nombre": "Ceviches de la Huayna Capac",
+    "orden": 14,
+    "resumen": "Pedidos y reservas de un restaurante de mariscos organizados en un embudo de ventas.",
+    "servicios": [
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "ceviches-huayna-capac"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:36:03Z",
+    "_id": "cuenta-chico-gato",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:36:03Z",
+    "activa": true,
+    "categoria": "Gastronomía",
+    "ciudad": "Cuenca",
+    "nombre": "Chico Gato",
+    "orden": 12,
+    "resumen": "Atención por WhatsApp y seguimiento de pedidos organizado en el CRM.",
+    "servicios": [
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "chico-gato"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:36:16Z",
+    "_id": "cuenta-comercial-jyc",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:36:16Z",
+    "activa": true,
+    "categoria": "Comercio",
+    "ciudad": "Cuenca",
+    "nombre": "Comercial JyC",
+    "orden": 23,
+    "resumen": "Seguimiento comercial y atención a clientes centralizado en el CRM.",
+    "servicios": [
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "comercial-jyc"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:36:06Z",
+    "_id": "cuenta-comercial-luna-pazmino",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:36:06Z",
+    "activa": true,
+    "categoria": "Comercio",
+    "ciudad": "Cuenca",
+    "nombre": "Comercial Luna Pazmiño",
+    "orden": 15,
+    "resumen": "Seguimiento comercial y atención a clientes centralizado en el CRM.",
+    "servicios": [
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "comercial-luna-pazmino"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:35:53Z",
+    "_id": "cuenta-cuenca-tour-360",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:35:53Z",
+    "activa": true,
+    "categoria": "Turismo",
+    "ciudad": "Cuenca",
+    "nombre": "Cuenca Tour 360",
+    "orden": 3,
+    "resumen": "Catálogo de 88 tours convertido en piezas de venta y cinco embudos conectados al bot.",
+    "servicios": [
+      {
+        "_key": "servicio-creatividad",
+        "_ref": "servicio-creatividad",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-audiovisual",
+        "_ref": "servicio-audiovisual",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-bot-ia",
+        "_ref": "servicio-bot-ia",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "cuenca-tour-360"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:36:00Z",
+    "_id": "cuenta-dar-ceramics",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:36:00Z",
+    "activa": true,
+    "categoria": "Cerámica y hogar",
+    "ciudad": "Cuenca",
+    "nombre": "Dar Ceramics",
+    "orden": 10,
+    "resumen": "Catálogo de piezas de cerámica con pedidos y seguimiento de clientes por WhatsApp.",
+    "servicios": [
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "dar-ceramics"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:36:08Z",
+    "_id": "cuenta-dr-christian-jeton",
+    "_type": "cuenta",
+    "_updatedAt": "2026-10-23T16:12:47Z",
+    "activa": true,
+    "categoria": "Salud",
+    "ciudad": "Cuenca",
+    "logo": {
+      "_type": "image",
+      "asset": {
+        "_ref": "image-59f2efbc42e730af7160db97d95fb0611b754d73-1080x1080-jpg",
+        "_type": "reference"
+      }
+    },
+    "logoCircular": {
+      "_type": "image",
+      "asset": {
+        "_ref": "image-fb8f36a5a1b44490172307a636ca35369d007700-512x512-webp",
+        "_type": "reference"
+      }
+    },
+    "nombre": "Dr. Christian Jetón",
+    "orden": 17,
+    "portada": {
+      "_type": "image",
+      "asset": {
+        "_ref": "image-59f2efbc42e730af7160db97d95fb0611b754d73-1080x1080-jpg",
+        "_type": "reference"
+      }
+    },
+    "resumen": "Agenda de citas y seguimiento de pacientes centralizado en el CRM.",
+    "servicios": [
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "dr-christian-jeton"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:35:49Z",
+    "_id": "cuenta-dukare",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:35:49Z",
+    "activa": true,
+    "categoria": "Movilidad",
+    "ciudad": "Ecuador",
+    "enfoque": "Montamos un embudo único en Kommo para toda la red y un bot de WhatsApp que recibe, califica y reparte cada lead al concesionario que corresponde. En paralelo produjimos el spot de lanzamiento y los reels para sostener la pauta.",
+    "nombre": "Dukare",
+    "orden": 0,
+    "resumen": "Lanzamiento de modelos y red de concesionarios con embudo único y bot de WhatsApp.",
+    "reto": "Dukare crecía con varios concesionarios trabajando cada uno por su lado. Los mensajes llegaban a números distintos, sin un lugar común donde ver el estado de cada prospecto ni quién debía responder.",
+    "servicios": [
+      {
+        "_key": "servicio-creatividad",
+        "_ref": "servicio-creatividad",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-audiovisual",
+        "_ref": "servicio-audiovisual",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-pauta",
+        "_ref": "servicio-pauta",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-bot-ia",
+        "_ref": "servicio-bot-ia",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "dukare"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:36:18Z",
+    "_id": "cuenta-el-carbonazo",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:36:18Z",
+    "activa": true,
+    "categoria": "Parrilladas",
+    "ciudad": "Cuenca",
+    "nombre": "El Carbonazo",
+    "orden": 25,
+    "resumen": "Parrilladas con dos locales, delivery y bot de WhatsApp en seis embudos de venta.",
+    "servicios": [
+      {
+        "_key": "servicio-creatividad",
+        "_ref": "servicio-creatividad",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-audiovisual",
+        "_ref": "servicio-audiovisual",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-bot-ia",
+        "_ref": "servicio-bot-ia",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "el-carbonazo"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:35:59Z",
+    "_id": "cuenta-el-cobayo",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:35:59Z",
+    "activa": true,
+    "categoria": "Gastronomía",
+    "ciudad": "Cuenca",
+    "nombre": "El Cobayo",
+    "orden": 9,
+    "resumen": "Restaurante de cuy con pedidos y reservas centralizados en el CRM.",
+    "servicios": [
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "el-cobayo"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:35:56Z",
+    "_id": "cuenta-el-horno",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:35:56Z",
+    "activa": true,
+    "categoria": "Distribución",
+    "ciudad": "Azuay",
+    "nombre": "El Horno",
+    "orden": 6,
+    "resumen": "Venta por rutas ordenada en cuatro embudos y material de catálogo para el equipo comercial.",
+    "servicios": [
+      {
+        "_key": "servicio-audiovisual",
+        "_ref": "servicio-audiovisual",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "el-horno"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:36:09Z",
+    "_id": "cuenta-electro-mz",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:36:09Z",
+    "activa": true,
+    "categoria": "Electrodomésticos",
+    "ciudad": "Cuenca",
+    "nombre": "Electro MZ",
+    "orden": 18,
+    "resumen": "Catálogo de electrodomésticos con seguimiento de pedidos y clientes en el CRM.",
+    "servicios": [
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "electro-mz"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:36:12Z",
+    "_id": "cuenta-hospi-spa",
+    "_type": "cuenta",
+    "_updatedAt": "2026-10-23T16:12:45Z",
+    "activa": true,
+    "categoria": "Bienestar y spa",
+    "ciudad": "Cuenca",
+    "logo": {
+      "_type": "image",
+      "asset": {
+        "_ref": "image-914422c95989f80ed9fb1aa001edea73741248db-1080x1080-jpg",
+        "_type": "reference"
+      }
+    },
+    "logoCircular": {
+      "_type": "image",
+      "asset": {
+        "_ref": "image-8832fb29e986d7f1a5654dd32b4c032e5744eccf-512x512-webp",
+        "_type": "reference"
+      }
+    },
+    "nombre": "Hospi Spa",
+    "orden": 20,
+    "portada": {
+      "_type": "image",
+      "asset": {
+        "_ref": "image-914422c95989f80ed9fb1aa001edea73741248db-1080x1080-jpg",
+        "_type": "reference"
+      }
+    },
+    "resumen": "Agenda de citas y seguimiento de clientes de un spa centralizado en el CRM.",
+    "servicios": [
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "hospi-spa"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:36:17Z",
+    "_id": "cuenta-importadora-gp",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:36:17Z",
+    "activa": true,
+    "categoria": "Importación",
+    "ciudad": "Cuenca",
+    "nombre": "Importadora GP",
+    "orden": 24,
+    "resumen": "Seguimiento de pedidos y clientes de una importadora centralizado en el CRM.",
+    "servicios": [
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "importadora-gp"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:35:57Z",
+    "_id": "cuenta-la-cazona-de-zam",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:35:57Z",
+    "activa": true,
+    "categoria": "Gastronomía",
+    "ciudad": "Cuenca",
+    "nombre": "La Cazona de Zam",
+    "orden": 7,
+    "resumen": "Pedidos y reservas de un asadero organizados en un embudo de ventas.",
+    "servicios": [
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "la-cazona-de-zam"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:35:54Z",
+    "_id": "cuenta-mi-escondite",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:35:54Z",
+    "activa": true,
+    "categoria": "Gastronomía",
+    "ciudad": "Cuenca",
+    "nombre": "Mi Escondite",
+    "orden": 4,
+    "resumen": "Identidad audiovisual de cocina típica y reservas gestionadas con plantillas de WhatsApp.",
+    "servicios": [
+      {
+        "_key": "servicio-creatividad",
+        "_ref": "servicio-creatividad",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-audiovisual",
+        "_ref": "servicio-audiovisual",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-bot-ia",
+        "_ref": "servicio-bot-ia",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "mi-escondite"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:35:50Z",
+    "_id": "cuenta-proavic",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:35:50Z",
+    "activa": true,
+    "categoria": "Alimentos",
+    "ciudad": "Ecuador",
+    "nombre": "Proavic",
+    "orden": 1,
+    "resumen": "Contenido de producto para mayorista y retail, con pedidos entrando por WhatsApp al CRM.",
+    "servicios": [
+      {
+        "_key": "servicio-audiovisual",
+        "_ref": "servicio-audiovisual",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-pauta",
+        "_ref": "servicio-pauta",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-bot-ia",
+        "_ref": "servicio-bot-ia",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "proavic"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:36:04Z",
+    "_id": "cuenta-silvestra",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:36:04Z",
+    "activa": true,
+    "categoria": "Gastronomía",
+    "ciudad": "Cuenca",
+    "nombre": "Silvestra",
+    "orden": 13,
+    "resumen": "Pizzas y pastas con bot de WhatsApp e Instagram, cuatro embudos y catálogo de productos.",
+    "servicios": [
+      {
+        "_key": "servicio-creatividad",
+        "_ref": "servicio-creatividad",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-audiovisual",
+        "_ref": "servicio-audiovisual",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-bot-ia",
+        "_ref": "servicio-bot-ia",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "silvestra"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:35:52Z",
+    "_id": "cuenta-spartagym",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:35:52Z",
+    "activa": true,
+    "categoria": "Fitness",
+    "ciudad": "Cuenca",
+    "nombre": "SpartaGym",
+    "orden": 2,
+    "resumen": "Campaña por sede, prueba gratis automatizada y seguimiento de renovaciones en cuatro embudos.",
+    "servicios": [
+      {
+        "_key": "servicio-creatividad",
+        "_ref": "servicio-creatividad",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-audiovisual",
+        "_ref": "servicio-audiovisual",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-pauta",
+        "_ref": "servicio-pauta",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-bot-ia",
+        "_ref": "servicio-bot-ia",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "spartagym"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:35:58Z",
+    "_id": "cuenta-taitico",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:35:58Z",
+    "activa": true,
+    "categoria": "Gastronomía",
+    "ciudad": "Cuenca",
+    "nombre": "Taitico",
+    "orden": 8,
+    "resumen": "Comida típica cuencana con cinco embudos de venta y bot de WhatsApp para pedidos y reservas.",
+    "servicios": [
+      {
+        "_key": "servicio-creatividad",
+        "_ref": "servicio-creatividad",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-audiovisual",
+        "_ref": "servicio-audiovisual",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      },
+      {
+        "_key": "servicio-bot-ia",
+        "_ref": "servicio-bot-ia",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "taitico"
+    }
+  },
+  {
+    "_createdAt": "2026-08-24T19:36:10Z",
+    "_id": "cuenta-tecno-mz",
+    "_type": "cuenta",
+    "_updatedAt": "2026-08-24T19:36:10Z",
+    "activa": true,
+    "categoria": "Tecnología",
+    "ciudad": "Cuenca",
+    "nombre": "Tecno MZ",
+    "orden": 19,
+    "resumen": "Catálogo de productos de tecnología con seguimiento de pedidos en el CRM.",
+    "servicios": [
+      {
+        "_key": "servicio-crm",
+        "_ref": "servicio-crm",
+        "_type": "reference"
+      }
+    ],
+    "slug": {
+      "_type": "slug",
+      "current": "tecno-mz"
+    }
+  }
+]

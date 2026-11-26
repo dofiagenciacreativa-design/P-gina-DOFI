@@ -1,0 +1,28 @@
+{
+  "_createdAt": "2026-08-31T20:15:53Z",
+  "_id": "hero",
+  "_type": "hero",
+  "_updatedAt": "2026-09-07T14:47:53Z",
+  "heroImage": {
+    "_type": "image",
+    "asset": {
+      "_ref": "image-b4761da415407363181c1b7389ad9810c2895ec1-1676x939-png",
+      "_type": "reference"
+    },
+    "crop": {
+      "_type": "sanity.imageCrop",
+      "bottom": 0.31658835655046225,
+      "left": 0,
+      "right": 0,
+      "top": 0
+    },
+    "hotspot": {
+      "_type": "sanity.imageHotspot",
+      "height": 0.6834116434495378,
+      "width": 1,
+      "x": 0.5,
+      "y": 0.3417058217247689
+    }
+  },
+  "heroImageAlt": "TEXTO DE PRUEBA"
+}

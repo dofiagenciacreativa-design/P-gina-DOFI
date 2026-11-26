@@ -1,0 +1,52 @@
+[
+  {
+    "_createdAt": "2026-08-19T14:58:03Z",
+    "_id": "2ee3db3c-85b2-455a-8562-bb9a0ebe3076",
+    "_type": "servicio",
+    "_updatedAt": "2026-08-19T14:58:31Z",
+    "descripcion": "Realizamos publicidad",
+    "imagen": {
+      "_type": "image",
+      "asset": {
+        "_ref": "image-0267ca2bc459e0821f3343e6184bcea59e6a4410-1254x1254-jpg",
+        "_type": "reference"
+      }
+    },
+    "titulo": "Publicidad"
+  },
+  {
+    "_createdAt": "2026-08-24T19:35:45Z",
+    "_id": "servicio-audiovisual",
+    "_type": "servicio",
+    "_updatedAt": "2026-08-24T19:35:45Z",
+    "nombre": "Audiovisual"
+  },
+  {
+    "_createdAt": "2026-08-24T19:35:48Z",
+    "_id": "servicio-bot-ia",
+    "_type": "servicio",
+    "_updatedAt": "2026-08-24T19:35:48Z",
+    "nombre": "Bot IA"
+  },
+  {
+    "_createdAt": "2026-08-24T19:35:43Z",
+    "_id": "servicio-creatividad",
+    "_type": "servicio",
+    "_updatedAt": "2026-08-24T19:35:43Z",
+    "nombre": "Creatividad"
+  },
+  {
+    "_createdAt": "2026-08-24T19:35:47Z",
+    "_id": "servicio-crm",
+    "_type": "servicio",
+    "_updatedAt": "2026-08-24T19:35:47Z",
+    "nombre": "CRM"
+  },
+  {
+    "_createdAt": "2026-08-24T19:35:46Z",
+    "_id": "servicio-pauta",
+    "_type": "servicio",
+    "_updatedAt": "2026-08-24T19:35:46Z",
+    "nombre": "Pauta"
+  }
+]

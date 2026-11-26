@@ -1,0 +1,15 @@
+{
+  "_createdAt": "2026-08-31T21:30:55Z",
+  "_id": "paginaInicio",
+  "_type": "paginaInicio",
+  "_updatedAt": "2026-10-15T14:16:27Z",
+  "hero": {
+    "ctaPrincipalEnlace": "https://api.whatsapp.com/send?phone=593978626069&text=Hola%2C%20quiero%20mejorar%20mis%20ventas.%20%C2%BFMe%20pueden%20ayudar%3F",
+    "ctaPrincipalTexto": "Quiero Mejorar Mis Ventas",
+    "ctaSecundarioEnlace": "/redes",
+    "ctaSecundarioTexto": "Mira Nuestro Trabajo",
+    "mensaje": "Pasa de 0 a $10K con nuestro Sistema de Ventas Inteligentes",
+    "titulo": "Ventas Inteligentes"
+  },
+  "titulo": "Página de inicio"
+}

@@ -1,0 +1,232 @@
+{
+  "_createdAt": "2026-09-28T21:23:59Z",
+  "_id": "asesoriasPage",
+  "_type": "asesoriasPage",
+  "_updatedAt": "2026-11-09T14:22:56Z",
+  "sections": [
+    {
+      "_key": "a46dbaf9015b",
+      "_type": "splitHeroBanner",
+      "activo": true,
+      "animar": true,
+      "cta": {
+        "_type": "ctaSimple",
+        "enlace": "/contactanos?servicio=asesorias",
+        "texto": "Quiero mejorar mis ventas"
+      },
+      "descripcion": "Tu negocio merece otra oportunidad. Te ayudamos a verlo con otros ojos: detectamos lo que está frenando tus ventas y trazamos un camino claro para crecer.",
+      "imagen": {
+        "_type": "image",
+        "alt": "Dani junto a emprendedores de distintos rubros: construcción, salud, gastronomía, comercio y servicios",
+        "asset": {
+          "_ref": "image-6d10227e11bf876945920b11d14354bae507e0a5-972x667-webp",
+          "_type": "reference"
+        }
+      },
+      "logo": {
+        "_type": "image",
+        "alt": "Rescatando Emprendedores",
+        "asset": {
+          "_ref": "image-6a0fe6d3b8acdd53acf39b2a914ea97bab60c849-2000x667-webp",
+          "_type": "reference"
+        }
+      },
+      "titulo": "Asesorías 1 a 1"
+    },
+    {
+      "_key": "06e47d5e8156",
+      "_type": "aboutBanner",
+      "activo": true,
+      "animar": true,
+      "descripcion": "Nace de la experiencia de Dani acompañando a más de 500 empresas. Todo lo que aprendió lo lleva a una reunión 1 a 1 contigo: revisamos tu negocio a fondo, qué vendes y cómo lo vendes, para encontrar las oportunidades y los puntos que hoy te frenan.\n\nSales con una ruta estratégica clara para seguir avanzando. No es una charla motivacional ni psicológica: es una asesoría enfocada en mejorar tu negocio y tus ventas.",
+      "destacado": "Una ruta para vender más.",
+      "titulo": "¿Qué es Rescatando Emprendedores?"
+    },
+    {
+      "_key": "92897e54cd58",
+      "_type": "achievementsBanner",
+      "activo": true,
+      "animar": true,
+      "logros": [
+        {
+          "_key": "6ff153936987",
+          "_type": "logro",
+          "firma": "Sobrepasó sus ventas en un 200%",
+          "foto": {
+            "_type": "image",
+            "alt": "Emprendedor de construcción (imagen de ejemplo)",
+            "asset": {
+              "_ref": "image-0f4b53633d09623e148bfce9be090587b937faa6-353x470-jpg",
+              "_type": "reference"
+            }
+          },
+          "texto": "Paso de ser un vendedor de calle a darle un concepto y valor en su negocio.",
+          "titulo": "Churritos de Nelmer"
+        },
+        {
+          "_key": "e10a44468012",
+          "_type": "logro",
+          "firma": "Rompió records de ventas",
+          "foto": {
+            "_type": "image",
+            "alt": "Emprendedora de salud (imagen de ejemplo)",
+            "asset": {
+              "_ref": "image-2438da209e7ee8ec1e57ad7e89fe65a9eeb891dc-353x446-jpg",
+              "_type": "reference"
+            }
+          },
+          "texto": "Descubrió como buen contenido, puede mejorar sus ventas",
+          "titulo": "Las Bandejas Paisas de Vivi"
+        },
+        {
+          "_key": "78d4fa335bf0",
+          "_type": "logro",
+          "firma": "Hoy tiene una nueva línea de negocio.",
+          "foto": {
+            "_type": "image",
+            "asset": {
+              "_ref": "image-d18ed5b8ba88b71d5097d99fe06be4d8d6fde779-357x485-jpg",
+              "_type": "reference"
+            }
+          },
+          "texto": "Creo un servicio que no sabía que existía.",
+          "titulo": "Legend Barber"
+        },
+        {
+          "_key": "f901a09c85a9",
+          "_type": "logro",
+          "firma": "Hoy tiene públicos específicos.",
+          "foto": {
+            "_type": "image",
+            "asset": {
+              "_ref": "image-5ef482942f228d1ff14d3aafd8f6b5a14dae99cc-356x378-jpg",
+              "_type": "reference"
+            }
+          },
+          "texto": "Descubrió lo importante de tener una comunidad ",
+          "titulo": "Roll and Coffee"
+        },
+        {
+          "_key": "915b3898792a",
+          "_type": "logro",
+          "firma": "Hoy vende sus billeteras a nivel nacional.",
+          "foto": {
+            "_type": "image",
+            "asset": {
+              "_ref": "image-2aa2e60d3dcc3a8c7553d7fc694063dbcb560e6b-2048x1151-jpg",
+              "_type": "reference"
+            }
+          },
+          "texto": "Entendió que un buen tráfico, trae buenos clientes.",
+          "titulo": "Wurzeln Wallets"
+        },
+        {
+          "_key": "a83a94ba0c8a",
+          "_type": "logro",
+          "firma": "Ahora su negocio vende 24/7",
+          "foto": {
+            "_type": "image",
+            "asset": {
+              "_ref": "image-62ffc4e547c338ffd58edf2537c45580aa8c6af9-1320x890-jpg",
+              "_type": "reference"
+            }
+          },
+          "texto": "Implementó inteligencia artificial en la atención a sus clientes.",
+          "titulo": "Sparta Gym"
+        },
+        {
+          "_key": "a42860b3a5d6",
+          "_type": "logro",
+          "firma": "Ahora realiza reservas y pedidos en automático.",
+          "foto": {
+            "_type": "image",
+            "asset": {
+              "_ref": "image-0f0871ba58985e8aad05179467cebf3f1315efbd-344x459-jpg",
+              "_type": "reference"
+            }
+          },
+          "texto": "Automatizo su negocio con inteligencia artificial.",
+          "titulo": "Taitico"
+        },
+        {
+          "_key": "1a29c525b18d",
+          "_type": "logro",
+          "etiqueta": "Hoy tiene un nuevo canal de venta.",
+          "foto": {
+            "_type": "image",
+            "asset": {
+              "_ref": "image-1c9335636eb28a2d7ddacc70204255db8be6c4e7-2048x1151-jpg",
+              "_type": "reference"
+            }
+          },
+          "texto": "Aprendió la importancia de una página web.",
+          "titulo": "Cuenca Tour 360"
+        }
+      ],
+      "pasoAutomatico": true,
+      "segundosPorLogro": 6,
+      "subtitulo": "Logros de nuestros emprendedores",
+      "titulo": "Historias que nos enorgullecen"
+    },
+    {
+      "_key": "34cb3acaa6e2",
+      "_type": "celularesBanner",
+      "activo": true,
+      "animar": true,
+      "celularCentral": {
+        "_type": "videoCelular",
+        "video": {
+          "_type": "file",
+          "asset": {
+            "_ref": "file-f3e2a71f35b079df16844f8d5d52c810573d25f4-mp4",
+            "_type": "reference"
+          }
+        }
+      },
+      "celularDerecho": {
+        "_type": "videoCelular",
+        "video": {
+          "_type": "file",
+          "asset": {
+            "_ref": "file-07e3d12d075e09bf87f6783f7637cd52d16c2df1-mp4",
+            "_type": "reference"
+          }
+        }
+      },
+      "celularIzquierdo": {
+        "_type": "videoCelular",
+        "video": {
+          "_type": "file",
+          "asset": {
+            "_ref": "file-181b0a424900f6c269473c7d194dbfd22bdd191d-mp4",
+            "_type": "reference"
+          }
+        }
+      },
+      "titulo": "ALGUNOS DE NUESTROS RESCATES"
+    },
+    {
+      "_key": "f4ef28070b43",
+      "_type": "ctaBanner",
+      "activo": true,
+      "alineacion": "centro",
+      "animar": true,
+      "cta": {
+        "_type": "ctaSimple",
+        "enlace": "/contactanos?servicio=asesorias",
+        "texto": "Quiero mejorar mis ventas"
+      },
+      "descripcion": "Agenda tu asesoría 1 a 1 y sal con una ruta clara para vender más.",
+      "imagen": {
+        "_type": "image",
+        "asset": {
+          "_ref": "image-1ab1f18e2c11513b39a786b7ee05f60869948834-2077x757-png",
+          "_type": "reference"
+        }
+      },
+      "overlay": "medio",
+      "titulo": "¿Le damos a tu negocio otra oportunidad?"
+    }
+  ],
+  "titulo": "Asesorías"
+}
