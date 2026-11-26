@@ -21,15 +21,9 @@
   // Van aca (versionadas en git) y no solo en el dashboard de Cloudflare
   // porque cada deploy nuevo (disparado por un push a main) usa ESTE
   // archivo como fuente de verdad y borra cualquier variable que no este
-  // declarada aca -- por eso habia que volver a cargarlas a mano despues
-  // de cada deploy. No son secretas (solo identifican el proyecto/dataset
-  // de Sanity, sin dar permiso de escritura), asi que es seguro tenerlas
-  // en texto plano. SANITY_REVALIDATE_SECRET SI es secreta: esa sigue
-  // yendo aparte, como Secret en el dashboard (o `wrangler secret put`),
-  // nunca en este archivo.
+  // declarada aca. Los secretos (PANEL_CLAVE, GITHUB_TOKEN_PANEL) van
+  // aparte, como Secret en el dashboard, nunca en este archivo.
   "vars": {
-    "SANITY_PROJECT_ID": "59r5krzd",
-    "SANITY_DATASET": "production",
     // Panel propio, etapa 6 (el cambio): «Publicar cambios» publica en main y
     // Cloudflare arma la web sola. Las vistas previas siguen publicando en su
     // rama de pruebas (bloque "previews" de abajo).
@@ -54,18 +48,12 @@
   ],
   // VISTAS PREVIAS DE RAMAS (`npx wrangler preview`, el "Deploy command" de
   // las ramas que no son main). Las variables y enlaces de arriba NO se
-  // heredan: sin este bloque la vista previa arrancaba sin SANITY_* y
-  // mostraba el contenido de respaldo (titulo «Un Mar de Ideas», banners
-  // vacios). Wrangler lo avisaba asi: «Your configuration has diverged...
-  // missing from the Previews settings». Mismos valores que produccion: la
-  // vista previa lee el mismo contenido de Sanity (solo lectura).
+  // heredan: Wrangler lo avisa asi: «Your configuration has diverged...
+  // missing from the Previews settings».
   "previews": {
     "vars": {
-      "SANITY_PROJECT_ID": "59r5krzd",
-      "SANITY_DATASET": "production",
-      // Panel propio (etapa 3): en las vistas previas, «Publicar cambios» va a
-      // esta rama de pruebas, nunca a main. En produccion NO se define todavia:
-      // sin ella el panel queda «solo para mirar» (la web real lee de Sanity hasta la etapa 6).
+      // Panel propio: en las vistas previas, «Publicar cambios» va a esta rama
+      // de pruebas, nunca a main (sin ella el panel queda «solo para mirar»).
       "PANEL_RAMA_DESTINO": "panel-pruebas-contenido"
     },
     // Las vistas previas usan su propio almacen: nunca tocan los videos de produccion.

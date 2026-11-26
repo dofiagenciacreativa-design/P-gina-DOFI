@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import consulta from "../fixtures/sanity/consulta-inicio.json";
+import consulta from "../fixtures/inicio/consulta-inicio.json";
 import {
   armarPaginaInicio,
   CAPACIDADES_FALLBACK,

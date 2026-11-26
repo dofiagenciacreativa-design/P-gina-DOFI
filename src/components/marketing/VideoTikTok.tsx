@@ -22,7 +22,7 @@ import {
   WifiHigh,
 } from "@phosphor-icons/react";
 import { MarcoIphone } from "@/components/MarcoIphone";
-import type { ImagenSanity, PerfilTikTok, VideoSeccion } from "@/lib/marketing-digital";
+import type { ImagenContenido, PerfilTikTok, VideoSeccion } from "@/lib/marketing-digital";
 
 /**
  * Un video como una publicación de TikTok en un iPhone (pedido del
@@ -127,7 +127,7 @@ export function VideoTikTok({
   tamano = "columna",
 }: {
   video: VideoSeccion | null;
-  portada: ImagenSanity | null;
+  portada: ImagenContenido | null;
   perfil: PerfilTikTok;
   /** El título de la sección: nombre accesible del video. */
   titulo: string;

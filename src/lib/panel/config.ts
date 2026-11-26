@@ -5,10 +5,9 @@
  *  - PANEL_CLAVE         secreto: la contraseña del panel (16+ caracteres)
  *  - GITHUB_TOKEN_PANEL  secreto: token de GitHub de un solo repositorio, Contents: Read and write
  *  - PANEL_RAMA_DESTINO  variable (wrangler.jsonc): dónde publica el panel.
- *                        Una rama de pruebas en las vistas previas; «main» en producción
- *                        desde la etapa 6. Si falta, el panel queda «solo para mirar»
- *                        (nunca cae a main por descuido). Así está en producción hasta
- *                        la etapa 6: la web real todavía se edita en Sanity.
+ *                        «main» en producción (desde la etapa 6, 2026-11-26); una rama
+ *                        de pruebas en las vistas previas. Si falta, el panel queda
+ *                        «solo para mirar» (nunca cae a main por descuido).
  */
 
 export const REPOSITORIO = { dueno: "dofiagenciacreativa-design", nombre: "P-gina-DOFI" } as const;

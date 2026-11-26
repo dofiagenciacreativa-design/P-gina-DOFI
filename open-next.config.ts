@@ -14,16 +14,16 @@ import staticAssetsIncrementalCache from "@opennextjs/cloudflare/overrides/incre
  *  - incrementalCache = archivos estaticos: las paginas se arman UNA vez,
  *    en la construccion, y se guardan junto a los archivos del sitio
  *    (.open-next/assets/cdn-cgi/_next_cache, solo legible por el Worker).
- *    Es de solo lectura: un cambio en Sanity se ve al volver a publicar
- *    (Sanity llama a /api/revalidate, que dispara una construccion nueva).
+ *    Es de solo lectura: un cambio de contenido se ve al publicarlo desde
+ *    el panel (cada publicacion es un commit a main y Cloudflare vuelve a
+ *    construir la web).
  *  - enableCacheInterception: las paginas guardadas se entregan antes de
  *    cargar Next.js, casi sin CPU y sin pasar por el Batcher de Next (el
  *    origen del error).
  *
- * Para que esto sirva, las paginas NO deben caducar por tiempo: por eso los
- * fetch de src/lib/sanity.ts y src/lib/google-places.ts usan
- * cache: "force-cache" (sin revalidate). Si una pagina caducara, cada visita
- * volveria a armarla.
+ * Para que esto sirva, las paginas NO deben caducar por tiempo: por eso el
+ * fetch de src/lib/google-places.ts usa cache: "force-cache" (sin
+ * revalidate). Si una pagina caducara, cada visita volveria a armarla.
  */
 const config = defineCloudflareConfig({
   incrementalCache: staticAssetsIncrementalCache,

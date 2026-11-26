@@ -1,5 +1,5 @@
 import { variarCtas } from "@/lib/cta";
-import { sanityQuery } from "@/lib/sanity";
+import { consultar } from "@/lib/consultas";
 import { obtenerResenasGoogle } from "@/lib/google-places";
 import { GIRO_GROQ } from "@/lib/giros";
 import { COPY_ASESORIAS, IMAGENES_ASESORIAS } from "@/lib/asesorias-respaldo";
@@ -19,7 +19,7 @@ import {
   type BaseSeccion,
   type GiroNegocio,
   type GiroRaw,
-  type ImagenSanity,
+  type ImagenContenido,
   type ImgRaw,
   type Resena,
   type RespuestaRaw,
@@ -72,7 +72,7 @@ export type CasoExito = {
   /** Nombre del giro tal como se cargó; "" = sin giro. */
   giro: string;
   cliente: string;
-  imagen: ImagenSanity | null;
+  imagen: ImagenContenido | null;
 };
 
 /** Una tarjeta de Logros: la frase grande, su remate, la etiqueta (rubro o
@@ -84,12 +84,12 @@ export type Logro = {
   etiqueta: string;
   nombre: string;
   firma: string;
-  foto: ImagenSanity | null;
+  foto: ImagenContenido | null;
 };
 
 export type SeccionPortadaAsesorias = BaseSeccion & {
   tipo: "splitHeroBanner";
-  logo: ImagenSanity | null;
+  logo: ImagenContenido | null;
   /** Cómo se integra la imagen con el fondo (FotoIntegrada): tratamiento e
    *  intensidad. Sin esto, el de por defecto. */
   integracionFoto?: unknown;
@@ -104,7 +104,7 @@ export type SeccionLogros = BaseSeccion & {
 
 /** Un celular de «Videos en celulares»: su video (o null mientras no se
  *  suba), el título que va sobre el video y la portada. */
-export type VideoCelular = { url: string | null; titulo: string; portada: ImagenSanity | null };
+export type VideoCelular = { url: string | null; titulo: string; portada: ImagenContenido | null };
 
 /** «Videos en celulares» (pedido del 2026-10-20): tres celulares, el del
  *  centro es el principal. Cada uno con su propio video desde el Studio. */
@@ -159,7 +159,7 @@ function base(key: string, parcial: Partial<BaseSeccion>): BaseSeccion {
   };
 }
 
-function imagenLocal(i: { archivo: string; ancho: number; alto: number; alt: string }): ImagenSanity {
+function imagenLocal(i: { archivo: string; ancho: number; alto: number; alt: string }): ImagenContenido {
   return { url: `/asesorias/${i.archivo}`, ancho: i.ancho, alto: i.alto, hotspot: null, alt: i.alt };
 }
 
@@ -420,6 +420,6 @@ export function armarPaginaAsesorias(
 }
 
 export async function getPaginaAsesorias(): Promise<{ secciones: SeccionAsesorias[] }> {
-  const [respuesta, resenasGoogle] = await Promise.all([sanityQuery<RespuestaAsesorias>(QUERY_ASESORIAS), obtenerResenasGoogle()]);
+  const [respuesta, resenasGoogle] = await Promise.all([consultar<RespuestaAsesorias>(QUERY_ASESORIAS), obtenerResenasGoogle()]);
   return armarPaginaAsesorias(respuesta, resenasGoogle);
 }

@@ -24,7 +24,6 @@ test("elige la variante más angosta que alcance, o la imagen completa", () => {
 test("el cargador de next/image entiende /media y deja igual lo demás", () => {
   expect(cargador({ src: `${BANNER}?w=2400&auto=format`, width: 1080 })).toBe(`/media/${SHA}-2077x757/w1080.webp`);
   expect(cargador({ src: "/home/banner-redes-foto.webp", width: 828 })).toBe("/home/banner-redes-foto.webp");
-  expect(cargador({ src: `https://cdn.sanity.io/images/p/d/${SHA}-2077x757.png?w=2400&auto=format`, width: 828 })).toBe(
-    `https://cdn.sanity.io/images/p/d/${SHA}-2077x757.png?w=828&auto=format&q=75&fit=max`
-  );
+  // Cualquier otra dirección se usa tal cual (ya no hay imágenes de Sanity).
+  expect(cargador({ src: "https://ejemplo.com/foto.png", width: 828 })).toBe("https://ejemplo.com/foto.png");
 });

@@ -1,5 +1,5 @@
 import { variarCtas } from "@/lib/cta";
-import { sanityQuery } from "@/lib/sanity";
+import { consultar } from "@/lib/consultas";
 import { obtenerResenasGoogle } from "@/lib/google-places";
 import { company } from "@/config/company";
 import { GIRO_GROQ, iconoDe } from "@/lib/giros";
@@ -308,6 +308,6 @@ export function armarPaginaTrafico(respuesta: RespuestaTrafico | null, resenasGo
 }
 
 export async function getPaginaTrafico(): Promise<PaginaTrafico> {
-  const [respuesta, resenasGoogle] = await Promise.all([sanityQuery<RespuestaTrafico>(QUERY_TRAFICO), obtenerResenasGoogle()]);
+  const [respuesta, resenasGoogle] = await Promise.all([consultar<RespuestaTrafico>(QUERY_TRAFICO), obtenerResenasGoogle()]);
   return armarPaginaTrafico(respuesta, resenasGoogle);
 }

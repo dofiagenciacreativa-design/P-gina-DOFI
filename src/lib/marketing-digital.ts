@@ -1,5 +1,5 @@
 import { TEXTO_CTA, enlaceFormulario, variarCtas } from "@/lib/cta";
-import { sanityQuery } from "@/lib/sanity";
+import { consultar } from "@/lib/consultas";
 import { company } from "@/config/company";
 import { obtenerResenasGoogle } from "@/lib/google-places";
 
@@ -33,7 +33,7 @@ import { obtenerResenasGoogle } from "@/lib/google-places";
 // Tipos que consumen los componentes
 // ============================================================
 
-export type ImagenSanity = {
+export type ImagenContenido = {
   /** URL de Sanity ya con ?w=.. */
   url: string;
   /** Dimensiones reales del archivo: dan la proporcion exacta, que es lo
@@ -86,7 +86,7 @@ export type GiroNegocio = {
   nombre: string;
   /** Opcional: sin icono elegido, el panel no muestra ninguno. */
   icono: IconoCategoria | null;
-  imagen: ImagenSanity | null;
+  imagen: ImagenContenido | null;
   empresas: EmpresaGiro[];
 };
 
@@ -145,8 +145,8 @@ export type Resena = {
 export type BaseSeccion = Base;
 type Base = {
   key: string;
-  imagen: ImagenSanity | null;
-  imagenMovil: ImagenSanity | null;
+  imagen: ImagenContenido | null;
+  imagenMovil: ImagenContenido | null;
   subtitulo: string;
   titulo: string;
   descripcion: string;
@@ -162,14 +162,14 @@ export type SeccionEquipo = Base & {
   /** Solo Marketing Digital (pedido del 2026-10-16): el PNG con transparencia
    *  de la derecha del hero, sobre el fondo de siempre. Sin el, la portada se
    *  pinta como antes (`imagen` de fondo). */
-  imagenDerecha?: ImagenSanity | null;
+  imagenDerecha?: ImagenContenido | null;
   /** Cómo se integra `imagenDerecha` con el fondo (FotoIntegrada): tratamiento
    *  e intensidad. Sin esto, el de por defecto. */
   integracionFoto?: unknown;
   /** Solo ChatBots/CRM (pedido del 2026-10-20): el celular con el video
    *  estilo TikTok de la derecha de la portada. */
   video?: VideoSeccion | null;
-  portadaVideo?: ImagenSanity | null;
+  portadaVideo?: ImagenContenido | null;
   tiktok?: PerfilTikTok;
 };
 export type SeccionQueEs = Base & { tipo: "aboutBanner" };
@@ -453,7 +453,7 @@ export function unoDe<T extends string>(v: Txt, validos: readonly T[], porDefect
 
 /** Una imagen sin archivo, o sin dimensiones, no se puede mostrar sin
  *  adivinar su proporcion: se descarta y la seccion usa su estado sin imagen. */
-export function imagen(raw: ImgRaw, ancho: number, altPorDefecto = ""): ImagenSanity | null {
+export function imagen(raw: ImgRaw, ancho: number, altPorDefecto = ""): ImagenContenido | null {
   if (!raw?.url || !raw.ancho || !raw.alto) return null;
   return {
     url: `${raw.url}?w=${ancho}&auto=format`,
@@ -681,6 +681,6 @@ export function armarPaginaMarketingDigital(
 }
 
 export async function getPaginaMarketingDigital(): Promise<{ secciones: SeccionMarketing[] }> {
-  const [respuesta, resenasGoogle] = await Promise.all([sanityQuery<RespuestaRaw>(QUERY_MARKETING), obtenerResenasGoogle()]);
+  const [respuesta, resenasGoogle] = await Promise.all([consultar<RespuestaRaw>(QUERY_MARKETING), obtenerResenasGoogle()]);
   return armarPaginaMarketingDigital(respuesta, resenasGoogle);
 }

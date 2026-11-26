@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "@phosphor-icons/react/dist/ssr";
 import { BotonCta } from "./BotonCta";
 import { CapabilityBand } from "./CapabilityBand";
-import type { HeroContent, Capacidad } from "@/lib/sanity";
+import type { HeroContent, Capacidad } from "@/lib/consultas";
 
 /**
  * Hero del Home — versión premium (pedido del 2026-10-07: "que se vea más

@@ -1,6 +1,6 @@
 import { Reveal } from "./Reveal";
 import { ClientsCarousel } from "./ClientsCarousel";
-import { getActiveAccounts } from "@/lib/sanity";
+import { getActiveAccounts } from "@/lib/consultas";
 
 /**
  * Galeria de clientes, en carrusel.

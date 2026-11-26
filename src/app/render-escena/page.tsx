@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getPaginaInicio } from "@/lib/sanity";
+import { getPaginaInicio } from "@/lib/consultas";
 import { CLAVES_ESCENA, GEOMETRIA, type ClaveEscena } from "@/remotion/home/tema";
 import { LienzoEscena } from "./LienzoEscena";
 

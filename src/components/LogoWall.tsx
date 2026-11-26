@@ -1,4 +1,4 @@
-import { getActiveAccounts } from "@/lib/sanity";
+import { getActiveAccounts } from "@/lib/consultas";
 
 /**
  * Franja de prueba social — V1 TEMPORAL, EN MODO TEXTO.

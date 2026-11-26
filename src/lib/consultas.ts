@@ -7,15 +7,12 @@ import {
 import { armarPaginaInicio, type PaginaInicio, type RespuestaCrudaInicio } from "@/lib/inicio";
 
 // Tipos, respaldos y normalizadores del Inicio: viven en inicio.ts (sin fetch,
-// para que el panel los use en el navegador). Se re-exportan para que los
-// import de siempre desde "@/lib/sanity" sigan funcionando.
+// para que el panel los use en el navegador). Se re-exportan desde aquí.
 export * from "@/lib/inicio";
-import { fuenteActual } from "@/lib/contenido/fuente";
 import { consultarLocal } from "@/lib/contenido/consulta-local";
 
-/** Lee del contenido guardado en el repositorio (CONTENT_SOURCE=archivos, ver
- *  src/lib/contenido/fuente.ts). Mismas consultas GROQ que contra Sanity.
- *  null si falla: cada funcion decide su respaldo, igual que con Sanity. */
+/** Lee del contenido guardado en el repositorio (carpeta contenido/) con una
+ *  consulta GROQ. null si falla: cada funcion decide su respaldo. */
 async function leerArchivos<T>(query: string, params: Record<string, string>, que: string): Promise<T | null> {
   try {
     return (await consultarLocal<T>(query, params)) ?? null;
@@ -26,32 +23,22 @@ async function leerArchivos<T>(query: string, params: Record<string, string>, qu
 }
 
 /**
- * Conexion a Sanity para las Cuentas (carrusel, muro de logos, pagina
- * individual y sitemap) y sus Contenidos asociados.
- *
- * Deliberadamente SIN el SDK @sanity/client: es un fetch() plano a la API
- * publica de consulta (query API), tal como la expone cualquier dataset con
- * lectura publica. No hace falta token para leer.
- *
- * Variables de entorno esperadas (ver .env.example):
- *   SANITY_PROJECT_ID
- *   SANITY_DATASET
- *
- * Se leen server-side (sin prefijo NEXT_PUBLIC_) porque estas funciones
- * corren en componentes de servidor: el fetch nunca llega al navegador.
+ * Las consultas de la web sobre el contenido del repositorio (contenido/,
+ * que se edita con el panel /admin): las Cuentas (carrusel, muro de logos,
+ * pagina individual y sitemap) con sus Contenidos asociados, y la pagina de
+ * Inicio. El contenido se lee al construir la web; cada publicacion del
+ * panel es un commit y Cloudflare vuelve a construir (docs/panel-propio/).
  *
  * Los tipos de documento son "cuenta", "contenido" y "servicio" (ver
- * studio/schemaTypes/). Los campos del schema estan en español; los alias
+ * src/panel/esquema/colecciones.ts). Los campos estan en español; los alias
  * del GROQ los mapean a los nombres que usa el resto de la app
  * (name/summary/cover/sector/...), asi que ClientCard, ClientsCarousel,
- * VideoTile y la pagina de detalle no necesitan saber nada de Sanity.
+ * VideoTile y la pagina de detalle no dependen de esa forma.
  */
-
-const API_VERSION = "2024-01-01";
 
 /** Reemplazo manual de vocales acentuadas: evita marcas combinadas en el
  *  codigo fuente (fragiles entre editores/encodings) para el slug de
- *  respaldo cuando un documento de Sanity no trae uno propio. */
+ *  respaldo cuando un documento no trae uno propio. */
 const ACENTOS: Record<string, string> = {
   á: "a",
   é: "e",
@@ -71,28 +58,12 @@ function slugify(input: string): string {
     .replace(/(^-+|-+$)/g, "");
 }
 
-/** Arma la URL de la API de consulta publica de Sanity, con parametros
- *  ($nombre) codificados correctamente via URLSearchParams. */
-function buildQueryUrl(
-  projectId: string,
-  dataset: string,
-  query: string,
-  params?: Record<string, string>
-): string {
-  const search = new URLSearchParams({ query });
-  if (params) {
-    for (const [key, value] of Object.entries(params)) {
-      search.set(`$${key}`, JSON.stringify(value));
-    }
-  }
-  return `https://${projectId}.apicdn.sanity.io/v${API_VERSION}/data/query/${dataset}?${search.toString()}`;
-}
 
 // ============================================================
 // Cuentas
 // ============================================================
 
-type SanityCuentaResumen = {
+type CuentaResumenCruda = {
   slug: string | null;
   name: string | null;
   summary: string | null;
@@ -102,7 +73,7 @@ type SanityCuentaResumen = {
   services: (string | null)[] | null;
 };
 
-type SanityContenido = {
+type ContenidoCrudo = {
   _id: string;
   titulo: string | null;
   tipoMedia: "imagen" | "video" | null;
@@ -115,7 +86,7 @@ type SanityContenido = {
   relacionAspecto: VideoSource["ratio"] | null;
 };
 
-export type SanityCuentaCompleta = SanityCuentaResumen & {
+export type CuentaCompletaCruda = CuentaResumenCruda & {
   city: string | null;
   challenge: string | null;
   approach: string | null;
@@ -128,7 +99,7 @@ export type SanityCuentaCompleta = SanityCuentaResumen & {
     sitioWeb?: string | null;
     otros?: { etiqueta: string; url: string }[] | null;
   } | null;
-  contenidos: SanityContenido[] | null;
+  contenidos: ContenidoCrudo[] | null;
 };
 
 // Campos livianos: para el carrusel y el muro de logos, sin el join de
@@ -172,7 +143,7 @@ export const QUERY_CUENTA_POR_SLUG = `*[_type == "cuenta" && activa == true && s
   }
 }`;
 
-function toAccountSummary(doc: SanityCuentaResumen): Client | null {
+function toAccountSummary(doc: CuentaResumenCruda): Client | null {
   if (!doc.name) return null;
   return {
     slug: doc.slug || slugify(doc.name),
@@ -187,7 +158,7 @@ function toAccountSummary(doc: SanityCuentaResumen): Client | null {
   };
 }
 
-function toContenidoVideo(c: SanityContenido): VideoSource | null {
+function toContenidoVideo(c: ContenidoCrudo): VideoSource | null {
   const src = c.tipoVideo === "youtube" ? c.youtubeId : c.videoUrl;
   if (!src) return null;
   return {
@@ -202,7 +173,7 @@ function toContenidoVideo(c: SanityContenido): VideoSource | null {
 }
 
 /** Arma la página de un cliente con la respuesta de QUERY_CUENTA_POR_SLUG. Pura: la usa también la vista previa del panel. */
-export function toAccountFull(doc: SanityCuentaCompleta): Client | null {
+export function toAccountFull(doc: CuentaCompletaCruda): Client | null {
   if (!doc.name) return null;
 
   const contenidos = doc.contenidos ?? [];
@@ -211,7 +182,7 @@ export function toAccountFull(doc: SanityCuentaCompleta): Client | null {
     .map(toContenidoVideo)
     .filter((v): v is VideoSource => v !== null);
   const gallery = contenidos
-    .filter((c): c is SanityContenido & { imagenUrl: string } => c.tipoMedia === "imagen" && Boolean(c.imagenUrl))
+    .filter((c): c is ContenidoCrudo & { imagenUrl: string } => c.tipoMedia === "imagen" && Boolean(c.imagenUrl))
     .map((c) => c.imagenUrl);
 
   const results = (doc.results ?? [])
@@ -257,113 +228,32 @@ export function toAccountFull(doc: SanityCuentaCompleta): Client | null {
 }
 
 /**
- * Cuentas activas para el carrusel y el muro de logos. Si faltan
- * credenciales, la API falla o el dataset viene vacio, cae de vuelta a
- * src/data/clients.ts: esas secciones NUNCA deben quedar rotas ni vacias
- * por un problema de conexion.
+ * Cuentas activas para el carrusel y el muro de logos. Si la lectura falla
+ * o no hay ninguna, cae de vuelta a src/data/clients.ts: esas secciones
+ * NUNCA deben quedar rotas ni vacias.
  */
 export async function getActiveAccounts(): Promise<Client[]> {
-  if (fuenteActual() === "archivos") {
-    const result = await leerArchivos<SanityCuentaResumen[]>(QUERY_CUENTAS_ACTIVAS, {}, "las cuentas");
-    const cuentas = (result ?? []).map(toAccountSummary).filter((c): c is Client => c !== null);
-    return cuentas.length > 0 ? cuentas : clientesRespaldo;
-  }
-
-  const projectId = process.env.SANITY_PROJECT_ID;
-  const dataset = process.env.SANITY_DATASET;
-
-  if (!projectId || !dataset) {
-    console.error(
-      "[sanity] Faltan SANITY_PROJECT_ID / SANITY_DATASET en el entorno. Se muestran las cuentas locales de respaldo (src/data/clients.ts)."
-    );
-    return clientesRespaldo;
-  }
-
-  const url = buildQueryUrl(projectId, dataset, QUERY_CUENTAS_ACTIVAS);
-
-  try {
-    const res = await fetch(url, {
-      // Se consulta al construir la web, no en cada visita (ver
-      // open-next.config.ts). Al publicar en Sanity, /api/revalidate dispara
-      // una construccion nueva y el cambio aparece en unos minutos.
-      cache: "force-cache",
-    });
-    if (!res.ok) throw new Error(`Sanity respondio ${res.status} ${res.statusText}`);
-
-    const { result } = (await res.json()) as { result: SanityCuentaResumen[] };
-    const cuentas = result.map(toAccountSummary).filter((c): c is Client => c !== null);
-
-    return cuentas.length > 0 ? cuentas : clientesRespaldo;
-  } catch (err) {
-    console.error("[sanity] No se pudo obtener las cuentas, se muestran las locales de respaldo:", err);
-    return clientesRespaldo;
-  }
+  const result = await leerArchivos<CuentaResumenCruda[]>(QUERY_CUENTAS_ACTIVAS, {}, "las cuentas");
+  const cuentas = (result ?? []).map(toAccountSummary).filter((c): c is Client => c !== null);
+  return cuentas.length > 0 ? cuentas : clientesRespaldo;
 }
 
 /** Solo los slugs de cuentas activas, para generateStaticParams() y el sitemap. */
 export async function getAllActiveSlugs(): Promise<string[]> {
-  if (fuenteActual() === "archivos") {
-    const result = await leerArchivos<(string | null)[]>(QUERY_SLUGS_ACTIVOS, {}, "los slugs de cuentas");
-    const slugs = (result ?? []).filter((s): s is string => Boolean(s));
-    return slugs.length > 0 ? slugs : clientesRespaldo.map((c) => c.slug);
-  }
-
-  const projectId = process.env.SANITY_PROJECT_ID;
-  const dataset = process.env.SANITY_DATASET;
-
-  if (!projectId || !dataset) {
-    return clientesRespaldo.map((c) => c.slug);
-  }
-
-  const url = buildQueryUrl(projectId, dataset, QUERY_SLUGS_ACTIVOS);
-
-  try {
-    const res = await fetch(url, { cache: "force-cache" });
-    if (!res.ok) throw new Error(`Sanity respondio ${res.status} ${res.statusText}`);
-
-    const { result } = (await res.json()) as { result: (string | null)[] };
-    const slugs = result.filter((s): s is string => Boolean(s));
-
-    return slugs.length > 0 ? slugs : clientesRespaldo.map((c) => c.slug);
-  } catch (err) {
-    console.error("[sanity] No se pudo obtener los slugs de cuentas, se usan los locales de respaldo:", err);
-    return clientesRespaldo.map((c) => c.slug);
-  }
+  const result = await leerArchivos<(string | null)[]>(QUERY_SLUGS_ACTIVOS, {}, "los slugs de cuentas");
+  const slugs = (result ?? []).filter((s): s is string => Boolean(s));
+  return slugs.length > 0 ? slugs : clientesRespaldo.map((c) => c.slug);
 }
 
 /**
  * Una cuenta activa completa, con su contenido asociado ya separado en
  * videos/gallery. Usada por la pagina individual /clientes/[slug]. Si la
- * cuenta no existe o esta inactiva, o si Sanity no responde, cae al
- * respaldo local (y si tampoco esta ahi, null -> notFound()).
+ * cuenta no existe o esta inactiva, cae al respaldo local (y si tampoco
+ * esta ahi, null -> notFound()).
  */
 export async function getAccountBySlug(slug: string): Promise<Client | null> {
-  if (fuenteActual() === "archivos") {
-    const result = await leerArchivos<SanityCuentaCompleta | null>(QUERY_CUENTA_POR_SLUG, { slug }, `la cuenta "${slug}"`);
-    return result ? toAccountFull(result) : (clientesRespaldo.find((c) => c.slug === slug) ?? null);
-  }
-
-  const projectId = process.env.SANITY_PROJECT_ID;
-  const dataset = process.env.SANITY_DATASET;
-
-  if (!projectId || !dataset) {
-    return clientesRespaldo.find((c) => c.slug === slug) ?? null;
-  }
-
-  const url = buildQueryUrl(projectId, dataset, QUERY_CUENTA_POR_SLUG, { slug });
-
-  try {
-    const res = await fetch(url, { cache: "force-cache" });
-    if (!res.ok) throw new Error(`Sanity respondio ${res.status} ${res.statusText}`);
-
-    const { result } = (await res.json()) as { result: SanityCuentaCompleta | null };
-    if (!result) return clientesRespaldo.find((c) => c.slug === slug) ?? null;
-
-    return toAccountFull(result);
-  } catch (err) {
-    console.error(`[sanity] No se pudo obtener la cuenta "${slug}", se usa el respaldo local:`, err);
-    return clientesRespaldo.find((c) => c.slug === slug) ?? null;
-  }
+  const result = await leerArchivos<CuentaCompletaCruda | null>(QUERY_CUENTA_POR_SLUG, { slug }, `la cuenta "${slug}"`);
+  return result ? toAccountFull(result) : (clientesRespaldo.find((c) => c.slug === slug) ?? null);
 }
 
 /**
@@ -391,39 +281,14 @@ export async function getAccountBySlug(slug: string): Promise<Client | null> {
  * en consola) y Tools.tsx se queda con su contenido de siempre.
  */
 
-// --- Fetch generico a la query API publica --------------------------------
+// --- Consulta generica al contenido del repositorio --------------------------
 
-/** Devuelve null ante cualquier problema (sin credenciales, red, documento
- *  inexistente); getSeccionesPaginaInicio() decide el respaldo. */
-export async function sanityQuery<T>(query: string): Promise<T | null> {
-  if (fuenteActual() === "archivos") return leerArchivos<T>(query, {}, "el contenido");
-
-  const projectId = process.env.SANITY_PROJECT_ID;
-  const dataset = process.env.SANITY_DATASET;
-
-  if (!projectId || !dataset) {
-    console.error(
-      "[sanity] Faltan SANITY_PROJECT_ID / SANITY_DATASET en el entorno."
-    );
-    return null;
-  }
-
-  const url = `https://${projectId}.apicdn.sanity.io/v${API_VERSION}/data/query/${dataset}?query=${encodeURIComponent(query)}`;
-
-  try {
-    const res = await fetch(url, { cache: "force-cache" });
-    if (!res.ok) {
-      throw new Error(`Sanity respondio ${res.status} ${res.statusText}`);
-    }
-    const { result } = (await res.json()) as { result: T | null };
-    return result ?? null;
-  } catch (err) {
-    console.error("[sanity] fetch fallo:", err);
-    return null;
-  }
+/** Devuelve null ante cualquier problema; quien llama decide el respaldo. */
+export async function consultar<T>(query: string): Promise<T | null> {
+  return leerArchivos<T>(query, {}, "el contenido");
 }
 
-/** Un solo fetch trae DOS documentos independientes: `paginaInicio`
+/** Una sola consulta trae DOS documentos independientes: `paginaInicio`
  *  (texto/CTA del Hero + secciones + capacidades) y `hero` (solo la
  *  fotografía, documento propio — ver HeroDocRaw). GROQ permite construir
  *  un objeto raíz con ambas consultas en una sola llamada a la Query API,
@@ -498,5 +363,5 @@ export const QUERY_PAGINA_INICIO = `{
  * armarPaginaInicio() (src/lib/inicio.ts), que tambien decide los respaldos.
  */
 export async function getPaginaInicio(): Promise<PaginaInicio> {
-  return armarPaginaInicio(await sanityQuery<RespuestaCrudaInicio>(QUERY_PAGINA_INICIO));
+  return armarPaginaInicio(await consultar<RespuestaCrudaInicio>(QUERY_PAGINA_INICIO));
 }

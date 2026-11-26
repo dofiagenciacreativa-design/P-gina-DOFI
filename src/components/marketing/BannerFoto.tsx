@@ -8,7 +8,7 @@ import { AtmosferaMar } from "./AtmosferaMar";
 import { CierreDofi } from "./CierreDofi";
 import type {
   Alineacion,
-  ImagenSanity,
+  ImagenContenido,
   Overlay,
   SeccionCierre,
   SeccionEquipo,
@@ -51,7 +51,7 @@ import type {
  * despues del anterior y en 600ms: rapida, sin movimiento permanente.
  */
 
-function aPosicion(h: ImagenSanity["hotspot"]) {
+function aPosicion(h: ImagenContenido["hotspot"]) {
   return h ? `${Math.round(h.x * 100)}% ${Math.round(h.y * 100)}%` : "50% 50%";
 }
 
@@ -62,8 +62,8 @@ function FotoCubierta({
   imagenMovil,
   prioridad,
 }: {
-  imagen: ImagenSanity;
-  imagenMovil: ImagenSanity | null;
+  imagen: ImagenContenido;
+  imagenMovil: ImagenContenido | null;
   prioridad: boolean;
 }) {
   const {

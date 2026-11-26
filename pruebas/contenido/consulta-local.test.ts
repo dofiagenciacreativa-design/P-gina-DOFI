@@ -1,8 +1,8 @@
 import { expect, test } from "vitest";
-import consulta from "../fixtures/sanity/consulta-inicio.json";
-import documentos from "../fixtures/sanity/documentos-inicio.json";
+import consulta from "../fixtures/inicio/consulta-inicio.json";
+import documentos from "../fixtures/inicio/documentos-inicio.json";
 import archivos from "../../contenido/archivos.json";
-import { QUERY_PAGINA_INICIO } from "@/lib/sanity";
+import { QUERY_PAGINA_INICIO } from "@/lib/consultas";
 import { consultarSobre } from "@/lib/contenido/consulta-local";
 import type { Doc } from "@/lib/contenido/tipos";
 

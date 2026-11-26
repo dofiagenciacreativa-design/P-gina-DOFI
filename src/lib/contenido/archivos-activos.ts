@@ -1,9 +1,9 @@
 import type { ResolverArchivo } from "./tipos";
 
 /**
- * Los documentos de activos (imágenes y videos) con la forma de Sanity:
- * `sanity.imageAsset` / `sanity.fileAsset`. Vienen de Sanity o de
- * contenido/archivos.json, según la fuente (src/lib/contenido/fuente.ts).
+ * Los documentos de activos (imágenes y videos) de contenido/archivos.json.
+ * Conservan los nombres de tipo con que se copiaron (`sanity.imageAsset` /
+ * `sanity.fileAsset`): son solo nombres, no hay ninguna conexión con Sanity.
  */
 export type Activo = {
   _id: string;

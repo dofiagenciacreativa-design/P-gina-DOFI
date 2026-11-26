@@ -23,7 +23,7 @@ import {
   Storefront,
   type Icon,
 } from "@phosphor-icons/react";
-import type { EmpresaGiro, GiroNegocio, IconoCategoria, ImagenSanity } from "@/lib/marketing-digital";
+import type { EmpresaGiro, GiroNegocio, IconoCategoria, ImagenContenido } from "@/lib/marketing-digital";
 import { LogoRedondo } from "./LogoRedondo";
 
 /**
@@ -137,13 +137,13 @@ function distribuir(ancho: number, n: number, activo: number, inicioPrevio: numb
   return { inicio, visibles, plegado, abierto: util - (visibles - 1) * plegado, separacion: m.separacion };
 }
 
-function posicionFoto(h: ImagenSanity["hotspot"]) {
+function posicionFoto(h: ImagenContenido["hotspot"]) {
   return h ? `${Math.round(h.x * 100)}% ${Math.round(h.y * 100)}%` : "50% 50%";
 }
 
 /** Imagen de un caso de éxito para el panel abierto (modo casos, Asesorías).
  *  `clave` identifica el caso: cambia la clave, entra la imagen nueva. */
-export type FotoCaso = { clave: string; url: string; hotspot: ImagenSanity["hotspot"]; alt: string };
+export type FotoCaso = { clave: string; url: string; hotspot: ImagenContenido["hotspot"]; alt: string };
 
 const CURVA_FOTO = [0.16, 1, 0.3, 1] as const;
 

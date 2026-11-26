@@ -1,5 +1,5 @@
 import { getImageProps } from "next/image";
-import type { ImagenSanity } from "@/lib/marketing-digital";
+import type { ImagenContenido } from "@/lib/marketing-digital";
 
 /**
  * Una pieza grafica terminada, mostrada ENTERA y tal como fue diseñada.
@@ -26,8 +26,8 @@ export function PiezaCompleta({
   alt,
   sizes = "100vw",
 }: {
-  imagen: ImagenSanity;
-  imagenMovil?: ImagenSanity | null;
+  imagen: ImagenContenido;
+  imagenMovil?: ImagenContenido | null;
   alt: string;
   sizes?: string;
 }) {

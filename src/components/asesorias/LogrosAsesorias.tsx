@@ -5,7 +5,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { Anim } from "@/components/marketing/Anim";
 import { OrnamentoIcono, OrnamentoNodo, OrnamentoRuta } from "@/components/marketing/OrnamentoNautico";
 import { claveGiro, type CasoExito, type Logro, type SeccionLogros } from "@/lib/asesorias";
-import type { GiroNegocio, IconoCategoria, ImagenSanity } from "@/lib/marketing-digital";
+import type { GiroNegocio, IconoCategoria, ImagenContenido } from "@/lib/marketing-digital";
 import { MazoCasos } from "./MazoCasos";
 
 /**
@@ -37,7 +37,7 @@ import { MazoCasos } from "./MazoCasos";
 
 const CURVA = [0.16, 1, 0.3, 1] as const;
 
-function posicion(h: ImagenSanity["hotspot"]) {
+function posicion(h: ImagenContenido["hotspot"]) {
   return h ? `${Math.round(h.x * 100)}% ${Math.round(h.y * 100)}%` : "50% 30%";
 }
 
@@ -47,7 +47,7 @@ function partirUltima(titulo: string): [string, string] {
   return i < 0 ? ["", titulo] : [titulo.slice(0, i), titulo.slice(i + 1)];
 }
 
-type Capa = { clave: string; foto: ImagenSanity };
+type Capa = { clave: string; foto: ImagenContenido };
 
 /** La foto de la historia al frente. Cada foto nueva entra con un barrido
  *  desde la derecha (el lado del mazo) y un zoom que se asienta; la anterior

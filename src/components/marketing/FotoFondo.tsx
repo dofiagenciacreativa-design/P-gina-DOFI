@@ -1,5 +1,5 @@
 import { getImageProps } from "next/image";
-import type { ImagenSanity } from "@/lib/marketing-digital";
+import type { ImagenContenido } from "@/lib/marketing-digital";
 
 /** Foto de fondo cargada en el Studio (Portada y Cierre). Igual que en los
  *  banners de Marketing Digital: version movil opcional, cada una con su
@@ -9,11 +9,11 @@ export function FotoFondo({
   imagenMovil,
   prioridad = false,
 }: {
-  imagen: ImagenSanity;
-  imagenMovil: ImagenSanity | null;
+  imagen: ImagenContenido;
+  imagenMovil: ImagenContenido | null;
   prioridad?: boolean;
 }) {
-  const pos = (h: ImagenSanity["hotspot"]) => (h ? `${Math.round(h.x * 100)}% ${Math.round(h.y * 100)}%` : "50% 50%");
+  const pos = (h: ImagenContenido["hotspot"]) => (h ? `${Math.round(h.x * 100)}% ${Math.round(h.y * 100)}%` : "50% 50%");
   const {
     props: { srcSet, style, ...resto },
   } = getImageProps({ src: imagen.url, alt: imagen.alt, fill: true, sizes: "100vw", priority: prioridad, unoptimized: imagen.url.startsWith("/") });

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getAccountBySlug, getAllActiveSlugs } from "@/lib/sanity";
+import { getAccountBySlug, getAllActiveSlugs } from "@/lib/consultas";
 import { company } from "@/config/company";
 import { metadatosDePagina } from "@/config/seo";
 import { FichaCliente } from "@/components/clientes/FichaCliente";

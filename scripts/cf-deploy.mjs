@@ -17,7 +17,7 @@
  * Cloudflare define WORKERS_CI=1 y WORKERS_CI_BRANCH en sus construcciones.
  */
 import { spawnSync } from "node:child_process";
-import { cpSync, existsSync, readFileSync } from "node:fs";
+import { cpSync, existsSync } from "node:fs";
 
 const RAMA_DE_PRODUCCION = "main";
 
@@ -29,28 +29,6 @@ function correr(comando) {
 
 const rama = process.env.WORKERS_CI_BRANCH;
 const enCloudflare = process.env.WORKERS_CI === "1";
-const publicaProduccion = !(enCloudflare && rama && rama !== RAMA_DE_PRODUCCION);
-
-// SEGURO DEL PANEL PROPIO (2026-11-25, docs/panel-propio/plan-etapa-2.md):
-// la web publicada sigue leyendo de Sanity hasta la etapa 6. Si alguien deja
-// CONTENT_SOURCE=archivos (pensado solo para la vista previa de una rama) y
-// eso llega a main, la construccion se detiene antes de publicar nada. En la
-// etapa 6 se crea contenido/LISTO-PARA-PRODUCCION y el seguro se abre.
-if (publicaProduccion) {
-  const enArchivo = existsSync(".env.production")
-    ? readFileSync(".env.production", "utf8").match(/^\s*CONTENT_SOURCE\s*=\s*(\S+)/m)?.[1]
-    : undefined;
-  const fuente = process.env.CONTENT_SOURCE ?? enArchivo ?? "sanity";
-  if (fuente === "archivos" && !existsSync("contenido/LISTO-PARA-PRODUCCION")) {
-    console.error(
-      "\nCONTENT_SOURCE=archivos esta pensado solo para vistas previas hasta la etapa 6 del panel." +
-        "\nEn produccion la web sigue leyendo de Sanity. Volver a poner CONTENT_SOURCE=sanity en .env.production" +
-        "\n(o crear contenido/LISTO-PARA-PRODUCCION el dia del cambio). No se publico nada.\n"
-    );
-    process.exit(1);
-  }
-}
-
 correr("opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion");
 
 if (enCloudflare && rama && rama !== RAMA_DE_PRODUCCION) {

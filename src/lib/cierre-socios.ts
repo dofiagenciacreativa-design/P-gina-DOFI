@@ -1,4 +1,4 @@
-import type { ImagenSanity } from "@/lib/marketing-digital";
+import type { ImagenContenido } from "@/lib/marketing-digital";
 
 /**
  * Las dos imagenes que acompañan el cierre de Marketing Digital («¿Somos socios
@@ -13,7 +13,7 @@ import type { ImagenSanity } from "@/lib/marketing-digital";
  * (ajustar-2026-10-08.mts) usan el MISMO archivo de imagen que Marketing, así
  * que no se sube dos veces.
  */
-export const IMAGEN_CIERRE_SOCIOS: ImagenSanity = {
+export const IMAGEN_CIERRE_SOCIOS: ImagenContenido = {
   url: "/cierre/socios.webp",
   ancho: 2077,
   alto: 757,

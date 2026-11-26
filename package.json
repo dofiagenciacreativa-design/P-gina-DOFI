@@ -12,22 +12,8 @@
     "cf:preview": "opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion && opennextjs-cloudflare preview",
     "cf:deploy": "node scripts/cf-deploy.mjs",
     "cf:typegen": "wrangler types cloudflare-env.d.ts",
-    "seed:sanity": "tsx scripts/seed-sanity-accounts.ts",
-    "sembrar:feniax": "tsx --env-file=.env.local scripts/sembrar-feniax.mts",
-    "sembrar:trafico": "tsx --env-file=.env.local scripts/sembrar-trafico.mts",
-    "ajustar:feniax": "tsx --env-file=.env.local scripts/ajustar-feniax.mts",
-    "ajustar:ctas": "tsx --env-file=.env.local scripts/ajustar-ctas.mts",
-    "sembrar:asesorias": "tsx --env-file=.env.local scripts/sembrar-asesorias.mts",
-    "ajustar:paginas": "tsx --env-file=.env.local scripts/ajustar-paginas.mts",
-    "ajustar:home-hibrido": "tsx --env-file=.env.local scripts/ajustar-2026-10-08.mts",
-    "ajustar:2026-10-15": "tsx --env-file=.env.local scripts/ajustar-2026-10-15.mts",
-    "ajustar:2026-10-16": "tsx --env-file=.env.local scripts/ajustar-2026-10-16.mts",
-    "ajustar:2026-10-20": "tsx --env-file=.env.local scripts/ajustar-2026-10-20.mts",
-    "logos:circulares": "tsx --env-file=.env.local scripts/logos-circulares.mts",
     "grabar:escenas": "node scripts/grabar-escenas.mjs",
-    "probar": "vitest run",
-    "contenido:copiar": "tsx --env-file=.env.production scripts/contenido-desde-sanity.mts",
-    "contenido:paridad": "tsx --env-file=.env.production scripts/paridad-contenido.mts"
+    "probar": "vitest run"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.20.2",
@@ -44,7 +30,6 @@
     "simple-icons": "^16.27.0"
   },
   "devDependencies": {
-    "@sanity/client": "^6.24.1",
     "@tailwindcss/postcss": "^4.1.13",
     "@types/node": "^22.15.0",
     "@types/react": "^19.1.0",

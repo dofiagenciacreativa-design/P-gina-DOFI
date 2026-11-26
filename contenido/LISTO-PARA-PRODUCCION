@@ -1,5 +1,0 @@
-El contenido de esta carpeta es el de la web desde el cambio (etapa 6 del panel
-propio, docs/panel-propio/plan-etapa-6.md). Con este archivo, scripts/cf-deploy.mjs
-deja construir main leyendo contenido/ (CONTENT_SOURCE=archivos).
-
-Quitarlo (junto con CONTENT_SOURCE=archivos de .env.production) devuelve la web a Sanity.

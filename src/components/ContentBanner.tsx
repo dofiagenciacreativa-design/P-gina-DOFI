@@ -9,7 +9,7 @@ import type {
   PosicionHorizontalCta,
   PosicionVerticalCta,
   SeccionContenido,
-} from "@/lib/sanity";
+} from "@/lib/consultas";
 
 /**
  * Uno de los 4 banners full-width que van debajo de las tarjetas del Hero.

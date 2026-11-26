@@ -23,7 +23,7 @@ import { referenciasDeActivos, resolverDeActivos, type Activo } from "@/lib/cont
 import { consultarSobre } from "@/lib/contenido/consulta-local";
 import { ARCHIVO_DE_COLECCION, BORRAR, repetido } from "@/lib/contenido/colecciones";
 import { ARCHIVO_DE_DOCUMENTO } from "@/lib/contenido/serializar";
-import { QUERY_CUENTA_POR_SLUG, toAccountFull, type SanityCuentaCompleta } from "@/lib/sanity";
+import { QUERY_CUENTA_POR_SLUG, toAccountFull, type CuentaCompletaCruda } from "@/lib/consultas";
 import { QUERY_MARKETING, armarPaginaMarketingDigital, type Resena, type RespuestaRaw } from "@/lib/marketing-digital";
 import { QUERY_TRAFICO, armarPaginaTrafico, type RespuestaTrafico } from "@/lib/trafico";
 import { QUERY_FENIAX, armarPaginaFeniax, type RespuestaFeniax } from "@/lib/feniax";
@@ -166,12 +166,6 @@ export function Panel({
     () => conjunto.filter((d) => d._type === "sanity.imageAsset" || d._type === "sanity.fileAsset") as unknown as Activo[],
     [conjunto]
   );
-  /** Cuántos videos en uso se ven todavía desde Sanity (se pasan a R2 con un clic). */
-  const videosEnSanity = useMemo(() => {
-    const usadas = referenciasDeActivos(conjunto.filter((d) => !d._type.startsWith("sanity.")));
-    return activos.filter((a) => a._id.startsWith("file-") && a.url.startsWith("https://cdn.sanity.io/") && usadas.has(a._id)).length;
-  }, [conjunto, activos]);
-  const [videos, setVideos] = useState<{ estado: "nada" | "copiando" | "listo" | "error"; mensaje?: string }>({ estado: "nada" });
   const [original, setOriginal] = useState(documentos);
   const [sesion, setSesion] = useState<"cargando" | "no" | "si">("cargando");
   /** rama: adónde se publica; sitio: dónde se ve esa rama (null = este mismo sitio). */
@@ -181,7 +175,7 @@ export function Panel({
     faltan: [],
     llave: null,
   });
-  /** Sin rama destino (la web real hasta la etapa 6): se edita y se ve, pero no se publica. */
+  /** Sin rama destino (PANEL_RAMA_DESTINO): se edita y se ve, pero no se publica. */
   const soloMirar = sesion === "si" && !ajustes.rama;
   const [publicacion, setPublicacion] = useState<Publicacion>({ estado: "nada" });
   const [recuperado, setRecuperado] = useState(false);
@@ -302,7 +296,7 @@ export function Panel({
         if (pagina === "cuenta") {
           const doc = docs[vistaSeccion];
           const slug = (doc?.slug as { current?: string } | undefined)?.current;
-          const cruda = slug ? await consultarSobre<SanityCuentaCompleta | null>(conjuntoVivo, QUERY_CUENTA_POR_SLUG, { slug }) : null;
+          const cruda = slug ? await consultarSobre<CuentaCompletaCruda | null>(conjuntoVivo, QUERY_CUENTA_POR_SLUG, { slug }) : null;
           nueva = {
             pagina: "cliente",
             cliente: cruda ? toAccountFull(cruda) : null,
@@ -503,24 +497,6 @@ export function Panel({
     setSesion("no");
   }
 
-  /** Una vez: pasa a R2 los videos que todavía salen de Sanity y publica sus direcciones nuevas. */
-  async function pasarVideos() {
-    setVideos({ estado: "copiando" });
-    try {
-      const r = await fetch("/api/admin/videos/copiar", { method: "POST" });
-      const j = (await r.json().catch(() => ({}))) as { copiados?: string[]; commit?: string; error?: string; mensaje?: string };
-      if (!r.ok) {
-        if (r.status === 401) setSesion("no");
-        setVideos({ estado: "error", mensaje: j.error ?? "No se pudieron pasar los videos." });
-        return;
-      }
-      setVideos({ estado: "listo", mensaje: j.mensaje ?? `Listo: ${j.copiados?.length ?? 0} videos ya están en Cloudflare. La web los usará en unos minutos.` });
-      if (j.commit) setPublicacion({ estado: "publicando", commit: j.commit, pedidoEn: Date.now() });
-    } catch {
-      setVideos({ estado: "error", mensaje: "No hay conexión. Vuelve a intentar." });
-    }
-  }
-
   function descartarTodo() {
     setDocs(original);
     setFotosNuevas([]);
@@ -543,7 +519,7 @@ export function Panel({
             setVideosNuevos((v) => [...v.filter((x) => x.activo._id !== video.activo._id), video]);
             return { _type: "file", asset: { _ref: video.activo._id, _type: "reference" } };
           },
-      motivoSinVideo: soloMirar ? "En la web real el panel es «solo para mirar»: los videos se cambian en la vista previa." : undefined,
+      motivoSinVideo: soloMirar ? "Este sitio no tiene configurado dónde publicar: los videos no se pueden cambiar aquí." : undefined,
       catalogo: (tipo) =>
         documentosDe(tipo, docs)
           .filter((d) => !estaBorrado(d))
@@ -761,7 +737,7 @@ export function Panel({
           type="button"
           onClick={() => setPublicacion({ estado: "confirmar" })}
           disabled={soloMirar || n === 0 || repetidos.length > 0 || publicacion.estado === "enviando" || publicacion.estado === "confirmar"}
-          title={soloMirar ? "En la web real, publicar desde el panel se activa el día del cambio (etapa 6)" : undefined}
+          title={soloMirar ? "Este sitio no tiene configurado dónde publicar (PANEL_RAMA_DESTINO)" : undefined}
           className="rounded-[10px] bg-accent px-3.5 py-2 text-[0.88rem] font-semibold text-ink transition-colors hover:bg-accent-lift disabled:bg-white/10 disabled:text-foam/55"
         >
           {n ? `Publicar cambios (${n})` : "Publicar cambios"}
@@ -844,7 +820,7 @@ export function Panel({
         </p>
       ) : soloMirar ? (
         <p className="border-b border-brand/15 bg-brand/[0.07] px-4 py-2 text-[0.85rem] text-brand sm:px-6">
-          <strong>Solo para mirar.</strong> La web real todavía se edita en Sanity: aquí puedes probar cambios y ver cómo quedan, pero «Publicar cambios» se activa el día del cambio (etapa 6). Lo que escribas aquí no sale a la web.
+          <strong>Solo para mirar.</strong> Este sitio no tiene configurado dónde publicar: puedes probar cambios y ver cómo quedan, pero «Publicar cambios» está apagado y lo que escribas aquí no sale a la web.
         </p>
       ) : ajustes.rama && ajustes.rama !== "main" ? (
         <p className="border-b border-brand/15 bg-brand/[0.07] px-4 py-2 text-[0.85rem] text-brand sm:px-6">
@@ -859,20 +835,6 @@ export function Panel({
             <strong>No se va a poder publicar todavía.</strong> {ajustes.llave}
           </span>
         </p>
-      ) : null}
-
-      {soloMirar ? null : videosEnSanity > 0 && videos.estado !== "listo" ? (
-        <p className="flex flex-wrap items-center gap-2 border-b border-canvas-border bg-white px-4 py-2 text-[0.85rem] text-ink-muted sm:px-6">
-          <span>
-            {videosEnSanity === 1 ? "Hay 1 video que todavía se ve desde Sanity." : `Hay ${videosEnSanity} videos que todavía se ven desde Sanity.`} Pásalos a Cloudflare una sola vez (tarda un par de minutos).
-          </span>
-          <button type="button" onClick={pasarVideos} disabled={videos.estado === "copiando"} className="rounded-full border border-brand px-3 py-1 text-[0.8rem] font-semibold text-brand hover:bg-brand hover:text-white disabled:opacity-60">
-            {videos.estado === "copiando" ? "Pasando los videos…" : "Pasar los videos a Cloudflare"}
-          </button>
-          {videos.estado === "error" ? <span className="font-medium text-[#B4520B]">{videos.mensaje}</span> : null}
-        </p>
-      ) : videos.estado === "listo" ? (
-        <p className="border-b border-canvas-border bg-white px-4 py-2 text-[0.85rem] text-[#1F6B47] sm:px-6">{videos.mensaje}</p>
       ) : null}
 
       {repetidos.length ? (

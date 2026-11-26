@@ -566,7 +566,7 @@ function CampoArchivo({
   const [error, setError] = useState<string | null>(null);
   const info = resolver(valor);
   const miniatura =
-    info && !esVideo ? (info.url.includes("cdn.sanity.io") ? `${info.url}?w=480&auto=format` : (direccionParaAncho(info.url, 240) ?? info.url)) : null;
+    info && !esVideo ? (direccionParaAncho(info.url, 240) ?? info.url) : null;
 
   async function elegido(e: React.ChangeEvent<HTMLInputElement>) {
     const archivo = e.target.files?.[0];

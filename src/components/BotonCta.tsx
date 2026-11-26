@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
-import type { ColorCta } from "@/lib/sanity";
+import type { ColorCta } from "@/lib/consultas";
 
 /**
  * Boton de llamado a la accion de DOFI: pastilla con flecha, aro y sombra.

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getAllActiveSlugs } from "@/lib/sanity";
+import { getAllActiveSlugs } from "@/lib/consultas";
 import { absoluteUrl } from "@/config/site";
 import { PAGINAS, type DatosPagina } from "@/config/seo";
 

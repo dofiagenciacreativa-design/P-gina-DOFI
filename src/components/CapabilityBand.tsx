@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 import { ShareNetwork, Megaphone, ChartLineUp, Lifebuoy, GraduationCap, ArrowUpRight } from "@phosphor-icons/react";
 import { useCallback, useRef, useState, type PointerEvent } from "react";
-import type { Capacidad } from "@/lib/sanity";
+import type { Capacidad } from "@/lib/consultas";
 
 /**
  * Banda de capacidades — 4 tarjetas editables desde Sanity (Replanteo

@@ -2,7 +2,7 @@ import { BotonCta } from "@/components/BotonCta";
 import { Anim } from "./Anim";
 import { OrnamentoDelfin, OrnamentoIcono, OrnamentoNodo, OrnamentoOlas, OrnamentoRuta } from "./OrnamentoNautico";
 import { PiezaCompleta } from "./PiezaCompleta";
-import type { CtaSimple, ImagenSanity, SeccionQueEs } from "@/lib/marketing-digital";
+import type { CtaSimple, ImagenContenido, SeccionQueEs } from "@/lib/marketing-digital";
 
 /**
  * 2 · ¿Qué es DOFI? (aboutBanner).
@@ -38,8 +38,8 @@ export function ModoPieza({
   id: string;
   nivel: "h1" | "h2";
   titulo: string;
-  imagen: ImagenSanity;
-  imagenMovil: ImagenSanity | null;
+  imagen: ImagenContenido;
+  imagenMovil: ImagenContenido | null;
   altPorDefecto: string;
   cta: CtaSimple;
   animar: boolean;

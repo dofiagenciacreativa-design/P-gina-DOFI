@@ -1,5 +1,5 @@
 import { variarCtas } from "@/lib/cta";
-import { sanityQuery } from "@/lib/sanity";
+import { consultar } from "@/lib/consultas";
 import { obtenerResenasGoogle } from "@/lib/google-places";
 import { COPY_FENIAX } from "@/lib/feniax-respaldo";
 import { IMAGEN_CIERRE_SOCIOS } from "@/lib/cierre-socios";
@@ -280,6 +280,6 @@ export function armarPaginaFeniax(respuesta: RespuestaFeniax | null, resenasGoog
 }
 
 export async function getPaginaFeniax(): Promise<PaginaFeniax> {
-  const [respuesta, resenasGoogle] = await Promise.all([sanityQuery<RespuestaFeniax>(QUERY_FENIAX), obtenerResenasGoogle()]);
+  const [respuesta, resenasGoogle] = await Promise.all([consultar<RespuestaFeniax>(QUERY_FENIAX), obtenerResenasGoogle()]);
   return armarPaginaFeniax(respuesta, resenasGoogle);
 }

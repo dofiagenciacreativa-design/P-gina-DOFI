@@ -12,7 +12,7 @@ import { CLAVES_ESCENA, type ClaveEscena } from "@/remotion/home/tema";
  * solo se exportan los tipos crudos.
  *
  * sanity.ts re-exporta todo lo de aqui, asi que los import de siempre
- * (from "@/lib/sanity") siguen funcionando.
+ * (from "@/lib/consultas") siguen funcionando.
  */
 
 // --- Tipos de las secciones ya conectadas a un componente -----------------

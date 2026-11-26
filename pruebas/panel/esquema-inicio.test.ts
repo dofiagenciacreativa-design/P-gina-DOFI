@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import documentos from "../fixtures/sanity/documentos-inicio.json";
+import documentos from "../fixtures/inicio/documentos-inicio.json";
 import type { Doc } from "@/lib/contenido/tipos";
 import { seccionesInicio } from "@/panel/esquema/inicio";
 import { leer } from "@/panel/motor/rutas";

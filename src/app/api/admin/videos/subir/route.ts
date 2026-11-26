@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
  *   POST {accion:"terminar", nombre, uploadId, partes}  → {listo}
  *   POST {accion:"cancelar", nombre, uploadId}          → {cancelado}
  *
- * Sin rama destino (la web real hasta la etapa 6, «solo para mirar») no se sube nada.
+ * Sin rama destino (PANEL_RAMA_DESTINO, «solo para mirar») no se sube nada.
  */
 
 type Pedido =
@@ -24,7 +24,7 @@ type Pedido =
   | { accion: "cancelar"; nombre: string; uploadId: string };
 
 function preparar() {
-  if (!ramaDestino()) return { error: json({ error: "En la web real el panel todavía es «solo para mirar»: los videos se cambian en la vista previa." }, 403) };
+  if (!ramaDestino()) return { error: json({ error: "Este sitio no tiene configurado dónde publicar: los videos no se pueden cambiar aquí." }, 403) };
   const almacen = almacenDeVideos();
   if (!almacen) return { error: json({ error: "El almacén de videos (R2) no está conectado a este sitio." }, 503) };
   return { almacen };

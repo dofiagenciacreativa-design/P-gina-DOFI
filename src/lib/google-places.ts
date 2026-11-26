@@ -3,7 +3,7 @@ import type { Resena } from "./marketing-digital";
 /**
  * Reseñas reales de Google, via la API de Places (Place Details, campo
  * `reviews`). Fuente PRIORITARIA de la sección Reseñas: si esto devuelve
- * algo, se muestra tal cual y no se mezcla con las reseñas de Sanity (quien
+ * algo, se muestra tal cual y no se mezcla con las reseñas guardadas (quien
  * llama decide la prioridad; este archivo solo trae los datos).
  *
  * CREDENCIALES: `GOOGLE_PLACES_API_KEY` y `GOOGLE_PLACE_ID`, SOLO en
@@ -17,12 +17,12 @@ import type { Resena } from "./marketing-digital";
  *
  * CACHE: los Terminos de Servicio de Google Maps Platform limitan cuanto
  * tiempo se puede conservar el contenido de Place Details. 6 horas es un
- * margen conservador: nunca se guarda de forma permanente en Sanity ni en
+ * margen conservador: nunca se guarda de forma permanente en el contenido ni en
  * ningun otro lado. Ver la nota de abajo sobre las construcciones.
  *
  * RESPALDO: sin configurar, con cualquier error de red, o si Google no
  * devuelve reseñas validas, esta funcion responde `null` -- nunca lanza --
- * para que quien llama caiga a las reseñas de Sanity sin romper la pagina.
+ * para que quien llama caiga a las reseñas guardadas sin romper la pagina.
  */
 
 // OJO (2026-11-24): las paginas ahora se arman al construir la web y no
@@ -73,13 +73,13 @@ export async function obtenerResenasGoogle(): Promise<Resena[] | null> {
     const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(placeId)}&fields=reviews&language=es&key=${encodeURIComponent(apiKey)}`;
     const res = await fetch(url, { cache: "force-cache" });
     if (!res.ok) {
-      console.error(`[google-places] HTTP ${res.status} al consultar Place Details, se usa el respaldo de Sanity.`);
+      console.error(`[google-places] HTTP ${res.status} al consultar Place Details, se usan las reseñas guardadas.`);
       return null;
     }
 
     const datos = (await res.json()) as RespuestaPlaceDetails;
     if (datos.status !== "OK") {
-      console.error(`[google-places] Place Details respondio status "${datos.status}", se usa el respaldo de Sanity.`);
+      console.error(`[google-places] Place Details respondio status "${datos.status}", se usan las reseñas guardadas.`);
       return null;
     }
 
@@ -89,7 +89,7 @@ export async function obtenerResenasGoogle(): Promise<Resena[] | null> {
 
     return resenas.length > 0 ? resenas : null;
   } catch (err) {
-    console.error("[google-places] fetch fallo, se usa el respaldo de Sanity:", err);
+    console.error("[google-places] fetch fallo, se usan las reseñas guardadas:", err);
     return null;
   }
 }

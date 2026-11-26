@@ -50,9 +50,9 @@ Para que eso funcione:
 - `npm run cf:deploy` (`scripts/cf-deploy.mjs`) construye siempre, pero solo
   publica en `main` (o a mano). En otra rama Cloudflare rechaza publicar el
   Worker de produccion y la construccion fallaba entera.
-- `wrangler.jsonc` repite las variables de Sanity y el enlace
-  `WORKER_SELF_REFERENCE` dentro de `"previews"`: no se heredan, y sin ellas la
-  vista previa mostraba el contenido de respaldo.
+- `wrangler.jsonc` repite dentro de `"previews"` el enlace
+  `WORKER_SELF_REFERENCE`, el almacén de videos de pruebas y
+  `PANEL_RAMA_DESTINO`: no se heredan de producción.
 
 La vista previa de una rama queda en
 `https://<rama>-pagina-dofi.dofiagenciacreativa.workers.dev`.
@@ -116,138 +116,28 @@ hay que tocar codigo:
 | `cover-16-9.jpg` | 16:9 | Portadas de video horizontal |
 | `cover-9-16.jpg` | 9:16 | Portadas de video vertical |
 
-### 3. Los clientes, sus páginas y sus videos
+### 3. El contenido: textos, fotos, videos, clientes y reseñas
 
-**El carrusel de la home (sección Clientes) se pinta con datos de Sanity**,
-via `src/lib/sanity.ts` (`getClientesSanity`, un `fetch()` directo a la query
-API pública — sin SDK). Lee `titulo`, `descripcion`, `imagen` y `categoria`
-de cada documento `cliente` y los mapea a `name` / `summary` / `cover` /
-`sector`. Si Sanity no responde (o faltan las variables de entorno), cae de
-vuelta a `src/data/clients.ts` para que el carrusel nunca se quede roto ni
-vacío.
+**Se edita en el panel propio, `/admin`** (una contraseña; docs/panel-propio/).
+Desde el 2026-11-26 la web ya no usa Sanity.
 
-Variables de entorno necesarias (ya están en Cloudflare; para local, copia
-`.env.example` a `.env.local`):
-
-```
-SANITY_PROJECT_ID=
-SANITY_DATASET=
-```
-
-El `_type` que se consulta es `"cliente"` — si tu Sanity Studio usa otro
-nombre de documento, ajústalo en `SANITY_TYPE` al inicio de `src/lib/sanity.ts`.
-
-**El texto de "Lo que hacemos", "El Socio" y el cierre/formulario sale de
-una sola consulta a un documento `paginaInicio`**, que trae un arreglo
-`secciones[]`. `page.tsx` busca cada una por `_type` con el diccionario
-`RENDERERS` (definido ahí mismo) y la pinta en un **lugar fijo del orden
-de la home**:
-
-```
-Hero -> LogoWall + Clientes -> Services (seccionHacemos) -> Process
-     -> Manifesto -> Tools -> Socio (seccionSocio) -> Contact (seccionCierre)
-```
-
-⚠️ **Esto cambió**: antes, el orden entre Hacemos/Socio/Cierre lo decidía
-el orden real del arreglo `secciones` en el Studio (reordenar ahí
-reordenaba la página sola). Por un pedido explícito de orden fijo para
-toda la home, esas tres secciones ahora tienen una posición fija en
-`page.tsx` — el **texto** de cada una sigue viniendo de Sanity, pero ya no
-se pueden reordenar *entre sí* sin volver a tocar código. Si en algún
-momento se quiere recuperar el reordenamiento dinámico, hay que volver al
-patrón anterior (`secciones.map(...)` en vez de buscar cada una por
-`_type` en un lugar fijo — queda documentado en el propio `page.tsx`).
-
-```groq
-*[_type == "paginaInicio"][0]{
-  titulo,
-  secciones[]{
-    _type,
-    _type == "seccionHacemos" => { titulo, subtitulo, tarjetas[]{ titulo, descripcion } },
-    _type == "seccionSocio" => { nombre, descripcion, "foto": foto.asset->url },
-    _type == "seccionPilares" => { titulo, listaHerramientas[]{ nombre, icono } },
-    _type == "seccionCierre" => { titulo, textoBoton, enlace }
-  }
-}
-```
-
-| `_type` en `secciones[]` | Campos | Se usa en | Estado |
-| --- | --- | --- | --- |
-| `seccionHacemos` | `titulo`, `subtitulo`, `tarjetas[]{titulo, descripcion}` | `Services.tsx` | ✅ conectado |
-| `seccionSocio` | `nombre`, `descripcion`, `foto` | `Socio.tsx` + `SocioPortrait.tsx` | ✅ conectado |
-| `seccionCierre` | `titulo`, `textoBoton`, `enlace` | `Contact.tsx` (etiqueta de arriba + botón de WhatsApp) | ✅ conectado |
-| `seccionPilares` | `titulo`, `listaHerramientas[]{nombre, icono}` | — | ⏸️ sin componente todavía (ver más abajo) |
-
-Notas importantes:
-
-- **El formulario real de contacto (nombre, correo, mensaje, envío a
-  `/api/contacto`) no viene de Sanity y no se tocó.** `seccionCierre` solo
-  trae `titulo`/`textoBoton`/`enlace`, que se usan para la etiqueta pequeña
-  arriba del formulario y el botón de WhatsApp — son, literalmente, un
-  título y un botón con enlace. El título y subtítulo grandes del
-  formulario siguen fijos en `Contact.tsx`.
-- **`seccionCierre` (el formulario) vuelve a ser fijo como última sección**
-  antes del pie de página, igual que siempre.
-- **`seccionPilares` todavía no tiene componente.** Se decidió no adivinar:
-  el esquema (`listaHerramientas[]{nombre, icono}`) no trae el texto de
-  rol/descripción que cada herramienta necesita en `Tools.tsx` ("Con qué
-  trabajamos"), ni su color de marca ni el ancho de celda del bento grid.
-  Mientras tanto, si esta sección llega en el arreglo, se ignora sin romper
-  nada (con un aviso en consola) y `Tools.tsx` se sigue pintando fijo, con
-  su contenido de siempre. Cuando definas esos campos que faltan, se puede
-  conectar igual que las otras tres.
-- **Hero, muro de logos, Herramientas, el carrusel de Clientes, el eslogan
-  animado ("Un mar de ideas...") y "Cómo entra una marca al agua" no están
-  en `secciones[]`** — no tienen todavía un tipo de documento en el Studio,
-  así que `page.tsx` los sigue pintando fijos, alrededor del bloque
-  dinámico (después del muro de logos, antes de Herramientas).
-
-Mismo patrón de respaldo que Clientes: si Sanity no responde, el documento
-`paginaInicio` no existe todavía, o falta alguna sección puntual, esa
-sección cae de vuelta al texto que ya tenía la página — respetando el
-orden real de lo que sí vino bien formado y agregando al final lo que
-falte (ver `SECCIONES_FALLBACK` en `src/lib/sanity.ts`). Ninguna sección
-desaparece de la página por un problema de conexión o de contenido a
-medio cargar.
-
-**La página individual en `/clientes/<slug>` sigue viniendo de
-`src/data/clients.ts`**, no de Sanity — esta migración cubrió solo las
-tarjetas del carrusel. Cada cuenta ahí lleva nombre, sector, resumen,
-servicios y una lista de videos, y alimenta:
-
-- la **galería** de respaldo (si Sanity falla),
-- su **página individual** en `/clientes/<slug>` (generada sola por cada
-  cuenta que exista en el arreglo).
-
-Si agregas una cuenta nueva solo en Sanity (no en este archivo), su tarjeta
-va a aparecer en el carrusel pero el enlace "ver más" va a dar 404 hasta que
-también tenga una entrada aquí.
-
-La página individual muestra solo las secciones que tengan contenido. Campos
-opcionales por cuenta:
-
-- `challenge` — el reto del negocio antes de entrar (1-2 párrafos)
-- `approach` — qué se hizo (1-2 párrafos)
-- `results` — datos duros `{ value, label }`. **No inventar**: déjalo vacío o
-  comentado hasta tener los números reales del CRM. Sin datos, el bloque no
-  aparece.
-- `gallery` — imágenes del proyecto (rutas en /public)
-- `testimonial` — `{ quote, author, role }`
-
-La cuenta **Dukare** ya está llena como ejemplo y sirve de plantilla. Copia su
-estructura al resto.
-
-Un video acepta dos fuentes:
-
-```ts
-{ kind: "file",    src: "/videos/dukare-spot.mp4" }   // archivo en public/videos/
-{ kind: "youtube", src: "dQw4w9WgXcQ" }               // solo el ID del video
-```
-
-Mientras el mp4 no exista, la pieza muestra un estado de error que nombra la
-ruta exacta que falta. Es intencional, para que sea obvio que archivo subir.
-
-Deja los mp4 en `public/videos/` y el fotograma de portada en `public/media/`.
+- **Dónde vive:** `contenido/*.json` (un archivo por página y uno por
+  colección: cuentas, reseñas, servicios, contenidos), fotos en
+  `public/media/` (WebP con variantes por ancho; los originales en
+  `media-originales/`, que no se publica) y videos en Cloudflare R2
+  (`/videos/<sha1>.<ext>`; almacén `dofi-media`, y `dofi-media-pruebas` para
+  las vistas previas). `contenido/archivos.json` registra fotos y videos.
+- **Cómo lo lee la web:** al construir, con consultas GROQ (`groq-js`) sobre
+  esos archivos (`src/lib/consultas.ts` y el `armarPagina…` de cada página).
+  Las páginas quedan armadas; no se consulta nada en cada visita.
+- **Publicar:** «Publicar cambios» hace un commit a `main` con solo lo
+  cambiado y Cloudflare vuelve a construir la web (unos 5 minutos). En una
+  vista previa de rama el panel publica en `panel-pruebas-contenido`.
+- **Historial:** «Versiones anteriores» en cada sección (el historial de git).
+- **Cambios con Claude:** editar `contenido/*.json` en una rama → vista
+  previa → visto bueno → `main`. Antes de pasar a `main`, traer `main`
+  (el panel también publica ahí).
+- **Respaldo:** si falta una cuenta, la web usa `src/data/clients.ts`.
 
 ### 3b. Los videos de los banners del Home
 
@@ -257,7 +147,7 @@ grabado de la escena Remotion de `src/remotion/home/`. Dibujada en vivo iba a
 saltos en computadoras con gráfica integrada (ver
 `audit/AJUSTES-2026-11-23-RESULTADOS.md`).
 
-**Si cambias el texto de un banner en Sanity**, ese banner vuelve solo a la
+**Si cambias el texto de un banner en el panel**, ese banner vuelve solo a la
 animación en vivo (nunca muestra un texto viejo). Para devolverle el video:
 
 ```bash
@@ -296,8 +186,6 @@ npx vercel        # primera vez, vincula el proyecto
 npx vercel --prod
 ```
 
-Agrega `SANITY_PROJECT_ID` y `SANITY_DATASET` en el panel de Vercel (Settings →
-Environment Variables) para que el carrusel de Clientes tambien funcione ahi.
 Cuando conectes el formulario a un servicio real, agrega esas variables igual
 y leelas desde el route handler.
 
