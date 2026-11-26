@@ -78,7 +78,13 @@ export function Panel({
   const [videos, setVideos] = useState<{ estado: "nada" | "copiando" | "listo" | "error"; mensaje?: string }>({ estado: "nada" });
   const [original, setOriginal] = useState(documentos);
   const [sesion, setSesion] = useState<"cargando" | "no" | "si">("cargando");
-  const [ajustes, setAjustes] = useState<{ rama: string | null; faltan: string[]; llave: string | null }>({ rama: null, faltan: [], llave: null });
+  /** rama: adónde se publica; sitio: dónde se ve esa rama (null = este mismo sitio). */
+  const [ajustes, setAjustes] = useState<{ rama: string | null; sitio: string | null; faltan: string[]; llave: string | null }>({
+    rama: null,
+    sitio: null,
+    faltan: [],
+    llave: null,
+  });
   const [publicacion, setPublicacion] = useState<Publicacion>({ estado: "nada" });
   const [recuperado, setRecuperado] = useState(false);
   const restaurado = useRef(false);
@@ -137,8 +143,8 @@ export function Panel({
   const consultarSesion = useCallback(async () => {
     try {
       const r = await fetch("/api/admin/yo", { cache: "no-store" });
-      const j = (await r.json()) as { sesion: boolean; rama: string | null; faltan: string[]; llave?: string | null };
-      setAjustes({ rama: j.rama, faltan: j.faltan ?? [], llave: j.llave ?? null });
+      const j = (await r.json()) as { sesion: boolean; rama: string | null; sitio?: string | null; faltan: string[]; llave?: string | null };
+      setAjustes({ rama: j.rama, sitio: j.sitio ?? null, faltan: j.faltan ?? [], llave: j.llave ?? null });
       setSesion(j.sesion ? "si" : "no");
     } catch {
       setSesion("no");
@@ -181,27 +187,28 @@ export function Panel({
   }, [docs, original, base, fotosNuevas]);
 
   // Después de publicar: mirar cada 20 s si la web ya se construyó con el cambio.
+  // El navegador lee el /contenido-version.json del sitio destino (este mismo,
+  // o el de pruebas en una vista previa) y, si la web cambió de versión, le
+  // pregunta a GitHub (por el panel) si esa versión ya incluye lo publicado.
   useEffect(() => {
     if (publicacion.estado !== "publicando") return;
     const { commit, pedidoEn } = publicacion;
+    const sitio = ajustes.sitio ?? "";
     let vivo = true;
+    let yaRevisado: string | null = null; // la última versión que GitHub dijo que todavía no lo incluye
     const mirar = async () => {
       try {
-        let construido: string | null = null;
-        if (ajustes.rama === "main") {
-          const v = (await fetch(`/contenido-version.json?t=${Date.now()}`, { cache: "no-store" }).then((r) => r.json())) as {
-            commit: string | null;
-          };
-          construido = v.commit;
-          if (construido === commit) return vivo && setPublicacion({ estado: "listo", commit });
-          if (!construido || construido === base) construido = null;
-        }
-        if (construido !== null || ajustes.rama !== "main") {
-          const q = construido ? `&construido=${construido}` : "";
-          const r = (await fetch(`/api/admin/incluye?publicado=${commit}${q}`, { cache: "no-store" }).then((x) => x.json())) as {
-            incluido?: boolean;
-          };
+        const v = (await fetch(`${sitio}/contenido-version.json?t=${Date.now()}`, { cache: "no-store" }).then((r) => r.json())) as {
+          commit?: string | null;
+        };
+        const construido = v.commit ?? null;
+        if (construido === commit) return vivo && setPublicacion({ estado: "listo", commit });
+        if (construido && construido !== base && construido !== yaRevisado) {
+          const r = (await fetch(`/api/admin/incluye?publicado=${commit}&construido=${construido}`, { cache: "no-store" }).then((x) =>
+            x.json()
+          )) as { incluido?: boolean };
           if (r.incluido) return vivo && setPublicacion({ estado: "listo", commit });
+          yaRevisado = construido;
         }
       } catch {
         // sin conexión por un momento: se vuelve a mirar en la próxima vuelta
@@ -214,7 +221,7 @@ export function Panel({
       vivo = false;
       clearInterval(id);
     };
-  }, [publicacion, ajustes.rama, base]);
+  }, [publicacion, ajustes.sitio, base]);
 
   const cambiar = (documento: string, ruta: Ruta, valor: unknown) =>
     setDocs((d) => ({ ...d, [documento]: escribir(d[documento], ruta, valor) }));
@@ -425,8 +432,8 @@ export function Panel({
           <CheckCircle size={18} weight="fill" aria-hidden="true" />
           <span>
             <strong>Ya está en la web.</strong>{" "}
-            {ajustes.rama && ajustes.rama !== "main" ? (
-              <a className="underline" href={`https://${ajustes.rama}-pagina-dofi.dofiagenciacreativa.workers.dev/`} target="_blank" rel="noopener">
+            {ajustes.sitio ? (
+              <a className="underline" href={`${ajustes.sitio}/`} target="_blank" rel="noopener">
                 Ver la vista previa de prueba
               </a>
             ) : (
