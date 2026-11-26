@@ -12,7 +12,7 @@ export async function POST(req: Request) {
 
   let intento = "";
   try {
-    intento = String(((await req.json()) as { clave?: unknown }).clave ?? "");
+    intento = String(((await req.json()) as { clave?: unknown }).clave ?? "").trim();
   } catch {
     return json({ error: "Petición inválida." }, 400);
   }

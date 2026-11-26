@@ -11,9 +11,10 @@
 
 export const REPOSITORIO = { dueno: "dofiagenciacreativa-design", nombre: "P-gina-DOFI" } as const;
 
-export const claveDelPanel = () => process.env.PANEL_CLAVE || undefined;
-export const tokenDeGithub = () => process.env.GITHUB_TOKEN_PANEL || undefined;
-export const ramaDestino = () => process.env.PANEL_RAMA_DESTINO || null;
+// Se quitan espacios y saltos de línea de los extremos: al pegar un secreto es fácil arrastrarlos.
+export const claveDelPanel = () => process.env.PANEL_CLAVE?.trim() || undefined;
+export const tokenDeGithub = () => process.env.GITHUB_TOKEN_PANEL?.trim() || undefined;
+export const ramaDestino = () => process.env.PANEL_RAMA_DESTINO?.trim() || null;
 
 /** Qué falta configurar, en palabras para el propietario. */
 export function ajustesFaltantes(): string[] {

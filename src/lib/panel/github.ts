@@ -14,6 +14,32 @@ export class ErrorDeGithub extends Error {
   }
 }
 
+/**
+ * Qué hacer cuando GitHub rechaza la llave, según su respuesta:
+ *  401 = la llave no es válida; 404 = la llave no ve el repositorio;
+ *  403 = la ve, pero no puede escribir. null = no es un problema de la llave.
+ */
+export function problemaDeLlave(e: unknown): string | null {
+  if (!(e instanceof ErrorDeGithub)) return null;
+  if (e.estado === 401)
+    return "GitHub dice que la llave del panel no es válida: puede estar incompleta, haber vencido o haberse borrado. Crea una nueva y pégala completa en GITHUB_TOKEN_PANEL.";
+  if (e.estado === 404)
+    return "La llave del panel no tiene acceso al repositorio P-gina-DOFI. Al crearla, en «Repository access» elige «Only select repositories» y marca P-gina-DOFI.";
+  if (e.estado === 403)
+    return "La llave del panel puede leer, pero no escribir. En GitHub, edita la llave y en «Permissions → Contents» elige «Read and write».";
+  return null;
+}
+
+/** Comprueba que la llave ve el repositorio (solo lectura; no cambia nada). null = bien. */
+export async function revisarLlave(token: string): Promise<string | null> {
+  try {
+    await pedir(token, "GET", "");
+    return null;
+  } catch (e) {
+    return problemaDeLlave(e) ?? "No se pudo comprobar la llave de GitHub en este momento.";
+  }
+}
+
 function cabeceras(token: string): Record<string, string> {
   return {
     Authorization: `Bearer ${token}`,

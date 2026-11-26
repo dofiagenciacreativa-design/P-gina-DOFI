@@ -78,7 +78,7 @@ export function Panel({
   const [videos, setVideos] = useState<{ estado: "nada" | "copiando" | "listo" | "error"; mensaje?: string }>({ estado: "nada" });
   const [original, setOriginal] = useState(documentos);
   const [sesion, setSesion] = useState<"cargando" | "no" | "si">("cargando");
-  const [ajustes, setAjustes] = useState<{ rama: string | null; faltan: string[] }>({ rama: null, faltan: [] });
+  const [ajustes, setAjustes] = useState<{ rama: string | null; faltan: string[]; llave: string | null }>({ rama: null, faltan: [], llave: null });
   const [publicacion, setPublicacion] = useState<Publicacion>({ estado: "nada" });
   const [recuperado, setRecuperado] = useState(false);
   const restaurado = useRef(false);
@@ -137,8 +137,8 @@ export function Panel({
   const consultarSesion = useCallback(async () => {
     try {
       const r = await fetch("/api/admin/yo", { cache: "no-store" });
-      const j = (await r.json()) as { sesion: boolean; rama: string | null; faltan: string[] };
-      setAjustes({ rama: j.rama, faltan: j.faltan ?? [] });
+      const j = (await r.json()) as { sesion: boolean; rama: string | null; faltan: string[]; llave?: string | null };
+      setAjustes({ rama: j.rama, faltan: j.faltan ?? [], llave: j.llave ?? null });
       setSesion(j.sesion ? "si" : "no");
     } catch {
       setSesion("no");
@@ -464,6 +464,15 @@ export function Panel({
       ) : ajustes.rama && ajustes.rama !== "main" ? (
         <p className="border-b border-brand/15 bg-brand/[0.07] px-4 py-2 text-[0.85rem] text-brand sm:px-6">
           <strong>Vista previa de prueba:</strong> al publicar, el cambio va a la rama «{ajustes.rama}» y a su propia vista previa, no a la web real.
+        </p>
+      ) : null}
+
+      {ajustes.llave ? (
+        <p className="flex items-center gap-2 border-b border-[#F4C9A5] bg-[#FFF0E3] px-4 py-2.5 text-[0.9rem] text-[#8A3F08] sm:px-6" role="alert">
+          <Warning size={18} weight="bold" aria-hidden="true" />
+          <span>
+            <strong>No se va a poder publicar todavía.</strong> {ajustes.llave}
+          </span>
         </p>
       ) : null}
 
