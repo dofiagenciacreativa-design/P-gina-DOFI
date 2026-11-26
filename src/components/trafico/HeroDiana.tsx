@@ -110,9 +110,12 @@ export function HeroDiana({ iconos, className = "" }: { iconos: Record<ClavePlat
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     medir();
+    // Cambiar el tamaño del lienzo lo borra: se vuelve a dibujar en el acto
+    // (al girar el teléfono, o si la animación está en pausa fuera de vista).
     const ro = new ResizeObserver(() => {
       medir();
-      if (reducido) dibujar(CICLO - 2, true);
+      if (reducido) dibujarQuieto();
+      else dibujar(t);
     });
     ro.observe(canvas);
 
@@ -374,20 +377,24 @@ export function HeroDiana({ iconos, className = "" }: { iconos: Record<ClavePlat
     }
 
     // Cuadro final quieto (menos movimiento): íconos repartidos, avisos y 1.000.
-    if (reducido) {
+    function dibujarQuieto() {
       const g = geo();
-      setAvisos(AVISOS.slice(0, VISIBLES).map((aviso, i) => ({ id: i + 1, aviso })).reverse());
-      if (cifra.current) cifra.current.textContent = NUM.format(META);
       dibujar(CICLO - 2, true);
       const k = Object.keys(iconos) as ClavePlataforma[];
       k.forEach((clave, i) => {
         const a = (i / k.length) * Math.PI * 2 - 0.6;
         insignia(g.cx + Math.cos(a) * g.R * 0.7, g.cy + Math.sin(a) * g.R * 0.7, 11, clave, 1);
       });
-      return () => ro.disconnect();
     }
 
     let t = 0;
+    if (reducido) {
+      setAvisos(AVISOS.slice(0, VISIBLES).map((aviso, i) => ({ id: i + 1, aviso })).reverse());
+      if (cifra.current) cifra.current.textContent = NUM.format(META);
+      dibujarQuieto();
+      return () => ro.disconnect();
+    }
+
     let previo: number | null = null;
     let cuadro = 0;
     const paso = (ahora: number) => {
