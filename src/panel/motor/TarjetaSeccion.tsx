@@ -20,6 +20,7 @@ export function TarjetaSeccion({
   alCopiarDeFabrica,
   alDeshacer,
   subidas,
+  alVersiones,
 }: {
   seccion: SeccionPanel;
   docs: Record<string, Doc>;
@@ -29,6 +30,8 @@ export function TarjetaSeccion({
   alCopiarDeFabrica: () => void;
   alDeshacer: () => void;
   subidas: Subidas;
+  /** Abre «Versiones anteriores» (si esta sección tiene historial). */
+  alVersiones?: () => void;
 }) {
   const idCampo = (b: Bloque, nombre: string) =>
     `campo-${seccion.clave}-${b.titulo}-${nombre}`.toLowerCase().replace(/[^a-z0-9-]+/g, "-");
@@ -79,7 +82,7 @@ export function TarjetaSeccion({
           {b.nota ? <p className="-mt-1.5 text-xs text-ink-subtle">{b.nota}</p> : null}
           <div className="grid gap-3 sm:grid-cols-2">
             {b.campos.map((c) => {
-              const ancho = c.clase === "numero" || (c.clase === "opcion" && c.forma !== "botones");
+              const ancho = c.clase === "numero" || c.clase === "fecha" || (c.clase === "opcion" && c.forma !== "botones");
               return (
                 <div key={c.nombre} className={ancho ? "" : "sm:col-span-2"}>
                   <CampoPanel
@@ -89,6 +92,7 @@ export function TarjetaSeccion({
                     alCambiar={(v) => alCambiar(b.documento, [...b.ruta, c.nombre], v)}
                     resolver={resolver}
                     subidas={subidas}
+                    contenedor={leer(docs[b.documento], b.ruta)}
                   />
                 </div>
               );
@@ -106,6 +110,15 @@ export function TarjetaSeccion({
         >
           Deshacer cambios
         </button>
+        {alVersiones ? (
+          <button
+            type="button"
+            onClick={alVersiones}
+            className="ml-auto rounded-[10px] px-3 py-2.5 text-sm font-medium text-brand underline-offset-4 hover:underline"
+          >
+            Versiones anteriores
+          </button>
+        ) : null}
       </footer>
     </article>
   );

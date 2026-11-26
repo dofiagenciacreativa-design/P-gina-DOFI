@@ -9,6 +9,7 @@ import { SeccionesMarketing } from "@/components/marketing/SeccionesMarketing";
 import { SeccionesTrafico } from "@/components/trafico/PaginaTrafico";
 import { CLASE_MAIN_FENIAX, SeccionesFeniax } from "@/components/feniax/PaginaFeniax";
 import { SeccionesAsesorias } from "@/components/asesorias/PaginaAsesorias";
+import { FichaCliente } from "@/components/clientes/FichaCliente";
 import type { MensajeAlLienzo, VistaPrevia } from "./mensajes";
 
 /**
@@ -23,7 +24,7 @@ import type { MensajeAlLienzo, VistaPrevia } from "./mensajes";
  */
 
 /** Las secciones de una página de servicio, con la clase de su <main>. */
-function Servicio({ vista, lista }: { vista: Exclude<VistaPrevia, { pagina: "inicio" }>; lista?: string[] }) {
+function Servicio({ vista, lista }: { vista: Exclude<VistaPrevia, { pagina: "inicio" | "cliente" }>; lista?: string[] }) {
   const claves = lista ? new Set(lista) : null;
   switch (vista.pagina) {
     case "marketing":
@@ -66,7 +67,9 @@ export function Lienzo() {
   const orden =
     vista?.pagina === "inicio"
       ? ["hero", ...vista.datos.seccionesContenido.map((b) => `banner:${b.id}`)]
-      : (vista?.secciones.map((s) => s.key) ?? []);
+      : vista && vista.pagina !== "cliente"
+        ? vista.secciones.map((s) => s.key)
+        : [];
   useEffect(() => {
     if (!pieza) return;
     if (modo !== "completa") {
@@ -82,6 +85,17 @@ export function Lienzo() {
 
   if (!vista) {
     return <div className="grid min-h-screen place-items-center bg-canvas font-sans text-ink-subtle">Preparando la vista previa…</div>;
+  }
+
+  if (vista.pagina === "cliente") {
+    if (!vista.cliente) {
+      return (
+        <div className="grid min-h-screen place-items-center bg-canvas px-6 text-center font-sans text-ink-subtle">
+          {vista.aviso ?? "Este cliente no tiene página en la web (está inactivo o le falta la dirección)."}
+        </div>
+      );
+    }
+    return <FichaCliente client={vista.cliente} />;
   }
 
   if (vista.pagina !== "inicio") {

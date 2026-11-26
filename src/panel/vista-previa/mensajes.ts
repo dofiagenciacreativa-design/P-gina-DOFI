@@ -3,6 +3,7 @@ import type { SeccionMarketing } from "@/lib/marketing-digital";
 import type { SeccionTrafico } from "@/lib/trafico";
 import type { SeccionFeniax } from "@/lib/feniax";
 import type { SeccionAsesorias } from "@/lib/asesorias";
+import type { Client } from "@/data/clients";
 
 /**
  * Lo que el panel le manda al lienzo (/admin/lienzo) por postMessage, y lo
@@ -25,6 +26,8 @@ export type VistaPrevia = Comun &
     | { pagina: "trafico"; secciones: SeccionTrafico[] }
     | { pagina: "feniax"; secciones: SeccionFeniax[] }
     | { pagina: "asesorias"; secciones: SeccionAsesorias[] }
+    /** La página de un cliente (/clientes/<slug>); null si no tiene página (inactivo o sin dirección). */
+    | { pagina: "cliente"; cliente: Client | null; aviso?: string }
   );
 
 export type MensajeAlLienzo = { tipo: "dibujar" } & VistaPrevia;

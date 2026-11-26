@@ -51,7 +51,51 @@ export type Campo =
   /** «Cambiar video»: sube el archivo a R2 (etapa 4). */
   | (Base & { clase: "video" })
   /** Una lista de elementos con sus campos: agregar, subir/bajar, duplicar y quitar. */
-  | (Base & { clase: "lista"; elemento: TipoElemento; max?: number; vacia?: string });
+  | (Base & { clase: "lista"; elemento: TipoElemento; max?: number; vacia?: string })
+  /** La dirección corta de una página ({ _type: "slug", current }), con «Crear desde <desde>». Etapa 5. */
+  | (Base & { clase: "slug"; desde: string })
+  /** Un documento de otra colección ({ _type: "reference", _ref }), elegido de una lista. */
+  | (Base & { clase: "referencia"; a: TipoColeccion })
+  /** Varios documentos de otra colección ([{ _key, _type: "reference", _ref }]), marcados en una lista. */
+  | (Base & { clase: "referencias"; a: TipoColeccion })
+  /** Una fecha «AAAA-MM-DD» (texto, como la guardaba Sanity). */
+  | (Base & { clase: "fecha" });
+
+/** Las colecciones (listas de documentos) del panel: etapa 5. */
+export type TipoColeccion = "cuenta" | "resena" | "servicio" | "contenido";
+
+/**
+ * Una colección: cómo se llama, cómo se ve cada documento en la lista, sus
+ * campos (en grupos, como los bloques) y con qué valores nace uno nuevo.
+ * Los campos escriben en la raíz del documento (mismos nombres que en Sanity).
+ */
+export type DefinicionColeccion = {
+  tipo: TipoColeccion;
+  /** «Clientes», «Reseñas»… (la pestaña). */
+  titulo: string;
+  /** «cliente», «reseña»… («+ Nuevo cliente», «¿Borrar este cliente?»). */
+  singular: string;
+  /** Género del singular, para «Nuevo»/«Nueva». */
+  femenino?: boolean;
+  icono: NombreIcono;
+  /** El texto de «¿Cómo funciona?» y de la cabecera de la pestaña. */
+  ayuda: string;
+  grupos: { titulo: string; campos: Campo[]; nota?: string }[];
+  /** El nombre de cada documento en la lista. */
+  resumen: (doc: Doc) => string;
+  /** Una línea chica debajo del nombre (categoría, estrellas…). */
+  detalle?: (doc: Doc) => string;
+  /** ¿Está apagado en la web? (para tacharlo en la lista). */
+  oculto?: (doc: Doc) => boolean;
+  /** Orden de la lista (por defecto, por el resumen). */
+  orden?: (a: Doc, b: Doc) => number;
+  /** Valores con los que nace un documento nuevo (además de _id y _type). */
+  nuevo: () => Record<string, unknown>;
+  /** Campos que no se pueden repetir entre documentos de la colección («slug.current», «nombre»…). */
+  unicos?: { campo: string; mensaje: string }[];
+  /** Prefijo del _id de los documentos nuevos («cuenta-» + slug, o «resena-» + clave). */
+  prefijoId: string;
+};
 
 /** Un grupo de campos que viven juntos en un documento (TEXTO, BOTÓN, una tarjeta…). */
 export type Bloque = {

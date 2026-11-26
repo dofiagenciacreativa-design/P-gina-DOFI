@@ -4,15 +4,35 @@ import { useRef, useState } from "react";
 import { ArrowDown, ArrowUp, CaretRight, Copy, Plus, Trash } from "@phosphor-icons/react";
 
 import type { ResolverArchivo } from "@/lib/contenido/tipos";
-import type { Campo, TipoElemento } from "@/panel/esquema/tipos";
+import type { Campo, TipoColeccion, TipoElemento } from "@/panel/esquema/tipos";
 import { direccionParaAncho } from "@/lib/contenido/medios";
 import { conClavesNuevas, escribir, leer, nuevaClave } from "./rutas";
 
 /** Sube un archivo elegido y devuelve el valor nuevo del campo ({ _type, asset: { _ref } }). */
 export type Subir = (archivo: File, avance: (texto: string) => void) => Promise<Record<string, unknown>>;
 
-/** Cómo se suben las fotos y los videos (undefined = no se puede, p. ej. «solo para mirar»). */
-export type Subidas = { foto?: Subir; video?: Subir; motivoSinVideo?: string };
+/**
+ * Lo que los campos le piden al panel: cómo se suben fotos y videos
+ * (undefined = no se puede, p. ej. «solo para mirar») y, para las
+ * referencias, la lista de documentos de una colección.
+ */
+export type Subidas = {
+  foto?: Subir;
+  video?: Subir;
+  motivoSinVideo?: string;
+  catalogo?: (tipo: TipoColeccion) => { id: string; titulo: string }[];
+};
+
+/** «Panadería La Esquina» → «panaderia-la-esquina». */
+export function aSlug(texto: string): string {
+  return texto
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 96);
+}
 
 /**
  * Un campo del formulario según su clase (src/panel/esquema/tipos.ts).
@@ -61,6 +81,7 @@ export function CampoPanel({
   id,
   resolver,
   subidas,
+  contenedor,
 }: {
   campo: Campo;
   valor: unknown;
@@ -68,6 +89,8 @@ export function CampoPanel({
   id: string;
   resolver: ResolverArchivo;
   subidas: Subidas;
+  /** El objeto donde vive el campo (el documento, el bloque o el elemento de la lista). */
+  contenedor?: unknown;
 }) {
   const texto = typeof valor === "string" ? valor : "";
   const falta =
@@ -268,6 +291,117 @@ export function CampoPanel({
 
     case "lista":
       return <CampoLista campo={campo} valor={valor} alCambiar={alCambiar} id={id} resolver={resolver} subidas={subidas} />;
+
+    case "slug": {
+      const actual = typeof (valor as { current?: unknown } | null)?.current === "string" ? ((valor as { current: string }).current) : "";
+      const base = leer(contenedor, [campo.desde]);
+      const sugerido = typeof base === "string" ? aSlug(base) : "";
+      const poner = (s: string) => alCambiar(s ? { _type: "slug", current: s } : undefined);
+      const malo = actual !== "" && actual !== aSlug(actual);
+      return (
+        <div className="flex flex-col gap-1.5">
+          <Etiqueta campo={campo} id={id} />
+          <div className="flex gap-2">
+            <input
+              id={id}
+              type="text"
+              autoComplete="off"
+              value={actual}
+              onChange={(e) => poner(e.target.value)}
+              onBlur={() => actual && poner(aSlug(actual))}
+              className={`${estiloEntrada} font-mono text-[0.85rem]`}
+              aria-invalid={(campo.obligatorio && !actual) || malo || undefined}
+            />
+            <button
+              type="button"
+              onClick={() => poner(sugerido)}
+              disabled={!sugerido || sugerido === actual}
+              className="shrink-0 rounded-[10px] border border-brand px-3 text-[0.8rem] font-semibold text-brand hover:bg-brand hover:text-white disabled:opacity-40"
+            >
+              Crear desde el nombre
+            </button>
+          </div>
+          {campo.obligatorio && !actual ? (
+            <Nota aviso>Falta este dato.</Nota>
+          ) : malo ? (
+            <Nota aviso>Solo letras sin tildes, números y guiones. Al salir del campo se arregla sola.</Nota>
+          ) : campo.ayuda ? (
+            <Nota>{campo.ayuda}</Nota>
+          ) : null}
+        </div>
+      );
+    }
+
+    case "referencia": {
+      const ref = (valor as { _ref?: unknown } | null)?._ref;
+      const opciones = subidas.catalogo?.(campo.a) ?? [];
+      return (
+        <div className="flex flex-col gap-1.5">
+          <Etiqueta campo={campo} id={id} />
+          <select
+            id={id}
+            value={typeof ref === "string" ? ref : ""}
+            onChange={(e) => alCambiar(e.target.value ? { _type: "reference", _ref: e.target.value } : undefined)}
+            className={estiloEntrada}
+          >
+            <option value="">Sin elegir</option>
+            {opciones.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.titulo}
+              </option>
+            ))}
+            {typeof ref === "string" && !opciones.some((o) => o.id === ref) ? <option value={ref}>(ya no existe: {ref})</option> : null}
+          </select>
+          {campo.obligatorio && typeof ref !== "string" ? <Nota aviso>Falta este dato.</Nota> : campo.ayuda ? <Nota>{campo.ayuda}</Nota> : null}
+        </div>
+      );
+    }
+
+    case "referencias": {
+      const lista = (Array.isArray(valor) ? valor : []) as { _key?: string; _ref?: string }[];
+      const marcados = new Set(lista.map((r) => r._ref));
+      const opciones = subidas.catalogo?.(campo.a) ?? [];
+      const alternar = (idDoc: string) =>
+        alCambiar(
+          marcados.has(idDoc)
+            ? lista.filter((r) => r._ref !== idDoc)
+            : [...lista, { _key: nuevaClave(), _type: "reference", _ref: idDoc }]
+        );
+      return (
+        <fieldset className="flex flex-col gap-1.5">
+          <legend className="text-sm font-semibold text-ink">{campo.titulo}</legend>
+          <div className="flex flex-wrap gap-1.5">
+            {opciones.map((o) => (
+              <label
+                key={o.id}
+                className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-[0.82rem] ${
+                  marcados.has(o.id) ? "border-brand bg-brand text-white" : "border-canvas-border bg-white text-ink-muted hover:border-brand/40"
+                }`}
+              >
+                <input type="checkbox" className="sr-only" checked={marcados.has(o.id)} onChange={() => alternar(o.id)} />
+                {o.titulo}
+              </label>
+            ))}
+          </div>
+          {campo.ayuda ? <Nota>{campo.ayuda}</Nota> : null}
+        </fieldset>
+      );
+    }
+
+    case "fecha":
+      return (
+        <div className="flex flex-col gap-1.5">
+          <Etiqueta campo={campo} id={id} />
+          <input
+            id={id}
+            type="date"
+            value={/^\d{4}-\d{2}-\d{2}$/.test(texto) ? texto : ""}
+            onChange={(e) => alCambiar(e.target.value || undefined)}
+            className={`${estiloEntrada} max-w-[14rem]`}
+          />
+          {campo.ayuda ? <Nota>{campo.ayuda}</Nota> : null}
+        </div>
+      );
   }
 }
 
@@ -387,6 +521,7 @@ function CampoLista({
                         alCambiar={(v) => poner(elementos.map((x, k) => (k === i ? escribir(x, [c.nombre], v) : x)))}
                         resolver={resolver}
                         subidas={subidas}
+                        contenedor={el}
                       />
                     </div>
                   ))}

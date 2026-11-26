@@ -1,10 +1,29 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowDown, ArrowSquareOut, ArrowUp, ArrowsOut, CheckCircle, Copy, Eye, EyeSlash, SignOut, Trash, Warning, X } from "@phosphor-icons/react";
+import {
+  ArrowCounterClockwise,
+  ArrowDown,
+  ArrowSquareOut,
+  ArrowUp,
+  ArrowsOut,
+  CheckCircle,
+  Copy,
+  Eye,
+  EyeSlash,
+  MagnifyingGlass,
+  Plus,
+  SignOut,
+  Trash,
+  Warning,
+  X,
+} from "@phosphor-icons/react";
 import { armarPaginaInicio } from "@/lib/inicio";
 import { referenciasDeActivos, resolverDeActivos, type Activo } from "@/lib/contenido/archivos-activos";
 import { consultarSobre } from "@/lib/contenido/consulta-local";
+import { ARCHIVO_DE_COLECCION, BORRAR, repetido } from "@/lib/contenido/colecciones";
+import { ARCHIVO_DE_DOCUMENTO } from "@/lib/contenido/serializar";
+import { QUERY_CUENTA_POR_SLUG, toAccountFull, type SanityCuentaCompleta } from "@/lib/sanity";
 import { QUERY_MARKETING, armarPaginaMarketingDigital, type Resena, type RespuestaRaw } from "@/lib/marketing-digital";
 import { QUERY_TRAFICO, armarPaginaTrafico, type RespuestaTrafico } from "@/lib/trafico";
 import { QUERY_FENIAX, armarPaginaFeniax, type RespuestaFeniax } from "@/lib/feniax";
@@ -16,7 +35,9 @@ import type { Doc } from "@/lib/contenido/tipos";
 import { NOMBRE_PAGINA, TIPOS_DE_PAGINA, definicionBloque, tieneFormulario, type PaginaServicio } from "@/panel/esquema/bloques";
 import { seccionesInicio } from "@/panel/esquema/inicio";
 import { DOCUMENTO_DE_PAGINA, seccionesCrudas, seccionesDeServicio, type SeccionCruda } from "@/panel/esquema/servicio";
-import type { Ruta, SeccionPanel } from "@/panel/esquema/tipos";
+import { COLECCIONES, ORDEN_COLECCIONES } from "@/panel/esquema/colecciones";
+import { documentoNuevo, documentosDe, estaBorrado, nombreDeDocumento, seccionesDeColeccion, usadoPor } from "@/panel/esquema/lista-documentos";
+import type { Ruta, SeccionPanel, TipoColeccion } from "@/panel/esquema/tipos";
 import type { Subidas } from "@/panel/motor/CampoPanel";
 import { conClavesNuevas, escribir, leer, nuevaClave } from "@/panel/motor/rutas";
 import { TarjetaSeccion } from "@/panel/motor/TarjetaSeccion";
@@ -24,6 +45,7 @@ import { Marco } from "@/panel/vista-previa/Marco";
 import type { Dispositivo, ModoVista, VistaPrevia } from "@/panel/vista-previa/mensajes";
 import { IconoSeccion } from "./iconos";
 import { Entrar } from "./Entrar";
+import { Versiones } from "./Versiones";
 
 /**
  * El panel: cada página de la web con la vista previa al lado. Se entra con la
@@ -45,7 +67,8 @@ type Publicacion =
   | { estado: "lento"; commit: string }
   | { estado: "error"; mensaje: string };
 
-type ClavePagina = "inicio" | PaginaServicio;
+type ClavePagina = "inicio" | PaginaServicio | TipoColeccion;
+const esColeccion = (p: ClavePagina): p is TipoColeccion => p in COLECCIONES;
 
 /** Las pestañas. `lista`: ya se edita en el panel; las demás llegan en etapas próximas. */
 const PESTANAS: { clave: ClavePagina | null; titulo: string; lista: boolean; ruta: string; proxima?: string }[] = [
@@ -54,15 +77,14 @@ const PESTANAS: { clave: ClavePagina | null; titulo: string; lista: boolean; rut
   { clave: "trafico", titulo: "Tráfico / Ads", lista: true, ruta: "/trafico-ads" },
   { clave: "feniax", titulo: "ChatBots / CRM", lista: true, ruta: "/chatbots-crm" },
   { clave: "asesorias", titulo: "Asesorías", lista: true, ruta: "/asesorias" },
-  { clave: null, titulo: "Clientes", lista: false, ruta: "/clientes", proxima: "la etapa 5" },
-  { clave: null, titulo: "Reseñas", lista: false, ruta: "/", proxima: "la etapa 5" },
-  { clave: null, titulo: "Archivos", lista: false, ruta: "/", proxima: "la etapa 5" },
+  // Las colecciones, en el orden del menú del Studio (inventario-esquema.md §2).
+  ...ORDEN_COLECCIONES.map((c) => ({ clave: c, titulo: COLECCIONES[c].titulo, lista: true, ruta: c === "resena" ? "/marketing-digital#resenas" : "/clientes" })),
 ];
 
 const SERVICIOS: PaginaServicio[] = ["marketing", "trafico", "feniax", "asesorias"];
-const PAGINAS: ClavePagina[] = ["inicio", ...SERVICIOS];
+const PAGINAS: ("inicio" | PaginaServicio)[] = ["inicio", ...SERVICIOS];
 
-const DESCRIPCION: Record<ClavePagina, string> = {
+const DESCRIPCION: Partial<Record<ClavePagina, string>> = {
   inicio: "Portada, tarjetas y los cuatro banners de la página de Inicio.",
   marketing: "Las secciones de Marketing Digital, en el orden en que aparecen. Aquí se editan los giros y logos de clientes que usan también las otras páginas de servicio.",
   trafico: "Las secciones de Tráfico / Ads, en el orden en que aparecen: muévelas, ocúltalas o agrega otras.",
@@ -94,8 +116,9 @@ function armarServicio(pagina: PaginaServicio, respuesta: unknown, resenas: Rese
   }
 }
 
-const seccionesDe = (p: ClavePagina, d: Record<string, Doc>): SeccionPanel[] => (p === "inicio" ? seccionesInicio(d) : seccionesDeServicio(p, d));
-const nombrePagina = (p: ClavePagina) => (p === "inicio" ? "Inicio" : NOMBRE_PAGINA[p]);
+const seccionesDe = (p: ClavePagina, d: Record<string, Doc>, o: Record<string, Doc>): SeccionPanel[] =>
+  p === "inicio" ? seccionesInicio(d) : esColeccion(p) ? seccionesDeColeccion(p, d, o) : seccionesDeServicio(p, d);
+const nombrePagina = (p: ClavePagina) => (p === "inicio" ? "Inicio" : esColeccion(p) ? COLECCIONES[p].titulo : NOMBRE_PAGINA[p]);
 
 /** Esconde, solo en esta página, el grano y el botón de WhatsApp que el layout del sitio pone en todas. */
 const SIN_ADORNOS_DEL_SITIO = `body:has(.panel-dofi) > .grain-layer, body:has(.panel-dofi) > a[aria-label="Ir al formulario de contacto"] { display: none !important; }`;
@@ -132,7 +155,11 @@ export function Panel({
   base: string | null;
 }) {
   const documentos = useMemo(
-    () => Object.fromEntries(EDITABLES.map((id) => [id, conjunto.find((d) => d._id === id) ?? { _id: id, _type: id }])) as Record<string, Doc>,
+    () =>
+      Object.fromEntries([
+        ...EDITABLES.map((id) => [id, conjunto.find((d) => d._id === id) ?? { _id: id, _type: id }]),
+        ...conjunto.filter((d) => d._type in COLECCIONES).map((d) => [d._id, d]),
+      ]) as Record<string, Doc>,
     [conjunto]
   );
   const activos = useMemo(
@@ -174,6 +201,7 @@ export function Panel({
   const [modo, setModo] = useState<ModoVista>("seccion");
   const [ampliada, setAmpliada] = useState(false);
   const [brindis, setBrindis] = useState<string | null>(null);
+  const [verVersiones, setVerVersiones] = useState(false);
 
   /** Los activos nuevos de esta sesión, con la dirección con la que se ven ya (la foto en data:, el video en /videos/). */
   const activosNuevos = useMemo(
@@ -184,15 +212,21 @@ export function Panel({
     [fotosNuevas, fotosPublicadas, videosNuevos, videosPublicados]
   );
   const resolver = useMemo(() => resolverDeActivos([...activos, ...activosNuevos]), [activos, activosNuevos]);
-  const secciones = useMemo(() => seccionesDe(pagina, docs), [pagina, docs]);
+  const secciones = useMemo(() => seccionesDe(pagina, docs, original), [pagina, docs, original]);
   const seccion: SeccionPanel | undefined = secciones.find((s) => s.clave === claves[pagina]) ?? secciones[0];
-  const docServicio = pagina === "inicio" ? null : DOCUMENTO_DE_PAGINA[pagina];
+  const docServicio = pagina === "inicio" || esColeccion(pagina) ? null : DOCUMENTO_DE_PAGINA[pagina];
+  const coleccion = esColeccion(pagina) ? pagina : null;
+  const [busqueda, setBusqueda] = useState("");
+  const visibles = useMemo(() => {
+    const q = busqueda.trim().toLowerCase();
+    return coleccion && q ? secciones.filter((s) => `${s.titulo} ${s.apareceEn}`.toLowerCase().includes(q)) : secciones;
+  }, [coleccion, busqueda, secciones]);
 
   /** Lo cambiado en todas las páginas: "pagina:clave" por sección, y "pagina:orden" si cambió el orden de las secciones. */
   const cambiadas = useMemo(() => {
     const salida = new Set<string>();
     for (const p of PAGINAS) {
-      for (const s of seccionesDe(p, docs)) {
+      for (const s of seccionesDe(p, docs, original)) {
         if (zonas(s, original).some((z) => !mismo(leer(docs[z.documento], z.ruta), leer(original[z.documento], z.ruta)))) salida.add(`${p}:${s.clave}`);
       }
       if (p !== "inicio") {
@@ -202,8 +236,20 @@ export function Panel({
         if (ahora !== antes) salida.add(`${p}:orden`);
       }
     }
+    // Colecciones: cada documento nuevo, cambiado o marcado para borrar.
+    for (const c of ORDEN_COLECCIONES) {
+      const ids = new Set([...documentosDe(c, docs), ...documentosDe(c, original)].map((d) => d._id));
+      for (const id of ids) if (!mismo(docs[id], original[id])) salida.add(`${c}:${id}`);
+    }
     return salida;
   }, [docs, original]);
+
+  /** Direcciones de clientes o nombres de servicios repetidos: no se puede publicar así. */
+  const repetidos = useMemo(
+    () =>
+      ORDEN_COLECCIONES.map((c) => repetido(documentosDe(c, docs).filter((d) => !estaBorrado(d)), c)).filter((x): x is string => x !== null),
+    [docs]
+  );
 
   /** Lo que se va a publicar, en palabras («Asesorías · Videos en celulares»). */
   const resumenCambios = useMemo(
@@ -211,10 +257,16 @@ export function Panel({
       [...cambiadas].map((k) => {
         const [p, c] = k.split(":") as [ClavePagina, string];
         if (c === "orden") return `${nombrePagina(p)} · orden de las secciones`;
-        const s = seccionesDe(p, docs).find((x) => x.clave === c);
+        if (esColeccion(p)) {
+          const d = docs[c] ?? original[c];
+          const actual = estaBorrado(d) ? original[c] : d;
+          const extra = !original[c] ? " (nuevo)" : estaBorrado(d) ? " (se borra)" : "";
+          return `${nombrePagina(p)} · ${actual ? COLECCIONES[p].resumen(actual) : c}${extra}`;
+        }
+        const s = seccionesDe(p, docs, original).find((x) => x.clave === c);
         return `${nombrePagina(p)} · ${s?.titulo ?? "sección"}`;
       }),
-    [cambiadas, docs]
+    [cambiadas, docs, original]
   );
 
   const datos = useMemo(
@@ -225,15 +277,55 @@ export function Panel({
     [docs, resolver]
   );
   // Páginas de servicio: la misma consulta GROQ y el mismo armado que la web, en el navegador, sobre el borrador.
-  const [datosServicio, setDatosServicio] = useState<VistaPrevia | null>(null);
+  // Clientes: su página /clientes/<slug>. Reseñas: la sección de reseñas de Marketing Digital.
+  const [datosServicio, setDatosServicio] = useState<(VistaPrevia & { para: string }) | null>(null);
+  const vistaSeccion = seccion?.vista ?? "";
+  const para = esColeccion(pagina) ? `${pagina}:${vistaSeccion}` : pagina;
+  /** Servicios y contenidos no tienen una pieza propia en la web: se dice dónde se ven. */
+  const sinVista =
+    pagina === "servicio"
+      ? "Los servicios no tienen una página propia: se marcan en cada cliente («Servicios»). Elige un cliente para ver su página."
+      : pagina === "contenido"
+        ? "Hoy la web no muestra los contenidos en ninguna página. Se guardan para usarlos más adelante."
+        : null;
   useEffect(() => {
-    if (pagina === "inicio") return;
+    if (pagina === "inicio" || sinVista) return;
     let vivo = true;
     const t = setTimeout(async () => {
       try {
-        const conjuntoVivo = [...conjunto.filter((d) => !(d._id in docs)), ...Object.values(docs), ...(activosNuevos as unknown as Doc[])];
-        const respuesta = await consultarSobre(conjuntoVivo, CONSULTA[pagina]);
-        if (vivo) setDatosServicio(armarServicio(pagina, respuesta, resenasGoogle));
+        const conjuntoVivo = [
+          ...conjunto.filter((d) => !(d._id in docs)),
+          ...Object.values(docs).filter((d) => !estaBorrado(d)),
+          ...(activosNuevos as unknown as Doc[]),
+        ];
+        let nueva: VistaPrevia;
+        if (pagina === "cuenta") {
+          const doc = docs[vistaSeccion];
+          const slug = (doc?.slug as { current?: string } | undefined)?.current;
+          const cruda = slug ? await consultarSobre<SanityCuentaCompleta | null>(conjuntoVivo, QUERY_CUENTA_POR_SLUG, { slug }) : null;
+          nueva = {
+            pagina: "cliente",
+            cliente: cruda ? toAccountFull(cruda) : null,
+            aviso: !doc
+              ? "Elige un cliente de la lista."
+              : estaBorrado(doc)
+                ? "Este cliente se borra al publicar."
+                : !slug
+                  ? "Este cliente todavía no tiene dirección («Crear desde el nombre»)."
+                  : doc.activa !== true
+                    ? "Este cliente está apagado («Activa» en no): no tiene página en la web."
+                    : undefined,
+            modo: "completa",
+            vista: "",
+          };
+        } else {
+          const servicio: PaginaServicio = pagina === "resena" ? "marketing" : (pagina as PaginaServicio);
+          nueva = armarServicio(servicio, await consultarSobre(conjuntoVivo, CONSULTA[servicio]), resenasGoogle);
+          if (pagina === "resena" && nueva.pagina === "marketing") {
+            nueva = { ...nueva, vista: nueva.secciones.find((s) => s.tipo === "reviewsBanner")?.key ?? "" };
+          }
+        }
+        if (vivo) setDatosServicio({ ...nueva, para });
       } catch (e) {
         console.error("[panel] No se pudo armar la vista previa:", e);
       }
@@ -242,13 +334,15 @@ export function Panel({
       vivo = false;
       clearTimeout(t);
     };
-  }, [pagina, docs, conjunto, activosNuevos, resenasGoogle]);
+  }, [pagina, para, sinVista, vistaSeccion, docs, conjunto, activosNuevos, resenasGoogle]);
 
-  const vistaSeccion = seccion?.vista ?? "";
   const vista: VistaPrevia | null = useMemo(() => {
     if (pagina === "inicio") return { pagina: "inicio", datos, modo, vista: vistaSeccion };
-    return datosServicio && datosServicio.pagina === pagina ? { ...datosServicio, modo, vista: vistaSeccion } : null;
-  }, [pagina, datos, datosServicio, modo, vistaSeccion]);
+    if (!datosServicio || datosServicio.para !== para) return null;
+    const { para: _p, ...v } = datosServicio;
+    void _p;
+    return esColeccion(pagina) ? { ...v, modo: pagina === "cuenta" ? "completa" : modo } : { ...v, modo, vista: vistaSeccion };
+  }, [pagina, para, datos, datosServicio, modo, vistaSeccion]);
 
   const avisar = useCallback((texto: string) => setBrindis(texto), []);
   useEffect(() => {
@@ -384,7 +478,10 @@ export function Panel({
         setPublicacion({ estado: "error", mensaje: j.error ?? "No se pudo publicar. Tus cambios siguen guardados en este navegador." });
         return;
       }
-      setOriginal(docs);
+      // Lo borrado ya no existe: sale del panel.
+      const vigentes = Object.fromEntries(Object.entries(docs).filter(([, d]) => !estaBorrado(d)));
+      setDocs(vigentes);
+      setOriginal(vigentes);
       setFotosPublicadas((p) => [...p, ...fotosUsadas]);
       setFotosNuevas([]);
       setVideosPublicados((p) => [...p, ...videosUsados]);
@@ -447,9 +544,55 @@ export function Panel({
             return { _type: "file", asset: { _ref: video.activo._id, _type: "reference" } };
           },
       motivoSinVideo: soloMirar ? "En la web real el panel es «solo para mirar»: los videos se cambian en la vista previa." : undefined,
+      catalogo: (tipo) =>
+        documentosDe(tipo, docs)
+          .filter((d) => !estaBorrado(d))
+          .map((d) => ({ id: d._id, titulo: COLECCIONES[tipo].resumen(d) })),
     }),
-    [soloMirar]
+    [soloMirar, docs]
   );
+
+  /** Colecciones: crear, duplicar, borrar (si nadie lo usa) y recuperar. */
+  const crearDocumento = () => {
+    if (!coleccion) return;
+    const nuevo = documentoNuevo(coleccion, nuevaClave());
+    setDocs((d) => ({ ...d, [nuevo._id]: nuevo }));
+    setBusqueda("");
+    setClave(nuevo._id);
+  };
+  const duplicarDocumento = (id: string) => {
+    if (!coleccion || !docs[id]) return;
+    const { _createdAt: _c, _updatedAt: _u, _rev: _r, ...resto } = conClavesNuevas(docs[id]) as Doc;
+    void _c;
+    void _u;
+    void _r;
+    const copia = { ...resto, _id: documentoNuevo(coleccion, nuevaClave())._id, _type: coleccion } as Doc;
+    // Lo que no se puede repetir queda vacío para que se elija de nuevo.
+    for (const u of COLECCIONES[coleccion].unicos ?? []) {
+      const [raiz] = u.campo.split(".");
+      delete (copia as Record<string, unknown>)[raiz];
+    }
+    setDocs((d) => ({ ...d, [copia._id]: copia }));
+    setClave(copia._id);
+  };
+  const borrarDocumento = (id: string) => {
+    if (!coleccion) return;
+    const def = COLECCIONES[coleccion];
+    const usan = usadoPor(id, Object.values(docs));
+    if (usan.length) {
+      window.alert(`No se puede borrar: lo usa ${usan.slice(0, 4).map(nombreDeDocumento).join(", ")}${usan.length > 4 ? ` y ${usan.length - 4} más` : ""}. Primero quítalo de ahí.`);
+      return;
+    }
+    if (!window.confirm(`¿Borrar ${def.femenino ? "esta" : "este"} ${def.singular} «${def.resumen(docs[id])}»? Se quita de la web al publicar (antes de publicar, «Deshacer cambios» lo recupera).`)) return;
+    setDocs((d) => {
+      if (!original[id]) {
+        const { [id]: _x, ...resto } = d;
+        void _x;
+        return resto;
+      }
+      return { ...d, [id]: { _id: id, _type: coleccion, [BORRAR]: true } as Doc };
+    });
+  };
 
   /** Cambia la lista de secciones de la página de servicio abierta. */
   const operar = (fn: (lista: SeccionCruda[]) => SeccionCruda[]) => {
@@ -480,7 +623,7 @@ export function Panel({
     operar((lista) => lista.filter((x) => x._key !== s.clave));
   };
   const agregarSeccion = (tipo: string) => {
-    if (pagina === "inicio") return;
+    if (pagina === "inicio" || esColeccion(pagina)) return;
     const def = definicionBloque(tipo, pagina);
     const nueva: SeccionCruda = { _key: nuevaClave(), _type: tipo, activo: true, animar: true, titulo: def.titulo, ...(def.nuevo?.() ?? {}) };
     const i = secciones.findIndex((s) => s.clave === seccion?.clave);
@@ -488,8 +631,50 @@ export function Panel({
     setClave(nueva._key);
   };
 
+  /** El archivo de contenido/ de la sección elegida (el de su primer documento). */
+  const docDeSeccion = seccion?.bloques[0]?.documento ?? (coleccion ? seccion?.clave : undefined);
+  const archivoDeSeccion = docDeSeccion
+    ? (ARCHIVO_DE_DOCUMENTO[docDeSeccion] ?? ARCHIVO_DE_COLECCION[(docs[docDeSeccion] ?? original[docDeSeccion])?._type ?? ""])
+    : undefined;
+
+  /** Pone en el formulario lo de esta sección tal como estaba en esa versión del archivo. */
+  const traerVersion = (contenido: unknown, fecha: string): string | null => {
+    if (!seccion || !docDeSeccion) return "No hay nada elegido.";
+    if (coleccion) {
+      const viejo = Array.isArray(contenido) ? (contenido as Doc[]).find((d) => d._id === seccion.clave) : undefined;
+      if (!viejo) return "En esa versión este documento todavía no existía.";
+      setDocs((d) => ({ ...d, [seccion.clave]: viejo }));
+    } else if (docServicio) {
+      const vieja = seccionesCrudas(contenido as Doc).find((s) => s._key === seccion.clave);
+      if (!vieja) return "En esa versión esta sección todavía no existía.";
+      operar((lista) => lista.map((s) => (s._key === seccion.clave ? vieja : s)));
+    } else {
+      const viejo = contenido as Doc;
+      setDocs((d) => {
+        let nuevo = d;
+        for (const z of zonas(seccion, original)) {
+          if (z.documento !== docDeSeccion) continue;
+          nuevo = { ...nuevo, [z.documento]: escribir(nuevo[z.documento], z.ruta, leer(viejo, z.ruta)) };
+        }
+        return nuevo;
+      });
+    }
+    avisar(`Se trajo la versión del ${fecha}. Revísala en la vista previa y publícala si sirve («Deshacer cambios» la quita).`);
+    return null;
+  };
+
   const deshacer = () => {
     if (!seccion) return;
+    if (coleccion) {
+      const id = seccion.clave;
+      setDocs((d) => {
+        if (original[id]) return { ...d, [id]: original[id] };
+        const { [id]: _x, ...resto } = d;
+        void _x;
+        return resto;
+      });
+      return;
+    }
     if (docServicio) {
       // Una sección de servicio vuelve a como estaba; si es nueva, se quita.
       const antes = seccionesCrudas(original[docServicio]).find((s) => s._key === seccion.clave);
@@ -575,7 +760,7 @@ export function Panel({
         <button
           type="button"
           onClick={() => setPublicacion({ estado: "confirmar" })}
-          disabled={soloMirar || n === 0 || publicacion.estado === "enviando" || publicacion.estado === "confirmar"}
+          disabled={soloMirar || n === 0 || repetidos.length > 0 || publicacion.estado === "enviando" || publicacion.estado === "confirmar"}
           title={soloMirar ? "En la web real, publicar desde el panel se activa el día del cambio (etapa 6)" : undefined}
           className="rounded-[10px] bg-accent px-3.5 py-2 text-[0.88rem] font-semibold text-ink transition-colors hover:bg-accent-lift disabled:bg-white/10 disabled:text-foam/55"
         >
@@ -690,6 +875,15 @@ export function Panel({
         <p className="border-b border-canvas-border bg-white px-4 py-2 text-[0.85rem] text-[#1F6B47] sm:px-6">{videos.mensaje}</p>
       ) : null}
 
+      {repetidos.length ? (
+        <p className="flex items-center gap-2 border-b border-[#F4C9A5] bg-[#FFF0E3] px-4 py-2.5 text-[0.9rem] text-[#8A3F08] sm:px-6" role="alert">
+          <Warning size={18} weight="bold" aria-hidden="true" />
+          <span>
+            <strong>Así no se puede publicar.</strong> {repetidos.join(" ")}
+          </span>
+        </p>
+      ) : null}
+
       <nav className="flex items-end gap-1 overflow-x-auto border-b border-canvas-border px-4 pt-2 sm:px-6" aria-label="Páginas de la web">
         {PESTANAS.map((p) =>
           p.clave === pagina ? (
@@ -717,15 +911,40 @@ export function Panel({
       <div className="flex flex-col gap-1.5 px-4 pb-4 pt-5 sm:px-6">
         <h1 className="font-display text-[clamp(1.35rem,1rem+1.2vw,1.9rem)] font-extrabold uppercase tracking-[0.01em]">Contenido · {pestana.titulo}</h1>
         <p className="max-w-4xl text-[0.93rem] text-ink-muted">
-          {DESCRIPCION[pagina]} Escribe en los campos y mira el cambio en la vista previa. Lo que cambies queda guardado en este navegador hasta que pulses «Publicar cambios»; entonces sale a la web en unos 5 a 7 minutos.
+          {DESCRIPCION[pagina] ?? (esColeccion(pagina) ? COLECCIONES[pagina].ayuda : "")} Escribe en los campos y mira el cambio en la vista previa. Lo que cambies queda guardado en este navegador hasta que pulses «Publicar cambios»; entonces sale a la web en unos 5 a 7 minutos.
         </p>
       </div>
 
       <div className="grid gap-5 px-4 pb-10 sm:px-6 md:grid-cols-2 xl:grid-cols-[210px_minmax(380px,0.85fr)_minmax(0,1.15fr)]">
         <aside className="min-w-0 md:col-span-2 xl:col-span-1">
-          <h2 className="mb-2 font-display text-[0.72rem] font-bold tracking-[0.12em] text-ink-subtle">EN ESTA PÁGINA</h2>
-          <ul className="flex gap-1 overflow-x-auto pb-1 xl:flex-col xl:overflow-visible">
-            {secciones.map((s) => (
+          <h2 className="mb-2 font-display text-[0.72rem] font-bold tracking-[0.12em] text-ink-subtle">
+            {coleccion ? `${COLECCIONES[coleccion].titulo.toUpperCase()} (${secciones.length})` : "EN ESTA PÁGINA"}
+          </h2>
+          {coleccion ? (
+            <div className="mb-2 flex flex-col gap-1.5">
+              <label className="flex items-center gap-2 rounded-[10px] border border-canvas-border bg-white px-2.5 py-1.5 focus-within:ring-2 focus-within:ring-brand">
+                <MagnifyingGlass size={15} weight="bold" className="shrink-0 text-ink-subtle" aria-hidden="true" />
+                <input
+                  type="search"
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                  placeholder="Buscar…"
+                  aria-label={`Buscar en ${COLECCIONES[coleccion].titulo}`}
+                  className="min-w-0 flex-1 bg-transparent text-[0.88rem] outline-none"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={crearDocumento}
+                className="inline-flex items-center justify-center gap-1.5 rounded-[10px] border border-brand px-3 py-1.5 text-[0.85rem] font-semibold text-brand hover:bg-brand hover:text-white"
+              >
+                <Plus size={14} weight="bold" aria-hidden="true" /> {COLECCIONES[coleccion].femenino ? "Nueva" : "Nuevo"} {COLECCIONES[coleccion].singular}
+              </button>
+            </div>
+          ) : null}
+          <ul className={`flex gap-1 overflow-x-auto pb-1 xl:flex-col ${coleccion ? "xl:max-h-[60vh] xl:overflow-y-auto" : "xl:overflow-visible"}`}>
+            {coleccion && visibles.length === 0 ? <li className="px-2.5 py-2 text-sm text-ink-subtle">{busqueda ? "Nada coincide con la búsqueda." : "Todavía no hay ninguno."}</li> : null}
+            {visibles.map((s) => (
               <li key={s.clave} className="shrink-0">
                 <button
                   type="button"
@@ -747,6 +966,35 @@ export function Panel({
               </li>
             ))}
           </ul>
+          {coleccion && seccion ? (
+            <div className="mt-2 flex flex-wrap items-center gap-1 rounded-xl border border-canvas-border bg-white p-1.5" aria-label="Acciones del elegido">
+              <button
+                type="button"
+                onClick={() => duplicarDocumento(seccion.clave)}
+                disabled={estaBorrado(docs[seccion.clave])}
+                className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[0.78rem] text-ink-muted hover:bg-brand/10 hover:text-brand disabled:opacity-30"
+              >
+                <Copy size={14} weight="bold" aria-hidden="true" /> Duplicar
+              </button>
+              {estaBorrado(docs[seccion.clave]) ? (
+                <button
+                  type="button"
+                  onClick={deshacer}
+                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[0.78rem] text-ink-muted hover:bg-brand/10 hover:text-brand"
+                >
+                  <ArrowCounterClockwise size={14} weight="bold" aria-hidden="true" /> Recuperar
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => borrarDocumento(seccion.clave)}
+                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[0.78rem] text-ink-muted hover:bg-brand/10 hover:text-brand"
+                >
+                  <Trash size={14} weight="bold" aria-hidden="true" /> Borrar
+                </button>
+              )}
+            </div>
+          ) : null}
           {docServicio && seccion ? (
             <div className="mt-2 flex flex-wrap items-center gap-1 rounded-xl border border-canvas-border bg-white p-1.5" aria-label="Mover u ocultar la sección elegida">
               {[
@@ -769,7 +1017,7 @@ export function Panel({
               ))}
             </div>
           ) : null}
-          {pagina !== "inicio" ? (
+          {docServicio ? (
             <label className="mt-2 flex flex-col gap-1 text-[0.8rem] text-ink-subtle">
               <span>Agregar una sección (debajo de la elegida)</span>
               <select
@@ -778,9 +1026,9 @@ export function Panel({
                 className="rounded-[10px] border border-canvas-border bg-white px-2.5 py-2 text-[0.88rem] text-ink"
               >
                 <option value="">+ Elegir el tipo…</option>
-                {TIPOS_DE_PAGINA[pagina].filter(tieneFormulario).map((tipo) => (
+                {TIPOS_DE_PAGINA[pagina as PaginaServicio].filter(tieneFormulario).map((tipo) => (
                   <option key={tipo} value={tipo}>
-                    {definicionBloque(tipo, pagina).titulo}
+                    {definicionBloque(tipo, pagina as PaginaServicio).titulo}
                   </option>
                 ))}
               </select>
@@ -799,10 +1047,11 @@ export function Panel({
             alCopiarDeFabrica={() => seccion.vacia && setDocs((d) => seccion.vacia!.aplicar(d))}
             alDeshacer={deshacer}
             subidas={subidas}
+            alVersiones={archivoDeSeccion && original[docDeSeccion ?? ""] ? () => setVerVersiones(true) : undefined}
           />
         ) : (
           <p className="rounded-[20px] border border-dashed border-canvas-border bg-white p-6 text-sm text-ink-muted">
-            Esta página no tiene secciones. Agrega una con «Agregar una sección».
+            {coleccion ? `No hay ${COLECCIONES[coleccion].titulo.toLowerCase()} todavía. Crea uno con «+ Nuevo».` : "Esta página no tiene secciones. Agrega una con «Agregar una sección»."}
           </p>
         )}
 
@@ -820,6 +1069,8 @@ export function Panel({
           {conmutadores}
           {ampliada ? (
             <div className="h-40 rounded-lg border border-dashed border-canvas-border" />
+          ) : sinVista ? (
+            <div className="grid h-60 place-items-center rounded-lg border border-dashed border-canvas-border px-6 text-center text-sm text-ink-muted">{sinVista}</div>
           ) : vista ? (
             <Marco vista={vista} dispositivo={dispositivo} />
           ) : (
@@ -851,6 +1102,16 @@ export function Panel({
             {vista ? <Marco vista={vista} dispositivo={dispositivo} ajustarAlto /> : null}
           </div>
         </div>
+      ) : null}
+
+      {verVersiones && seccion && archivoDeSeccion ? (
+        <Versiones
+          key={`${pagina}:${seccion.clave}`}
+          archivo={archivoDeSeccion}
+          titulo={`${nombrePagina(pagina)} · ${seccion.titulo}`}
+          alTraer={traerVersion}
+          alCerrar={() => setVerVersiones(false)}
+        />
       ) : null}
 
       {brindis ? (

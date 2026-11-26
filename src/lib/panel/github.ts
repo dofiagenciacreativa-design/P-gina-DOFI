@@ -139,3 +139,22 @@ export async function crearCommit(
   }
   return commit.sha;
 }
+
+/** Los últimos commits de una rama que tocaron un archivo («Versiones anteriores»). */
+export async function commitsDeArchivo(
+  token: string,
+  rama: string,
+  ruta: string,
+  cuantos = 20
+): Promise<{ commit: string; fecha: string; mensaje: string }[]> {
+  const lista = await pedir<{ sha: string; commit: { message: string; author?: { date?: string }; committer?: { date?: string } } }[]>(
+    token,
+    "GET",
+    `/commits?sha=${encodeURIComponent(rama)}&path=${encodeURIComponent(ruta)}&per_page=${cuantos}`
+  );
+  return lista.map((c) => ({
+    commit: c.sha,
+    fecha: c.commit.committer?.date ?? c.commit.author?.date ?? "",
+    mensaje: c.commit.message.split("\n")[0],
+  }));
+}

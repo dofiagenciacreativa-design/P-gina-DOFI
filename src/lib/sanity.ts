@@ -115,7 +115,7 @@ type SanityContenido = {
   relacionAspecto: VideoSource["ratio"] | null;
 };
 
-type SanityCuentaCompleta = SanityCuentaResumen & {
+export type SanityCuentaCompleta = SanityCuentaResumen & {
   city: string | null;
   challenge: string | null;
   approach: string | null;
@@ -201,7 +201,8 @@ function toContenidoVideo(c: SanityContenido): VideoSource | null {
   };
 }
 
-function toAccountFull(doc: SanityCuentaCompleta): Client | null {
+/** Arma la página de un cliente con la respuesta de QUERY_CUENTA_POR_SLUG. Pura: la usa también la vista previa del panel. */
+export function toAccountFull(doc: SanityCuentaCompleta): Client | null {
   if (!doc.name) return null;
 
   const contenidos = doc.contenidos ?? [];

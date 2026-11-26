@@ -3,6 +3,7 @@ import { ARCHIVO_DE_ACTIVOS, ARCHIVO_DE_DOCUMENTO, rutaDeMedioPermitida, seriali
 import { ramaDestino, tokenDeGithub } from "@/lib/panel/config";
 import { ErrorDeGithub, archivosCambiados, commitDeRama, crearCommit, leerTexto, problemaDeLlave, type ArchivoAPublicar } from "@/lib/panel/github";
 import { almacenDeVideos, claveDeVideo } from "@/lib/panel/media";
+import { ARCHIVO_DE_COLECCION, ID_DE_COLECCION, mezclarColeccion, repetido } from "@/lib/contenido/colecciones";
 import { exigirSesion, json } from "../_comun";
 
 export const dynamic = "force-dynamic";
@@ -63,24 +64,36 @@ export async function POST(req: Request) {
     return json({ error: "Petición inválida." }, 400);
   }
 
-  // Qué archivos se escriben, validando cada ruta.
+  // Qué archivos se escriben, validando cada ruta. Los documentos únicos van a su
+  // archivo; los de una colección (clientes, reseñas…) se agrupan por archivo y se
+  // mezclan más abajo con lo que tiene la rama (etapa 5).
   const archivos: ArchivoAPublicar[] = [];
+  const colecciones = new Map<string, { tipo: string; cambios: Doc[] }>();
   for (const d of p.documentos ?? []) {
-    const ruta = ARCHIVO_DE_DOCUMENTO[d?._id];
-    if (!ruta || d._type !== d._id) return json({ error: `El documento «${d?._id}» no se puede publicar desde el panel.` }, 400);
-    archivos.push({ ruta, texto: serializarJson(d) });
+    const unico = ARCHIVO_DE_DOCUMENTO[d?._id];
+    if (unico && d._type === d._id) {
+      archivos.push({ ruta: unico, texto: serializarJson(d) });
+      continue;
+    }
+    const ruta = ARCHIVO_DE_COLECCION[d?._type];
+    if (!ruta || typeof d._id !== "string" || !ID_DE_COLECCION.test(d._id)) {
+      return json({ error: `El documento «${d?._id}» no se puede publicar desde el panel.` }, 400);
+    }
+    const grupo = colecciones.get(ruta) ?? { tipo: d._type, cambios: [] };
+    grupo.cambios.push(d);
+    colecciones.set(ruta, grupo);
   }
   for (const m of p.medios ?? []) {
     if (!rutaDeMedioPermitida(m.ruta) || !/^[a-f0-9]{40}$/.test(m.blob)) return json({ error: "Una foto tiene una ruta inválida." }, 400);
     archivos.push({ ruta: m.ruta, blob: m.blob });
   }
-  if (archivos.length === 0 && !(p.activosNuevos ?? []).length) return json({ error: "No hay cambios para publicar." }, 400);
+  if (archivos.length === 0 && colecciones.size === 0 && !(p.activosNuevos ?? []).length) return json({ error: "No hay cambios para publicar." }, 400);
 
   try {
     const actual = await commitDeRama(token, rama);
 
     // ¿Alguien (otra pestaña, Claude Desktop) cambió estos mismos archivos mientras se editaba?
-    const rutas = new Set(archivos.map((a) => a.ruta));
+    const rutas = new Set([...archivos.map((a) => a.ruta), ...colecciones.keys()]);
     if (p.base && SHA.test(p.base) && p.base !== actual) {
       const cambiados = await archivosCambiados(token, p.base, actual);
       const choque = cambiados.filter((r) => rutas.has(r));
@@ -90,6 +103,16 @@ export async function POST(req: Request) {
           409
         );
       }
+    }
+
+    // Colecciones: cada archivo se lee de la rama y se cambian solo esos documentos.
+    const ahora = new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
+    for (const [ruta, { tipo, cambios }] of colecciones) {
+      const texto = await leerTexto(token, ruta, actual);
+      const lista = mezclarColeccion(texto ? (JSON.parse(texto) as Doc[]) : [], cambios, ahora);
+      const error = repetido(lista, tipo);
+      if (error) return json({ error }, 400);
+      archivos.push({ ruta, texto: serializarJson(lista) });
     }
 
     // Fotos y videos nuevos: se agregan a contenido/archivos.json (leído de la rama en ese momento).
