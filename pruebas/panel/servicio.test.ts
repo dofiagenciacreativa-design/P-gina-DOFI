@@ -60,15 +60,17 @@ test("duplicar da claves nuevas también a los elementos de las listas internas"
   expect(copia.logros.every((l) => !originales.has(l._key))).toBe(true);
 });
 
-test("solo se pueden agregar los tipos que ya tienen formulario", () => {
-  expect(TIPOS_DE_PAGINA.asesorias.filter(tieneFormulario)).toEqual([
-    "splitHeroBanner",
-    "aboutBanner",
-    "achievementsBanner",
-    "celularesBanner",
-    "ctaBanner",
-  ]);
-  expect(definicionBloque("methodBanner", "asesorias").aviso).toBeTruthy();
+test("todos los tipos de cada página tienen formulario y se pueden agregar", () => {
+  for (const pagina of Object.keys(TIPOS_DE_PAGINA) as (keyof typeof TIPOS_DE_PAGINA)[]) {
+    expect(TIPOS_DE_PAGINA[pagina].filter(tieneFormulario), pagina).toEqual(TIPOS_DE_PAGINA[pagina]);
+    for (const tipo of TIPOS_DE_PAGINA[pagina]) expect(definicionBloque(tipo, pagina).aviso, `${pagina}:${tipo}`).toBeUndefined();
+  }
+  // Un tipo que el panel no conoce: se ve, se mueve, se oculta o se quita, pero no se edita.
+  const rara = definicionBloque("bloqueNuevoDelStudio", "asesorias");
+  expect(rara.aviso).toBeTruthy();
+  expect(rara.grupos.flatMap((g) => g.campos.map((c) => c.nombre))).toEqual(["activo"]);
+  expect(tieneFormulario("bloqueNuevoDelStudio")).toBe(false);
+  expect(tieneFormulario("toString")).toBe(false);
 });
 
 test("la vista previa arma Asesorías igual que la web (misma consulta, mismo armado)", async () => {

@@ -50,9 +50,9 @@ type ClavePagina = "inicio" | PaginaServicio;
 /** Las pestañas. `lista`: ya se edita en el panel; las demás llegan en etapas próximas. */
 const PESTANAS: { clave: ClavePagina | null; titulo: string; lista: boolean; ruta: string; proxima?: string }[] = [
   { clave: "inicio", titulo: "Inicio", lista: true, ruta: "/" },
-  { clave: "marketing", titulo: "Marketing Digital", lista: false, ruta: "/marketing-digital", proxima: "la próxima parte de la etapa 4" },
-  { clave: "trafico", titulo: "Tráfico / Ads", lista: false, ruta: "/trafico-ads", proxima: "la próxima parte de la etapa 4" },
-  { clave: "feniax", titulo: "ChatBots / CRM", lista: false, ruta: "/chatbots-crm", proxima: "la próxima parte de la etapa 4" },
+  { clave: "marketing", titulo: "Marketing Digital", lista: true, ruta: "/marketing-digital" },
+  { clave: "trafico", titulo: "Tráfico / Ads", lista: true, ruta: "/trafico-ads" },
+  { clave: "feniax", titulo: "ChatBots / CRM", lista: true, ruta: "/chatbots-crm" },
   { clave: "asesorias", titulo: "Asesorías", lista: true, ruta: "/asesorias" },
   { clave: null, titulo: "Clientes", lista: false, ruta: "/clientes", proxima: "la etapa 5" },
   { clave: null, titulo: "Reseñas", lista: false, ruta: "/", proxima: "la etapa 5" },
@@ -64,9 +64,9 @@ const PAGINAS: ClavePagina[] = ["inicio", ...SERVICIOS];
 
 const DESCRIPCION: Record<ClavePagina, string> = {
   inicio: "Portada, tarjetas y los cuatro banners de la página de Inicio.",
-  marketing: "Las secciones de Marketing Digital, en el orden en que aparecen.",
-  trafico: "Las secciones de Tráfico / Ads, en el orden en que aparecen.",
-  feniax: "Las secciones de ChatBots / CRM, en el orden en que aparecen.",
+  marketing: "Las secciones de Marketing Digital, en el orden en que aparecen. Aquí se editan los giros y logos de clientes que usan también las otras páginas de servicio.",
+  trafico: "Las secciones de Tráfico / Ads, en el orden en que aparecen: muévelas, ocúltalas o agrega otras.",
+  feniax: "Las secciones de ChatBots / CRM, en el orden en que aparecen, con el video del celular de la portada y los chats de ejemplo.",
   asesorias: "Las secciones de Asesorías, en el orden en que aparecen: muévelas, ocúltalas, agrega otras y cambia los videos.",
 };
 

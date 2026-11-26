@@ -293,6 +293,10 @@ function CampoLista({
   const lleno = campo.max !== undefined && elementos.length >= campo.max;
 
   const poner = (lista: Record<string, unknown>[]) => alCambiar(lista);
+  /** Un elemento de otro tipo (p. ej. una referencia a una cuenta): se puede mover o quitar, pero no se edita aquí. */
+  const ajeno = (el: Record<string, unknown>) => el._type !== tipo.tipo;
+  const nombre = (el: Record<string, unknown>) =>
+    !ajeno(el) ? tipo.resumen(el) : el._type === "reference" ? "Cuenta enlazada (se edita en Clientes)" : `Elemento «${String(el._type)}» (no se edita aquí)`;
   const mover = (i: number, d: number) => {
     const j = i + d;
     if (j < 0 || j >= elementos.length) return;
@@ -311,7 +315,7 @@ function CampoLista({
     setAbierto(copia._key as string);
   };
   const quitar = (i: number) => {
-    if (!window.confirm(`¿Quitar «${tipo.resumen(elementos[i])}» de la lista? (Puedes recuperarlo con «Deshacer cambios» antes de publicar.)`)) return;
+    if (!window.confirm(`¿Quitar «${nombre(elementos[i])}» de la lista? (Puedes recuperarlo con «Deshacer cambios» antes de publicar.)`)) return;
     poner(elementos.filter((_, k) => k !== i));
   };
 
@@ -339,6 +343,7 @@ function CampoLista({
                 <button
                   type="button"
                   onClick={() => setAbierto(abiertoEste ? null : clave)}
+                  disabled={ajeno(el)}
                   aria-expanded={abiertoEste}
                   className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1.5 py-1 text-left text-[0.88rem] text-ink hover:bg-brand/[0.06]"
                 >
@@ -349,7 +354,7 @@ function CampoLista({
                     aria-hidden="true"
                   />
                   <span className="tabular-nums text-ink-subtle">{i + 1}.</span>
-                  <span className="truncate">{tipo.resumen(el)}</span>
+                  <span className={`truncate ${ajeno(el) ? "italic text-ink-subtle" : ""}`}>{nombre(el)}</span>
                 </button>
                 <button type="button" className={botonChico} onClick={() => mover(i, -1)} disabled={i === 0} title="Subir" aria-label="Subir">
                   <ArrowUp size={14} weight="bold" />
@@ -371,7 +376,7 @@ function CampoLista({
                   <Trash size={14} weight="bold" />
                 </button>
               </div>
-              {abiertoEste ? (
+              {abiertoEste && !ajeno(el) ? (
                 <div className="grid gap-3 border-t border-canvas-border bg-white p-3 sm:grid-cols-2">
                   {tipo.campos.map((c) => (
                     <div key={c.nombre} className={c.clase === "numero" ? "" : "sm:col-span-2"}>

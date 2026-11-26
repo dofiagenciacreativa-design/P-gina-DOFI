@@ -34,7 +34,8 @@ export function seccionesDeServicio(pagina: PaginaServicio, docs: Record<string,
     repetidos.set(s._type, n);
     const oculta = s.activo === false;
     const titulo = (total.get(s._type) ?? 0) > 1 ? `${def.titulo} ${n}` : def.titulo;
-    const cuenta = Array.isArray(s.logros) ? s.logros.length : Array.isArray(s.pasos) ? s.pasos.length : undefined;
+    const lista = [s.logros, s.pasos, s.categorias, s.plataformas].find(Array.isArray);
+    const cuenta = lista ? lista.length : undefined;
     return {
       clave: s._key,
       titulo,
