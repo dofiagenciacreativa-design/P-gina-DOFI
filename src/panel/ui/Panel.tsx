@@ -65,13 +65,17 @@ export function Panel({
   documentos,
   activos,
   base,
+  videosEnSanity,
 }: {
   documentos: Record<string, Doc>;
   /** Las fotos que usan los documentos (de Sanity o del repositorio). */
   activos: Activo[];
   /** El commit con el que se construyó esta página (null fuera de Cloudflare). */
   base: string | null;
+  /** Cuántos videos en uso se ven todavía desde Sanity (se pasan a R2 con un clic). */
+  videosEnSanity: number;
 }) {
+  const [videos, setVideos] = useState<{ estado: "nada" | "copiando" | "listo" | "error"; mensaje?: string }>({ estado: "nada" });
   const [original, setOriginal] = useState(documentos);
   const [sesion, setSesion] = useState<"cargando" | "no" | "si">("cargando");
   const [ajustes, setAjustes] = useState<{ rama: string | null; faltan: string[] }>({ rama: null, faltan: [] });
@@ -261,6 +265,24 @@ export function Panel({
     setSesion("no");
   }
 
+  /** Una vez: pasa a R2 los videos que todavía salen de Sanity y publica sus direcciones nuevas. */
+  async function pasarVideos() {
+    setVideos({ estado: "copiando" });
+    try {
+      const r = await fetch("/api/admin/videos/copiar", { method: "POST" });
+      const j = (await r.json().catch(() => ({}))) as { copiados?: string[]; commit?: string; error?: string; mensaje?: string };
+      if (!r.ok) {
+        if (r.status === 401) setSesion("no");
+        setVideos({ estado: "error", mensaje: j.error ?? "No se pudieron pasar los videos." });
+        return;
+      }
+      setVideos({ estado: "listo", mensaje: j.mensaje ?? `Listo: ${j.copiados?.length ?? 0} videos ya están en Cloudflare. La web los usará en unos minutos.` });
+      if (j.commit) setPublicacion({ estado: "publicando", commit: j.commit, pedidoEn: Date.now() });
+    } catch {
+      setVideos({ estado: "error", mensaje: "No hay conexión. Vuelve a intentar." });
+    }
+  }
+
   function descartarTodo() {
     setDocs(original);
     setFotosNuevas([]);
@@ -443,6 +465,20 @@ export function Panel({
         <p className="border-b border-brand/15 bg-brand/[0.07] px-4 py-2 text-[0.85rem] text-brand sm:px-6">
           <strong>Vista previa de prueba:</strong> al publicar, el cambio va a la rama «{ajustes.rama}» y a su propia vista previa, no a la web real.
         </p>
+      ) : null}
+
+      {videosEnSanity > 0 && videos.estado !== "listo" ? (
+        <p className="flex flex-wrap items-center gap-2 border-b border-canvas-border bg-white px-4 py-2 text-[0.85rem] text-ink-muted sm:px-6">
+          <span>
+            {videosEnSanity === 1 ? "Hay 1 video que todavía se ve desde Sanity." : `Hay ${videosEnSanity} videos que todavía se ven desde Sanity.`} Pásalos a Cloudflare una sola vez (tarda un par de minutos).
+          </span>
+          <button type="button" onClick={pasarVideos} disabled={videos.estado === "copiando"} className="rounded-full border border-brand px-3 py-1 text-[0.8rem] font-semibold text-brand hover:bg-brand hover:text-white disabled:opacity-60">
+            {videos.estado === "copiando" ? "Pasando los videos…" : "Pasar los videos a Cloudflare"}
+          </button>
+          {videos.estado === "error" ? <span className="font-medium text-[#B4520B]">{videos.mensaje}</span> : null}
+        </p>
+      ) : videos.estado === "listo" ? (
+        <p className="border-b border-canvas-border bg-white px-4 py-2 text-[0.85rem] text-[#1F6B47] sm:px-6">{videos.mensaje}</p>
       ) : null}
 
       <nav className="flex items-end gap-1 overflow-x-auto border-b border-canvas-border px-4 pt-2 sm:px-6" aria-label="Páginas de la web">

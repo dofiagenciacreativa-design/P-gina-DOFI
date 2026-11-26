@@ -32,5 +32,9 @@ export default async function PaginaPanel() {
   // alguien cambió lo mismo después (lo define Cloudflare Workers Builds).
   const base = process.env.WORKERS_CI_COMMIT_SHA ?? null;
 
-  return <Panel documentos={documentos} activos={activos} base={base} />;
+  // Videos que todavía se ven desde Sanity (se pasan a R2 con un clic en el panel).
+  const videosEnSanity =
+    (await sanityQuery<number>(`count(*[_type == "sanity.fileAsset" && string::startsWith(url, "https://cdn.sanity.io/") && count(*[references(^._id)]) > 0])`)) ?? 0;
+
+  return <Panel documentos={documentos} activos={activos} base={base} videosEnSanity={videosEnSanity} />;
 }
