@@ -221,7 +221,7 @@ function respaldo(girosMarketing: GiroNegocio[], marketing: ClientesMarketing | 
 /** Un celular de «Videos en celulares»: el archivo, su título y su portada. */
 const CELULAR = `"url": video.asset->url, titulo, "portada": portada{ ${IMG} }`;
 
-const QUERY_ASESORIAS = `{
+export const QUERY_ASESORIAS = `{
   "pagina": *[_type == "asesoriasPage"][0]{
     sections[]{
       _type, _key, activo, subtitulo, titulo, descripcion, destacado, animar,

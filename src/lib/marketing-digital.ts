@@ -317,7 +317,7 @@ export const IMG = `"url": asset->url, "ancho": asset->metadata.dimensions.width
  *  necesita la proporcion para reservar el espacio sin deformar). */
 export const LOGO = `"logo": logo.asset->url, "ancho": logo.asset->metadata.dimensions.width, "alto": logo.asset->metadata.dimensions.height, "logoCircular": logoCircular.asset->url`;
 
-const QUERY_MARKETING = `{
+export const QUERY_MARKETING = `{
   "pagina": *[_type == "marketingDigitalPage"][0]{
     sections[]{
       _type, _key, activo, subtitulo, titulo, descripcion, destacado, animar,

@@ -10,6 +10,20 @@ import { armarPaginaInicio, type PaginaInicio, type RespuestaCrudaInicio } from 
 // para que el panel los use en el navegador). Se re-exportan para que los
 // import de siempre desde "@/lib/sanity" sigan funcionando.
 export * from "@/lib/inicio";
+import { fuenteActual } from "@/lib/contenido/fuente";
+import { consultarLocal } from "@/lib/contenido/consulta-local";
+
+/** Lee del contenido guardado en el repositorio (CONTENT_SOURCE=archivos, ver
+ *  src/lib/contenido/fuente.ts). Mismas consultas GROQ que contra Sanity.
+ *  null si falla: cada funcion decide su respaldo, igual que con Sanity. */
+async function leerArchivos<T>(query: string, params: Record<string, string>, que: string): Promise<T | null> {
+  try {
+    return (await consultarLocal<T>(query, params)) ?? null;
+  } catch (err) {
+    console.error(`[contenido] No se pudo leer ${que} de los archivos del repositorio:`, err);
+    return null;
+  }
+}
 
 /**
  * Conexion a Sanity para las Cuentas (carrusel, muro de logos, pagina
@@ -129,13 +143,13 @@ const CAMPOS_CUENTA_RESUMEN = `
   "services": servicios[]->nombre
 `;
 
-const QUERY_CUENTAS_ACTIVAS = `*[_type == "cuenta" && activa == true] | order(orden asc){
+export const QUERY_CUENTAS_ACTIVAS = `*[_type == "cuenta" && activa == true] | order(orden asc){
   ${CAMPOS_CUENTA_RESUMEN}
 }`;
 
-const QUERY_SLUGS_ACTIVOS = `*[_type == "cuenta" && activa == true].slug.current`;
+export const QUERY_SLUGS_ACTIVOS = `*[_type == "cuenta" && activa == true].slug.current`;
 
-const QUERY_CUENTA_POR_SLUG = `*[_type == "cuenta" && activa == true && slug.current == $slug][0]{
+export const QUERY_CUENTA_POR_SLUG = `*[_type == "cuenta" && activa == true && slug.current == $slug][0]{
   ${CAMPOS_CUENTA_RESUMEN},
   "city": ciudad,
   "challenge": reto,
@@ -248,6 +262,12 @@ function toAccountFull(doc: SanityCuentaCompleta): Client | null {
  * por un problema de conexion.
  */
 export async function getActiveAccounts(): Promise<Client[]> {
+  if (fuenteActual() === "archivos") {
+    const result = await leerArchivos<SanityCuentaResumen[]>(QUERY_CUENTAS_ACTIVAS, {}, "las cuentas");
+    const cuentas = (result ?? []).map(toAccountSummary).filter((c): c is Client => c !== null);
+    return cuentas.length > 0 ? cuentas : clientesRespaldo;
+  }
+
   const projectId = process.env.SANITY_PROJECT_ID;
   const dataset = process.env.SANITY_DATASET;
 
@@ -281,6 +301,12 @@ export async function getActiveAccounts(): Promise<Client[]> {
 
 /** Solo los slugs de cuentas activas, para generateStaticParams() y el sitemap. */
 export async function getAllActiveSlugs(): Promise<string[]> {
+  if (fuenteActual() === "archivos") {
+    const result = await leerArchivos<(string | null)[]>(QUERY_SLUGS_ACTIVOS, {}, "los slugs de cuentas");
+    const slugs = (result ?? []).filter((s): s is string => Boolean(s));
+    return slugs.length > 0 ? slugs : clientesRespaldo.map((c) => c.slug);
+  }
+
   const projectId = process.env.SANITY_PROJECT_ID;
   const dataset = process.env.SANITY_DATASET;
 
@@ -311,6 +337,11 @@ export async function getAllActiveSlugs(): Promise<string[]> {
  * respaldo local (y si tampoco esta ahi, null -> notFound()).
  */
 export async function getAccountBySlug(slug: string): Promise<Client | null> {
+  if (fuenteActual() === "archivos") {
+    const result = await leerArchivos<SanityCuentaCompleta | null>(QUERY_CUENTA_POR_SLUG, { slug }, `la cuenta "${slug}"`);
+    return result ? toAccountFull(result) : (clientesRespaldo.find((c) => c.slug === slug) ?? null);
+  }
+
   const projectId = process.env.SANITY_PROJECT_ID;
   const dataset = process.env.SANITY_DATASET;
 
@@ -364,6 +395,8 @@ export async function getAccountBySlug(slug: string): Promise<Client | null> {
 /** Devuelve null ante cualquier problema (sin credenciales, red, documento
  *  inexistente); getSeccionesPaginaInicio() decide el respaldo. */
 export async function sanityQuery<T>(query: string): Promise<T | null> {
+  if (fuenteActual() === "archivos") return leerArchivos<T>(query, {}, "el contenido");
+
   const projectId = process.env.SANITY_PROJECT_ID;
   const dataset = process.env.SANITY_DATASET;
 
@@ -394,7 +427,7 @@ export async function sanityQuery<T>(query: string): Promise<T | null> {
  *  fotografía, documento propio — ver HeroDocRaw). GROQ permite construir
  *  un objeto raíz con ambas consultas en una sola llamada a la Query API,
  *  asi que sigue siendo un unico round-trip de red, no dos. */
-const QUERY_PAGINA_INICIO = `{
+export const QUERY_PAGINA_INICIO = `{
   "pagina": *[_type == "paginaInicio"][0]{
     titulo,
     secciones[]{

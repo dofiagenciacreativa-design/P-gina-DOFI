@@ -181,7 +181,7 @@ const METRICAS = `"metricas": metricas{
   "hitos": hitos[]{ dia, texto }
 }`;
 
-const QUERY_TRAFICO = `{
+export const QUERY_TRAFICO = `{
   "pagina": *[_type == "traficoAdsPage"][0]{
     sections[]{
       _type, _key, activo, subtitulo, titulo, descripcion, destacado, animar,

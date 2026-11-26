@@ -2,6 +2,7 @@
 
 import type { ResolverArchivo } from "@/lib/contenido/tipos";
 import type { Campo } from "@/panel/esquema/tipos";
+import { direccionParaAncho } from "@/lib/contenido/medios";
 
 /**
  * Un campo del formulario según su clase (src/panel/esquema/tipos.ts).
@@ -244,7 +245,11 @@ export function CampoPanel({
 
     case "imagen": {
       const info = resolver(valor);
-      const miniatura = info ? (info.url.includes("cdn.sanity.io") ? `${info.url}?w=480&auto=format` : info.url) : null;
+      const miniatura = info
+        ? info.url.includes("cdn.sanity.io")
+          ? `${info.url}?w=480&auto=format`
+          : (direccionParaAncho(info.url, 240) ?? info.url)
+        : null;
       return (
         <div className="flex flex-col gap-1.5">
           <span className="text-sm font-semibold text-ink">{campo.titulo}</span>

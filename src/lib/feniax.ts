@@ -148,7 +148,7 @@ function respaldo(girosMarketing: GiroConChat[], resenas: SeccionResenas["resena
 /** Una conversacion de demo tal como se carga en el Studio (tipo chatDemo). */
 const CHAT = `negocio, estado, "avatar": avatar.asset->url, "mensajes": mensajes[]{ de, texto, "imagen": imagen.asset->url }, aviso{ titulo, texto }`;
 
-const QUERY_FENIAX = `{
+export const QUERY_FENIAX = `{
   "pagina": *[_type == "chatbotsCrmPage"][0]{
     sections[]{
       _type, _key, activo, subtitulo, titulo, descripcion, destacado, animar,

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowSquareOut, ArrowsOut, X } from "@phosphor-icons/react";
 import { armarPaginaInicio } from "@/lib/inicio";
-import { resolverDeSanity } from "@/lib/contenido/archivos-sanity";
+import { resolverDeActivos, type Activo } from "@/lib/contenido/archivos-activos";
 import { proyectarPaginaInicio } from "@/lib/contenido/proyecciones/pagina-inicio";
 import type { Doc } from "@/lib/contenido/tipos";
 import { seccionesInicio } from "@/panel/esquema/inicio";
@@ -46,10 +46,11 @@ function zonas(s: SeccionPanel, original: Record<string, Doc>): { documento: str
 
 export function Panel({
   documentos,
-  sanity,
+  activos,
 }: {
   documentos: Record<string, Doc>;
-  sanity: { projectId: string; dataset: string };
+  /** Las fotos que usan los documentos (de Sanity o del repositorio). */
+  activos: Activo[];
 }) {
   const [original] = useState(documentos);
   const [docs, setDocs] = useState(documentos);
@@ -59,7 +60,7 @@ export function Panel({
   const [ampliada, setAmpliada] = useState(false);
   const [brindis, setBrindis] = useState<string | null>(null);
 
-  const resolver = useMemo(() => resolverDeSanity(sanity), [sanity]);
+  const resolver = useMemo(() => resolverDeActivos(activos), [activos]);
   const secciones = useMemo(() => seccionesInicio(docs), [docs]);
   const seccion = secciones.find((s) => s.clave === clave) ?? secciones[0];
 

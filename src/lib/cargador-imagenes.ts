@@ -1,3 +1,5 @@
+import { direccionParaAncho } from "./contenido/medios";
+
 /**
  * Cargador de imágenes de next/image (next.config.ts → images.loaderFile).
  *
@@ -21,6 +23,12 @@
  * en el tamaño en que se usan (ver los logos livianos en public/).
  */
 export default function cargadorImagenes({ src, width, quality }: { src: string; width: number; quality?: number }) {
+  // Contenido guardado en el repositorio (etapa 2 del panel): la variante
+  // WebP ya generada más angosta que alcance, o la imagen completa. Se
+  // ignoran ?w, ?h, ?auto y ?q que traen las consultas: el tamaño lo decide
+  // `width`. Ver src/lib/contenido/medios.ts.
+  if (src.startsWith("/media/")) return direccionParaAncho(src.split("?")[0], width) ?? src;
+
   if (!src.startsWith("https://cdn.sanity.io/")) return src;
 
   const url = new URL(src);
