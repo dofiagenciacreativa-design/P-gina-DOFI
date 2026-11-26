@@ -21,6 +21,8 @@ El seguro de `scripts/cf-deploy.mjs` deja construir `main` con archivos solo si 
 2. El commit del cambio: `.env.production` con `CONTENT_SOURCE=archivos`, `contenido/LISTO-PARA-PRODUCCION` y `PANEL_RAMA_DESTINO=main` en las variables de producción de `wrangler.jsonc` (las vistas previas siguen publicando en `panel-pruebas-contenido`).
 3. La vista previa de la rama se armó con archivos y se comparó con la web real.
 
+**Resultado de la preparación (2026-11-26):** la copia nueva de Sanity salió idéntica a la del 25 (nadie editó Sanity desde entonces); `npm run contenido:paridad` = 0 diferencias; la vista previa `https://panel-6-cambio-pagina-dofi.dofiagenciacreativa.workers.dev` (commit `c96018c`, construida con archivos) es igual a la web real en 12 páginas (texto, y fotos y videos comparados por su huella sha1); no pide ninguna foto a Sanity (solo los 3 videos de Asesorías); 40 fotos de `/media/` probadas: todas cargan; sin errores en la consola.
+
 ## Lista del día
 
 **El propietario:** elige el día y esa mañana **no edita nada en Sanity**.
