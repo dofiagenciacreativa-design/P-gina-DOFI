@@ -46,3 +46,12 @@ Plan: `docs/panel-propio/plan-etapa-3.md`.
 - En la vista previa: confirmar que ahora sí sale «✓ Ya está en la web» y probar «Cambiar foto».
 - Etapa 4: los videos en el formulario de Asesorías («Cambiar video», con subida por partes) y las cuatro páginas de servicio.
 - Etapa 6: definir `PANEL_RAMA_DESTINO=main` en producción, `CONTENT_SOURCE=archivos`, pasar los videos en producción con el mismo botón.
+
+## Preparación para `main` (2026-11-26, rama `panel-1-3-a-main`)
+
+Aprobada la etapa 3, las etapas 1 a 3 se preparan para entrar juntas a `main`:
+
+- Se deshizo el commit «SOLO VISTA PREVIA» (`878ebf6`): la web vuelve a leer de Sanity, como en producción.
+- **Panel «solo para mirar»** en la web real hasta la etapa 6 (sin `PANEL_RAMA_DESTINO`): se edita y se ve la vista previa, pero «Publicar cambios» queda inactivo con su explicación y no aparece el botón de los videos. Comprobado en local con `next build` + `next start` (contraseña de prueba, borrada al terminar): aviso visible, botón inactivo tras cambiar el título, `POST /api/admin/publicar` → 503.
+- `main` no tenía cambios nuevos (8ee6e69 ya estaba en la rama): pasar a `main` es un avance rápido.
+- Vista previa `https://panel-1-3-a-main-pagina-dofi.dofiagenciacreativa.workers.dev` (commit `0202016`) comparada con `dofiagenciacreativa.com`: **10 páginas con el mismo texto y las mismas fotos y videos** (/, /marketing-digital, /trafico-ads, /chatbots-crm, /asesorias, /redes, /clientes, /contactanos, /el-socio, /feniax). `/admin` con `noindex` y bloqueado en `robots.txt`.
